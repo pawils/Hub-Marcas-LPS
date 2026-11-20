@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Reserva tu Pieza Artesanal - Preventa Exclusiva Artesanitas</title>
+  <meta name="description" content="Reserva en preventa tus piezas de cerámica artesanales pintadas a mano por Artesanitas. Entrega el 10 de Diciembre.">
+  <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
+          colors: {
+            brand: { dark: '#4A3C31', muted: '#8C7A6B', terracota: '#B87352', cream: '#F9F6F0', beige: '#D5C9BD' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '851775257895823');
+    fbq('track', 'PageView');
+  </script>
+</head>
+
+<body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen">
+
+  <div class="max-w-xl mx-auto px-3.5 sm:px-5 py-5 sm:py-12">
+    <!-- Header -->
+    <div class="text-center mb-6 sm:mb-8">
+      <a href="/artesanitas" class="inline-block transition-transform hover:scale-105 mb-2.5">
+        <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas"
+          class="h-14 w-14 sm:h-16 sm:w-16 object-cover rounded-full shadow-md mx-auto border-2 border-white">
+      </a>
+      <span class="inline-block bg-[#B87352]/10 text-[#B87352] text-[11px] sm:text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+        Preventa Exclusiva
+      </span>
+      <h1 class="text-2xl sm:text-4xl font-serif text-[#4A3C31]">Reserva tu Producto</h1>
+      <p class="text-[#8C7A6B] mt-1 text-xs sm:text-base">Elige tu pieza favorita y completa tus datos para asegurar tu pedido artesanal.</p>
+      <div class="mt-3">
+        <a href="/artesanitas/seguimiento" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B87352] hover:underline bg-white px-3.5 py-1.5 rounded-full border border-[#EBE5DE] shadow-2xs">
+          <span>📦 ¿Ya tienes una reserva? Rastrea tu pedido aquí</span>
+          <span>→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Formulario de Reserva -->
+    <form id="pedido-form" class="space-y-6 bg-white rounded-3xl shadow-sm border border-[#EBE5DE] p-4 sm:p-6 md:p-8">
+      
+      <!-- Paso 1: Selección del Producto -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-[#EBE5DE]">
+          <h3 class="text-sm font-bold text-[#4A3C31] uppercase tracking-wider flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-[#B87352] text-white text-xs flex items-center justify-center font-sans">1</span>
+            Elige tu Producto
+          </h3>
+          <span id="badge-reserva-plin" class="text-xs text-[#008C8E] font-bold bg-[#00B5B8]/10 px-2.5 py-0.5 rounded-full border border-[#00B5B8]/20 transition-all">
+            Reserva con S/ 20 por Plin
+          </span>
+        </div>
+
+        <div>
+          <label for="producto-select" class="block text-xs sm:text-sm font-semibold text-[#4A3C31] mb-2 flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              <line x1="6" y1="1" x2="6" y2="4"></line>
+              <line x1="10" y1="1" x2="10" y2="4"></line>
+              <line x1="14" y1="1" x2="14" y2="4"></line>
+            </svg>
+            <span>Selecciona la colección o pieza que deseas:</span>
+            <span class="text-red-500">*</span>
+          </label>
+
+          <!-- Lista desplegable limpia con únicamente los 4 productos principales -->
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#B87352]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m9 12 2 2 4-4"></path>
+              </svg>
+            </div>
+            <select id="producto-select" required
+              class="w-full pl-11 pr-10 py-3.5 rounded-2xl border-2 border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] font-semibold text-xs sm:text-sm focus:outline-none focus:border-[#B87352] focus:bg-white transition-all cursor-pointer appearance-none shadow-2xs">
+              <option value="" disabled selected>— Selecciona tu producto —</option>
+              <option value="taza-navidad-papa-noel">🎄 Taza Navideña Papá Noel (S/ 59.90)</option>
+              <option value="taza-muneco-de-nieve">⛄ Taza Muñeco de Nieve (S/ 59.90)</option>
+              <option value="taza-arbolito-chocolatosa">🍫 Taza Arbolito Chocolatosa (S/ 59.90)</option>
+              <option value="taza-arbolito-rosa">🌸 Taza Arbolito Rosa (S/ 59.90)</option>
+              <option value="taza-rapunzel">01 · Colección Rapunzel</option>
+              <option value="taza-stich">02 · Taza Stich</option>
+              <option value="taza-van-gogh">03 · Taza Van Gogh</option>
+              <option value="taza-piston-cup">04 · Taza Piston Cup</option>
+              <option value="azucarera-van-gogh">05 · Azucarera Van Gogh</option>
+              <option value="vasito-van-gogh">06 · Vasito Van Gogh</option>
+            </select>
+            <input type="hidden" id="producto-variante-input" name="producto_slug" value="">
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#8C7A6B]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Submenú de Variaciones Interactivas de Rapunzel -->
+          <div id="rapunzel-variants-container" class="hidden mt-4 pt-4 border-t border-[#EBE5DE] space-y-4 animate-fadeIn">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-xs font-bold text-[#4A3C31] uppercase tracking-wider flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]">
+                  <path d="M12 2a4 4 0 0 0-4 4c0 3 4 6 4 6s4-3 4-6a4 4 0 0 0-4-4z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 22a4 4 0 0 0 4-4c0-3-4-6-4-6s-4 3-4 6a4 4 0 0 0 4 4z"/>
+                  <path d="M2 12a4 4 0 0 0 4 4c3 0 6-4 6-4s-3-4-6-4a4 4 0 0 0-4 4z"/>
+                  <path d="M22 12a4 4 0 0 0-4-4c-3 0-6 4-6 4s3 4 6 4a4 4 0 0 0 4-4z"/>
+                </svg>
+                <span>Elige tu acabado de Rapunzel:</span>
+              </p>
+              <span class="text-[10px] sm:text-[11px] text-[#B87352] font-semibold bg-[#B87352]/10 px-2 sm:px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                9 opciones
+              </span>
+            </div>
+
+            <!-- Grupo 1: Colores Enteros (Sin Plato - S/ 65.00) -->
+            <div class="bg-[#F9F6F0]/80 p-3 sm:p-4 rounded-2xl border border-[#EBE5DE] space-y-2.5">
+              <div class="flex items-center justify-between text-xs gap-2">
+                <span class="font-bold text-[#4A3C31] flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]">
+                    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.5-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9.6-10-9.6z"/>
+                  </svg>
+                  <span>1. Colores Enteros</span>
+                  <span class="text-[#8C7A6B] font-normal text-[11px]">(Sin Plato)</span>
+                </span>
+                <span class="font-bold text-[#B87352] bg-white px-2 py-0.5 rounded-md border border-[#D5C9BD] text-xs whitespace-nowrap">S/ 65.00</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <button type="button" data-variant="taza-rapunzel-morada-sin-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Morada_sinplato_1.jpeg" alt="Taza Morada sin plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#8E44AD] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Morada</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Sin plato</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 65.00</span>
+                  </div>
+                </button>
+
+                <button type="button" data-variant="taza-rapunzel-rosa-flamenco-sin-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_RosaFlamenco_sinplato_1.jpeg" alt="Taza Rosa Flamenco sin plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#E05282] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Rosa Flamenco</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Sin plato</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 65.00</span>
+                  </div>
+                </button>
+
+                <button type="button" data-variant="taza-rapunzel-palo-rosa-sin-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Palo_Rosa_sin_plato_1.jpeg" alt="Taza Palo Rosa sin plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#E8A598] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Palo Rosa</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Sin plato</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 65.00</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Grupo 2: Taza con Detalles (Con Líneas - S/ 69.90) -->
+            <div class="bg-[#F9F6F0]/80 p-3 sm:p-4 rounded-2xl border border-[#EBE5DE] space-y-2.5">
+              <div class="flex items-center justify-between text-xs gap-2">
+                <span class="font-bold text-[#4A3C31] flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]">
+                    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/>
+                  </svg>
+                  <span>2. Taza con Detalles</span>
+                  <span class="text-[#8C7A6B] font-normal text-[11px]">(Con Líneas)</span>
+                </span>
+                <span class="font-bold text-[#B87352] bg-white px-2 py-0.5 rounded-md border border-[#D5C9BD] text-xs whitespace-nowrap">S/ 69.90</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button type="button" data-variant="taza-rapunzel-morada-lineas"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/taza_Rapunzel_Morada_con_lineas_1.jpeg" alt="Taza Morada con líneas" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#8E44AD] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Morada con líneas</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Líneas en relieve</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 69.90</span>
+                  </div>
+                </button>
+
+                <button type="button" data-variant="taza-rapunzel-palo-rosa-lineas"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_PaloRosa_con-lineas_1.jpeg" alt="Taza Palo Rosa con líneas" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#E8A598] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Palo Rosa con líneas</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Líneas en relieve</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 69.90</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Grupo 3: Taza + Platito Artesanal (S/ 89.90 y S/ 99.00) -->
+            <div class="bg-[#F9F6F0]/80 p-3 sm:p-4 rounded-2xl border border-[#EBE5DE] space-y-2.5">
+              <div class="flex items-center justify-between text-xs gap-2">
+                <span class="font-bold text-[#4A3C31] flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="1" x2="6" y2="4"/>
+                    <line x1="10" y1="1" x2="10" y2="4"/>
+                    <line x1="14" y1="1" x2="14" y2="4"/>
+                  </svg>
+                  <span>3. Set Completo</span>
+                  <span class="text-[#8C7A6B] font-normal text-[11px]">(Taza + Platito)</span>
+                </span>
+                <span class="font-bold text-[#B87352] bg-white px-2 py-0.5 rounded-md border border-[#D5C9BD] text-xs whitespace-nowrap">Desde S/ 89.90</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button type="button" data-variant="taza-rapunzel-morada-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Morada_con_plato_1.jpeg" alt="Taza Morada + Plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#8E44AD] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Morada + Plato</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Set con platito</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 89.90</span>
+                  </div>
+                </button>
+
+                <button type="button" data-variant="taza-rapunzel-palo-rosa-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_PaloRosa_Con-Plato_1.jpeg" alt="Taza Palo Rosa + Plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#E8A598] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Palo Rosa + Plato</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Set con platito</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 89.90</span>
+                  </div>
+                </button>
+
+                <button type="button" data-variant="taza-rapunzel-morada-lineas-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Morada_con_lineas_y_plato_1.jpeg" alt="Taza Morada líneas + plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#8E44AD] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Morada líneas + Plato</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Relieve + platito</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 99.00</span>
+                  </div>
+                </button>
+
+                <button type="button" data-variant="taza-rapunzel-palo-rosa-lineas-plato"
+                  class="btn-rapunzel-variant p-2.5 sm:p-3 rounded-2xl border text-left transition-all text-xs flex items-center gap-3 border-[#D5C9BD] bg-white hover:border-[#B87352] active:scale-[0.98] cursor-pointer group shadow-2xs">
+                  <div class="w-14 h-14 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F9F6F0] shrink-0 border border-[#EBE5DE] relative">
+                    <img src="/imagenes/Artesanitas/Fotos/Taza_Rapunzel_PaloRosa_con_lineas_y_plato_1.jpeg" alt="Taza Palo Rosa líneas + plato" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#E8A598] shrink-0"></span>
+                      <span class="font-bold text-[#4A3C31] text-xs sm:text-sm truncate">Palo Rosa líneas + Plato</span>
+                    </div>
+                    <span class="text-[11px] sm:text-[10px] text-[#8C7A6B] block">Relieve + platito</span>
+                    <span class="text-[#B87352] font-bold text-xs mt-0.5 block">S/ 99.00</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado Vacío (Sin producto seleccionado) -->
+        <div id="product-card-empty"
+          class="rounded-2xl border-2 border-dashed border-[#D5C9BD] bg-[#F9F6F0]/50 p-6 text-center transition-all">
+          <div class="w-12 h-12 rounded-full bg-white text-[#B87352] flex items-center justify-center mx-auto mb-2 shadow-xs border border-[#EBE5DE]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </div>
+          <p class="text-sm font-bold text-[#4A3C31]">Selecciona tu modelo favorito arriba</p>
+          <p class="text-xs text-[#8C7A6B] mt-0.5">Podrás ver la foto real en primer plano, ajustar cantidad y agregarlo a tu reserva.</p>
+        </div>
+
+        <!-- Estado Seleccionado (Con producto - Hero Preview Primer Plano) -->
+        <div id="product-card-selected"
+          class="hidden rounded-3xl border-2 border-[#B87352]/30 bg-gradient-to-b from-[#F9F6F0] to-white p-4 sm:p-5 transition-all shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
+            
+            <!-- Foto en Primer Plano con Zoom / Lightbox Trigger -->
+            <div class="relative w-full sm:w-44 h-56 sm:h-44 rounded-2xl overflow-hidden bg-white shrink-0 border border-[#EBE5DE] shadow-sm group cursor-pointer" id="btn-open-lightbox">
+              <img id="preview-product-img" src="" alt="Producto Artesanitas"
+                class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300">
+              
+              <!-- Badge flotante de ampliación -->
+              <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span class="bg-black/60 text-white text-[11px] font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                  Ver foto HD
+                </span>
+              </div>
+              <span id="preview-tag-badge" class="absolute bottom-2 left-2 text-[10px] font-bold bg-[#4A3C31]/80 text-white px-2 py-0.5 rounded-md backdrop-blur-xs">
+                Primer Plano
+              </span>
+            </div>
+
+            <div class="flex-1 w-full space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span id="preview-product-category" class="text-[10px] font-bold text-[#B87352] uppercase tracking-wider block">Cerámica Artesanal</span>
+                  <h2 id="preview-product-title" class="text-base sm:text-lg font-serif font-bold text-[#4A3C31] leading-snug">--</h2>
+                </div>
+                <div class="text-right shrink-0">
+                  <span id="preview-product-price" class="text-xl sm:text-2xl font-bold text-[#B87352]">S/ --</span>
+                  <span class="text-[10px] text-[#8C7A6B] block -mt-0.5 font-medium">precio por unidad</span>
+                </div>
+              </div>
+
+              <p id="preview-product-desc" class="text-xs text-[#8C7A6B] leading-relaxed bg-white/70 p-2.5 rounded-xl border border-[#EBE5DE]/70">--</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs text-[#8C7A6B]">
+                <div class="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-[#EBE5DE]/80 shadow-2xs">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-[#B87352] shrink-0">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span><strong>Entrega:</strong> 10 de Diciembre</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-[#EBE5DE]/80 shadow-2xs">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-[#007A78] shrink-0">
+                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <span id="preview-entrega-txt"><strong>Entrega:</strong> Shalom o Taller</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector de Cantidad para este modelo y Botón Agregar -->
+          <div class="pt-3 border-t border-[#EBE5DE] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 w-full sm:w-auto">
+              <span class="text-xs font-semibold text-[#4A3C31] shrink-0">Cantidad de este modelo:</span>
+              <div class="flex items-center bg-white rounded-xl border-2 border-[#D5C9BD] p-0.5 shadow-2xs">
+                <button type="button" id="btn-cantidad-menos"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#F9F6F0] hover:bg-[#B87352] hover:text-white text-[#4A3C31] font-bold text-sm flex items-center justify-center transition-all cursor-pointer select-none"
+                  aria-label="Disminuir cantidad">
+                  −
+                </button>
+                <input type="number" id="cantidad-input" name="cantidad_seleccionada" min="1" max="50" value="1" readonly
+                  class="w-8 sm:w-10 text-center font-bold text-xs sm:text-sm text-[#4A3C31] bg-transparent focus:outline-none select-none">
+                <button type="button" id="btn-cantidad-mas"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#F9F6F0] hover:bg-[#B87352] hover:text-white text-[#4A3C31] font-bold text-sm flex items-center justify-center transition-all cursor-pointer select-none"
+                  aria-label="Aumentar cantidad">
+                  +
+                </button>
+              </div>
+            </div>
+
+            <!-- Botón Agregar a mi Reserva -->
+            <button type="button" id="btn-agregar-item"
+              class="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl bg-[#B87352] hover:bg-[#a36344] active:scale-[0.98] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              <span id="btn-agregar-text">Agregar a mi Reserva</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Carrito / Resumen de Piezas en tu Reserva -->
+        <div id="items-reserva-container" class="hidden rounded-3xl border border-[#D5C9BD] bg-[#F9F6F0]/80 p-4 sm:p-5 space-y-3 shadow-2xs">
+          <div class="flex items-center justify-between pb-2 border-b border-[#EBE5DE]">
+            <div class="flex items-center gap-2">
+              <div class="w-2.5 h-2.5 rounded-full bg-[#007A78]"></div>
+              <h4 class="text-xs sm:text-sm font-bold text-[#4A3C31]">
+                Tus Piezas Seleccionadas
+              </h4>
+              <span id="badge-total-piezas" class="text-[11px] font-extrabold text-[#B87352] bg-[#B87352]/15 px-2 py-0.5 rounded-full border border-[#B87352]/30">
+                0 piezas
+              </span>
+            </div>
+            <button type="button" id="btn-agregar-otro"
+              class="text-xs font-bold text-[#B87352] hover:text-[#8C583E] hover:underline flex items-center gap-1 cursor-pointer transition-colors">
+              <span>+ Elegir otro modelo</span>
+            </button>
+          </div>
+
+          <!-- Lista Dinámica de Piezas Seleccionadas -->
+          <div id="lista-items-reserva" class="space-y-2.5">
+            <!-- Renderizado dinámico desde pedido.js -->
+          </div>
+
+          <!-- Subtotal de Reserva acumulada -->
+          <div class="pt-3 border-t border-[#EBE5DE] flex items-center justify-between text-xs sm:text-sm">
+            <span class="text-[#8C7A6B] font-medium">Total de piezas: <strong id="cart-total-piezas-txt" class="text-[#4A3C31]">0</strong></span>
+            <div class="text-right">
+              <span class="text-xs text-[#8C7A6B] block">Reserva Plin acumulada:</span>
+              <span id="cart-total-reserva-txt" class="text-sm sm:text-base font-bold text-[#007A78]">S/ 0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Datos Personales & Entrega -->
+      <div class="space-y-4 pt-2 border-t border-[#EBE5DE]">
+        <div class="flex items-center justify-between pb-2 border-b border-[#EBE5DE]">
+          <h3 class="text-sm font-bold text-[#4A3C31] uppercase tracking-wider flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-[#B87352] text-white text-xs flex items-center justify-center font-sans">2</span>
+            Tus Datos Personales
+          </h3>
+        </div>
+
+        <div>
+          <label for="nombre-input" class="block text-sm font-medium text-[#4A3C31] mb-1.5">Nombres completos <span class="text-red-500">*</span></label>
+          <input type="text" id="nombre-input" required maxlength="100" placeholder="Ej: María Rodríguez"
+            class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors text-sm sm:text-base">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="dni-input" class="block text-sm font-medium text-[#4A3C31] mb-1.5">
+              DNI <span class="text-xs text-[#8C7A6B] font-normal">(8 dígitos)</span> <span class="text-red-500">*</span>
+            </label>
+            <input type="tel" id="dni-input" required maxlength="8" placeholder="Ej: 71234567"
+              class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors text-sm sm:text-base">
+          </div>
+          <div>
+            <label for="whatsapp-input" class="block text-sm font-medium text-[#4A3C31] mb-1.5">WhatsApp <span class="text-red-500">*</span></label>
+            <input type="tel" id="whatsapp-input" required maxlength="15" placeholder="Ej: 987654321"
+              class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors text-sm sm:text-base">
+          </div>
+        </div>
+
+        <!-- Tipo de Entrega -->
+        <div class="space-y-3 pt-2">
+          <label class="block text-sm font-semibold text-[#4A3C31]">Método de entrega <span class="text-red-500">*</span></label>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Opción Shalom -->
+            <label id="opt-provincia"
+              class="relative flex flex-col p-4 rounded-2xl border-2 border-[#B87352] bg-[#F9F6F0] cursor-pointer transition-all shadow-2xs hover:border-[#B87352]">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#742284] bg-[#742284]/10 px-2 py-0.5 rounded-full">
+                  🚚 Shalom
+                </span>
+                <input type="radio" name="tipo_entrega" value="provincia" checked class="text-[#B87352] focus:ring-[#B87352]">
+              </div>
+              <span class="font-bold text-sm text-[#4A3C31]">Envío a Provincia</span>
+              <span class="text-xs text-[#8C7A6B] mt-0.5">Recojo en agencia Shalom de tu ciudad</span>
+              <span class="text-xs font-semibold text-[#B87352] mt-2">+ S/ 10.00 (Flete de envío)</span>
+            </label>
+
+            <!-- Opción Recojo Local -->
+            <label id="opt-local"
+              class="relative flex flex-col p-4 rounded-2xl border-2 border-[#EBE5DE] bg-white cursor-pointer transition-all shadow-2xs hover:border-[#D5C9BD]">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#007A78] bg-[#007A78]/10 px-2 py-0.5 rounded-full">
+                  📍 Trujillo
+                </span>
+                <input type="radio" name="tipo_entrega" value="local" class="text-[#B87352] focus:ring-[#B87352]">
+              </div>
+              <span class="font-bold text-sm text-[#4A3C31]">Recojo en Taller Trujillo</span>
+              <span class="text-xs text-[#8C7A6B] mt-0.5">Sin costo adicional · Coordinar fecha</span>
+              <span class="text-xs font-semibold text-[#007A78] mt-2">Gratis (S/ 0.00)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Campos condicionales Shalom -->
+        <div id="shalom-fields-container" class="space-y-3 bg-[#F9F6F0]/60 p-4 rounded-2xl border border-[#EBE5DE]">
+          <div>
+            <label for="sede-shalom-input" class="block text-xs sm:text-sm font-semibold text-[#4A3C31] mb-1">
+              Agencia Shalom de destino <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="sede-shalom-input" placeholder="Ej: Shalom Chiclayo - Av. Bolognesi o Shalom Lima - La Victoria"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors text-xs sm:text-sm">
+            <p class="text-[11px] text-[#8C7A6B] mt-1">Indícanos la ciudad y sede donde retirarás tu encomienda.</p>
+          </div>
+
+          <div>
+            <label for="direccion-input" class="block text-xs font-medium text-[#4A3C31] mb-1">
+              Dirección o referencia adicional <span class="text-xs text-[#8C7A6B] font-normal">(opcional)</span>
+            </label>
+            <input type="text" id="direccion-input" placeholder="Ej: Frente al parque central / Dpto 301"
+              class="w-full px-3.5 py-2 rounded-xl border border-[#D5C9BD] bg-white text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors text-xs">
+          </div>
+        </div>
+
+        <!-- Información Taller Trujillo -->
+        <div id="taller-info-container" class="hidden bg-[#007A78]/5 p-4 rounded-2xl border border-[#007A78]/20 space-y-1">
+          <p class="text-xs font-bold text-[#007A78] flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            Taller Artesanitas en Trujillo
+          </p>
+          <p class="text-xs text-[#4A3C31] leading-relaxed">
+            Te contactaremos vía WhatsApp cuando tus piezas estén listas para coordinar el horario de recojo en nuestro taller.
+          </p>
+        </div>
+      </div>
+
+      <!-- Paso 3: Reserva con Plin & Comprobante -->
+      <div class="space-y-4 pt-2 border-t border-[#EBE5DE]">
+        <div class="flex items-center justify-between pb-2 border-b border-[#EBE5DE]">
+          <h3 class="text-sm font-bold text-[#4A3C31] uppercase tracking-wider flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-[#007A78] text-white text-xs flex items-center justify-center font-sans">3</span>
+            Reserva con Plin
+          </h3>
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#007A78]/10 text-[#007A78] border border-[#007A78]/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#007A78] animate-pulse"></span>
+            Solo Plin
+          </span>
+        </div>
+
+        <!-- Desglose transparente de todas las piezas -->
+        <div class="bg-[#F9F6F0] rounded-2xl p-4 border border-[#EBE5DE] space-y-3">
+          <div class="text-xs text-[#8C7A6B] font-bold uppercase tracking-wider pb-1 border-b border-[#EBE5DE] flex items-center justify-between">
+            <span>Detalle de tu orden</span>
+            <span id="desglose-total-piezas-txt" class="text-[#B87352]">0 piezas</span>
+          </div>
+
+          <!-- Lista dinámica en Paso 3 -->
+          <div id="desglose-items-lista" class="space-y-2">
+            <!-- Renderizado dinámico -->
+          </div>
+
+          <div class="pt-2 border-t border-[#EBE5DE] space-y-1.5 text-xs text-[#8C7A6B]">
+            <div class="flex items-center justify-between">
+              <span>Subtotal productos:</span>
+              <span id="desglose-subtotal-txt" class="font-semibold text-[#4A3C31]">S/ 0.00</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Costo de envío:</span>
+              <span id="desglose-envio-txt" class="font-semibold text-[#4A3C31]">S/ 10.00 (Delivery Shalom)</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Saldo restante (al entregar):</span>
+              <span id="desglose-saldo-txt" class="font-semibold text-[#4A3C31]">S/ 0.00</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2.5 border-t-2 border-[#EBE5DE] text-sm font-medium">
+            <span class="text-[#4A3C31] font-bold">Monto de Reserva (Pagas hoy con Plin):</span>
+            <span id="desglose-reserva-txt" class="text-base font-bold text-[#007A78]">S/ 0.00</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Interactiva Plin (Armonizada con la paleta de Artesanitas) -->
+        <div class="bg-gradient-to-br from-[#007A78]/10 via-[#F9F6F0] to-[#B87352]/5 rounded-2xl p-4 sm:p-5 border border-[#007A78]/25 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-[#007A78] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                P
+              </div>
+              <div>
+                <p class="text-xs text-[#8C7A6B] font-medium leading-none">Plin a nombre de:</p>
+                <p class="text-sm font-bold text-[#4A3C31] mt-0.5">Diana Cecilia Culqui</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-medium text-[#007A78] bg-white px-2.5 py-1 rounded-full border border-[#007A78]/20 shadow-2xs">
+              Sin comisiones
+            </span>
+          </div>
+
+          <!-- Número copiable con 1 clic -->
+          <div class="bg-white rounded-xl p-2.5 sm:p-3 border border-[#EBE5DE] flex items-center justify-between gap-3 shadow-2xs">
+            <div class="pl-1 sm:pl-2">
+              <span class="text-[10px] text-[#8C7A6B] uppercase tracking-wider font-semibold block leading-none">Número Plin</span>
+              <span class="text-xl sm:text-2xl font-mono font-bold text-[#4A3C31] tracking-wider leading-tight">923 282 069</span>
+            </div>
+            <button type="button" id="btn-copy-number"
+              class="shrink-0 bg-[#007A78] hover:bg-[#00635D] active:scale-95 text-white px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+              <svg id="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-text">Copiar</span>
+            </button>
+          </div>
+
+          <!-- Toggle / Visualizador de QR -->
+          <div class="space-y-2">
+            <button type="button" id="btn-toggle-qr"
+              class="w-full py-2 px-3 rounded-xl bg-white/80 hover:bg-white text-xs font-medium text-[#4A3C31] border border-[#EBE5DE] flex items-center justify-between transition-colors">
+              <span class="inline-flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#007A78]">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Ver Código QR Oficial de Plin</span>
+              </span>
+              <svg id="qr-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#8C7A6B] transition-transform duration-200">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <div id="qr-container" class="hidden bg-white rounded-2xl p-4 border border-[#EBE5DE] text-center space-y-3 shadow-inner">
+              <div class="max-w-[200px] mx-auto bg-white p-2 rounded-xl border border-[#EBE5DE] shadow-xs">
+                <img src="/imagenes/Artesanitas/QR_pago_plin_artesanitas_1.jpg" alt="QR Plin Diana Cecilia Culqui - Artesanitas"
+                  class="w-full h-auto rounded-lg object-contain">
+              </div>
+              <p class="text-xs text-[#8C7A6B]">
+                Escanea este QR desde tu app <strong>Plin</strong> (BBVA, Interbank, Scotiabank o BanBif) para pagar la reserva de <strong id="qr-monto-reserva-txt" class="text-[#007A78]">S/ 0.00</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 3: Subida de Comprobante Dropzone -->
+        <div class="space-y-2 pt-2">
+          <label id="label-comprobante-plin" class="block text-sm font-bold text-[#4A3C31]">Adjunta tu Comprobante de Plin <span class="text-red-500">*</span></label>
+          <input type="file" id="comprobante-input" accept="image/*" required class="hidden">
+
+          <div id="dropzone-area"
+            class="relative group cursor-pointer border-2 border-dashed border-[#D5C9BD] hover:border-[#007A78] bg-[#F9F6F0]/60 hover:bg-[#F9F6F0] rounded-2xl p-5 sm:p-6 transition-all text-center space-y-2">
+            
+            <div id="dropzone-empty-state" class="space-y-2">
+              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white text-[#007A78] flex items-center justify-center mx-auto shadow-xs group-hover:scale-110 transition-transform">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 sm:w-6 sm:h-6">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs sm:text-sm font-semibold text-[#4A3C31]">Haz clic o arrastra tu captura de Plin aquí</p>
+                <p id="dropzone-hint-txt" class="text-[11px] sm:text-xs text-[#8C7A6B] mt-0.5">Captura del pago de reserva por Plin (JPG, PNG hasta 5MB)</p>
+              </div>
+            </div>
+
+            <div id="dropzone-file-state" class="hidden flex items-center justify-between bg-white p-3.5 rounded-xl border border-[#007A78]/30 shadow-2xs">
+              <div class="flex items-center gap-3">
+                <img id="file-preview-img" src="" alt="Comprobante Plin" class="w-12 h-12 rounded-lg object-cover border border-[#EBE5DE]">
+                <div class="text-left">
+                  <span class="text-xs font-bold text-[#008f6b] flex items-center gap-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Comprobante listo
+                  </span>
+                  <p id="file-name-txt" class="text-xs font-semibold text-[#4A3C31] truncate max-w-[150px] sm:max-w-[220px]">comprobante.jpg</p>
+                  <p id="file-size-txt" class="text-[10px] text-[#8C7A6B]">-- KB</p>
+                </div>
+              </div>
+              <button type="button" id="btn-change-file" class="text-xs font-semibold text-[#B87352] hover:text-[#4A3C31] px-2.5 py-1 rounded-lg hover:bg-[#F9F6F0] transition-colors">
+                Cambiar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-600 text-xs sm:text-sm rounded-xl px-4 py-3"></div>
+
+      <!-- Botón Confirmar Reserva -->
+      <button type="submit" id="submit-btn"
+        class="w-full bg-[#B87352] hover:bg-[#A36244] active:scale-[0.99] text-white py-3.5 sm:py-4 rounded-2xl font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Confirmar Reserva de Pedido</span>
+      </button>
+    </form>
+
+    <!-- Estado Éxito -->
+    <div id="success-state" class="hidden text-center bg-white rounded-3xl shadow-sm border border-[#EBE5DE] p-6 sm:p-8 space-y-5">
+      <div class="w-16 h-16 bg-[#00D09C]/10 rounded-full flex items-center justify-center mx-auto text-[#008f6b] shadow-xs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <div class="space-y-1">
+        <h2 class="text-xl sm:text-2xl font-serif font-bold text-[#4A3C31]">¡Reserva registrada con éxito!</h2>
+        <p class="text-xs sm:text-sm text-[#8C7A6B] max-w-md mx-auto" id="success-message">
+          Hemos registrado tu reserva. Te contactaremos por WhatsApp para coordinar los detalles de entrega.
+        </p>
+      </div>
+
+      <!-- Tarjeta con Código Único de Seguimiento -->
+      <div id="success-tracking-box" class="hidden bg-[#F9F6F0] border-2 border-[#B87352]/30 rounded-2xl p-4 max-w-md mx-auto space-y-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B] block">Tu Código de Seguimiento</span>
+        <div class="flex items-center justify-center gap-2">
+          <span id="success-codigo-pedido" class="text-xl sm:text-2xl font-mono font-extrabold text-[#B87352]">ART-2026-0000</span>
+        </div>
+        <p class="text-[11px] text-[#8C7A6B]">Guarda este código o usa tu DNI para consultar el avance de horneado y tu guía Shalom.</p>
+      </div>
+
+      <!-- Botón de WhatsApp y Seguimiento Centrados -->
+      <div class="pt-3 flex flex-col items-center justify-center gap-3 w-full">
+        <a id="btn-success-tracking" href="/artesanitas/seguimiento"
+          class="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] bg-[#B87352] hover:bg-[#A36244] text-white px-5 sm:px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-center">
+          <span>📦 Rastrear mi Pedido en Vivo</span>
+        </a>
+        <a id="btn-success-whatsapp" href="https://wa.me/51929938466"
+          target="_blank" rel="noreferrer"
+          class="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] bg-[#008f6b] hover:bg-[#007759] text-white px-5 sm:px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-white">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          </svg>
+          <span>Escribir por WhatsApp</span>
+          <span class="bg-white/20 px-2 py-0.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap">929 938 466</span>
+        </a>
+        <a href="/artesanitas"
+          class="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] border border-[#D5C9BD] text-[#4A3C31] px-6 py-3 rounded-2xl text-xs sm:text-sm font-semibold hover:bg-[#F9F6F0] transition-colors text-center">
+          Volver al Catálogo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lightbox HD: Primer Plano Full Screen -->
+  <div id="modal-lightbox" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md transition-all duration-300">
+    <div class="relative max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#EBE5DE] animate-scaleUp">
+      <div class="relative bg-[#F9F6F0] flex items-center justify-center min-h-[300px] max-h-[70vh] overflow-hidden">
+        <img id="lightbox-img" src="" alt="Vista previa HD" class="w-full h-full max-h-[70vh] object-contain">
+        <button type="button" id="btn-close-lightbox"
+          class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition-all cursor-pointer shadow-md">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <span id="lightbox-badge" class="absolute bottom-3 left-3 text-xs font-bold bg-black/70 text-white px-3 py-1 rounded-full backdrop-blur-xs">
+          Foto Real en Primer Plano
+        </span>
+      </div>
+      <div class="p-4 sm:p-5 flex items-center justify-between gap-3 bg-white">
+        <div>
+          <h3 id="lightbox-title" class="text-base sm:text-lg font-serif font-bold text-[#4A3C31] leading-snug">--</h3>
+          <p id="lightbox-desc" class="text-xs text-[#8C7A6B] mt-0.5">--</p>
+        </div>
+        <span id="lightbox-price" class="text-lg sm:text-xl font-bold text-[#B87352] shrink-0">S/ --</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script modular externo con Cache-Buster -->
+  <script src="/artesanitas/js/pedido.js?v=20261120_v1"></script>
+</body>
+
+</html>

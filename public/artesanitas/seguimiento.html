@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Rastrea tu Pedido - Artesanitas Perú</title>
+  <meta name="description" content="Consulta en vivo el estado de tu pedido o preventa artesanal en Artesanitas Perú con tu código de seguimiento o DNI.">
+  <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
+          colors: {
+            brand: { dark: '#4A3C31', muted: '#8C7A6B', terracota: '#B87352', cream: '#F9F6F0', beige: '#D5C9BD' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Barra superior -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-[#EBE5DE] sticky top-0 z-40">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <a href="/artesanitas" class="flex items-center gap-3 group">
+        <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas"
+          class="h-11 w-11 rounded-full object-cover shadow-xs border border-[#EBE5DE] group-hover:scale-105 transition-transform">
+        <div>
+          <span class="font-serif font-bold text-base text-[#4A3C31] block leading-none">Artesanitas Perú</span>
+          <span class="text-[11px] text-[#8C7A6B]">Seguimiento de Pedidos</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="/artesanitas/pedido"
+          class="text-xs font-semibold text-[#B87352] hover:text-[#A36244] bg-[#B87352]/10 px-3.5 py-2 rounded-xl transition-colors">
+          + Nueva Reserva
+        </a>
+        <a href="/artesanitas"
+          class="text-xs font-medium text-[#8C7A6B] hover:text-[#4A3C31] px-2.5 py-2 rounded-xl transition-colors">
+          Catálogo
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+    <!-- Encabezado -->
+    <div class="text-center space-y-2">
+      <span class="inline-flex items-center gap-1.5 bg-[#B87352]/10 text-[#B87352] text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+        📦 Tracking en Vivo
+      </span>
+      <h1 class="text-2xl sm:text-4xl font-serif text-[#4A3C31]">Rastrea tu Pedido Artesanal</h1>
+      <p class="text-xs sm:text-sm text-[#8C7A6B] max-w-lg mx-auto">
+        Ingresa tu <strong>Código de Pedido</strong> (ej. <span class="font-mono text-[#4A3C31]">ART-2026-XXXX</span>) o tu número de <strong>DNI</strong> para consultar en qué etapa va tu pieza y tu guía de envío.
+      </p>
+    </div>
+
+    <!-- Buscador -->
+    <form id="tracking-form" class="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-[#EBE5DE]">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <input type="text" id="tracking-query" required maxlength="40"
+            placeholder="Ingresa tu DNI (8 dígitos) o Código ART-2026-..."
+            class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-[#D5C9BD] bg-[#F9F6F0] text-sm font-semibold text-[#4A3C31] placeholder-[#8C7A6B]/70 focus:outline-none focus:border-[#B87352] focus:bg-white transition-all">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            class="w-5 h-5 text-[#B87352] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <button type="submit" id="btn-buscar-tracking"
+          class="bg-[#B87352] hover:bg-[#A36244] text-white font-semibold px-7 py-3.5 rounded-2xl text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer shrink-0">
+          <span>Consultar Estado</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+      <div id="tracking-error" class="hidden mt-3 text-xs sm:text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5"></div>
+    </form>
+
+    <!-- Contenedor de Resultados (Pueden ser 1 o varios pedidos si busca por DNI) -->
+    <div id="tracking-results" class="space-y-6"></div>
+  </main>
+
+  <footer class="border-t border-[#EBE5DE] bg-white/60 py-6 text-center text-xs text-[#8C7A6B]">
+    <div class="max-w-3xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>© 2026 Artesanitas Perú · Cerámica hecha a mano</span>
+      <a href="https://wa.me/51929938466?text=Hola!%20Tengo%20una%20consulta%20sobre%20el%20seguimiento%20de%20mi%20pedido."
+        target="_blank" rel="noreferrer" class="text-[#B87352] font-semibold hover:underline">
+        ¿Necesitas ayuda? Escríbenos por WhatsApp
+      </a>
+    </div>
+  </footer>
+
+  <script src="/artesanitas/js/seguimiento.js?v=20261120_v1"></script>
+</body>
+
+</html>

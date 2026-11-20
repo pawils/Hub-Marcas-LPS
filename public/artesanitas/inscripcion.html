@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Inscríbete a un Taller - Artesanitas</title>
+  <meta name="description" content="Reserva tu lugar en los talleres de cerámica de Artesanitas.">
+  <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-N4N98THX');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1563612551863150'); // Pixel de Los Pilares (sitio completo)
+    fbq('init', '851775257895823');  // Pixel propio de Artesanitas
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1563612551863150&ev=PageView&noscript=1" /></noscript>
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=851775257895823&ev=PageView&noscript=1" /></noscript>
+  <!-- End Meta Pixel Code -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet">
+
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#4A3C31',
+              muted: '#8C7A6B',
+              terracota: '#B87352',
+              cream: '#F9F6F0',
+              beige: '#D5C9BD',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen">
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N4N98THX" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+
+  <div class="max-w-lg mx-auto px-5 py-10 md:py-16">
+    <a href="/artesanitas#talleres"
+      class="inline-flex items-center gap-1.5 text-sm text-[#8C7A6B] hover:text-[#B87352] transition-colors mb-6 cursor-pointer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" class="w-4 h-4">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      Volver
+    </a>
+
+    <div class="text-center mb-8">
+      <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas"
+        class="h-16 w-16 object-cover rounded-full shadow-md mx-auto mb-4">
+      <h1 class="text-3xl font-serif text-[#4A3C31]">Inscríbete a un Taller</h1>
+      <p class="text-[#8C7A6B] mt-2">Completa tus datos y separa tu lugar.</p>
+    </div>
+
+    <!-- Estado: cargando -->
+    <div id="loading-state" class="text-center py-16 text-[#8C7A6B]">Cargando talleres disponibles...</div>
+
+    <!-- Estado: sin talleres -->
+    <div id="empty-state" class="hidden text-center py-16 text-[#8C7A6B]">
+      No hay talleres disponibles en este momento. Escríbenos por
+      <a href="https://wa.me/51929938466" target="_blank" rel="noreferrer" class="text-[#B87352] font-medium">WhatsApp</a>.
+    </div>
+
+    <!-- Formulario -->
+    <form id="inscripcion-form" class="hidden space-y-5 bg-white rounded-3xl shadow-sm border border-[#EBE5DE] p-6 md:p-8">
+      <div>
+        <label class="block text-sm font-medium text-[#4A3C31] mb-1.5">Taller</label>
+        <select id="taller-select" required
+          class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] focus:outline-none focus:border-[#B87352] transition-colors">
+          <option value="" disabled selected>-- Selecciona el taller --</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-[#4A3C31] mb-1.5">Nombre completo</label>
+        <input type="text" id="nombre-input" required maxlength="100" placeholder="Ej: María Rodríguez"
+          class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-[#4A3C31] mb-1.5">Edad</label>
+          <input type="number" id="edad-input" required min="1" max="119" placeholder="Ej: 28"
+            class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[#4A3C31] mb-1.5">WhatsApp</label>
+          <input type="tel" id="whatsapp-input" required placeholder="987 654 321"
+            class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] placeholder:text-[#8C7A6B]/60 focus:outline-none focus:border-[#B87352] transition-colors">
+        </div>
+      </div>
+
+      <div id="acompanante-field" class="hidden">
+        <label class="block text-sm font-medium text-[#4A3C31] mb-1.5">Acompañante(s) o madre</label>
+        <div id="acompanantes-list" class="space-y-2"></div>
+        <button type="button" id="btn-agregar-acompanante"
+          class="mt-2 text-sm font-medium text-[#B87352] hover:underline inline-flex items-center gap-1.5 cursor-pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Agregar otra persona
+        </button>
+      </div>
+
+      <!-- ── SECCIÓN DE PAGO ── -->
+      <div class="pt-4 border-t border-[#EBE5DE] space-y-4">
+        <div class="flex items-center justify-between">
+          <label class="block text-sm font-bold text-[#4A3C31] tracking-tight">Paso 2: Realiza tu Pago</label>
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#00B5B8]/10 text-[#008C8E] border border-[#00B5B8]/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00B5B8] animate-pulse"></span>
+            Solo Plin
+          </span>
+        </div>
+
+        <!-- Resumen dinámico de adelanto -->
+        <div id="payment-summary-box" class="bg-[#F9F6F0] rounded-2xl p-4 border border-[#EBE5DE] space-y-2.5">
+          <div class="flex items-center justify-between text-xs text-[#8C7A6B]">
+            <span>Taller seleccionado:</span>
+            <span id="summary-taller-name" class="font-medium text-[#4A3C31] text-right truncate max-w-[200px]">Selecciona un taller</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-[#8C7A6B]">
+            <span>Precio total por persona:</span>
+            <span id="summary-total-price" class="font-semibold text-[#4A3C31]">S/ --</span>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-[#EBE5DE] text-sm font-medium">
+            <span class="text-[#4A3C31]">Adelanto requerido:</span>
+            <span id="summary-deposit-price" class="text-base font-bold text-[#008C8E]">S/ 20.00</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Interactiva Plin -->
+        <div class="bg-gradient-to-br from-[#00B5B8]/10 via-[#F9F6F0] to-[#004B6E]/5 rounded-2xl p-5 border border-[#00B5B8]/20 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-[#00B5B8] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                P
+              </div>
+              <div>
+                <p class="text-xs text-[#8C7A6B] font-medium leading-none">Plin a nombre de:</p>
+                <p class="text-sm font-bold text-[#4A3C31] mt-0.5">Diana Cecilia Culqui</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-medium text-[#008C8E] bg-white px-2.5 py-1 rounded-full border border-[#00B5B8]/20 shadow-2xs">
+              Sin comisiones
+            </span>
+          </div>
+
+          <!-- Número copiable con 1 clic -->
+          <div class="bg-white rounded-xl p-2.5 sm:p-3 border border-[#EBE5DE] flex items-center justify-between gap-3 shadow-2xs">
+            <div class="pl-2">
+              <span class="text-[10px] text-[#8C7A6B] uppercase tracking-wider font-semibold block leading-none">Número Plin</span>
+              <span class="text-xl sm:text-2xl font-mono font-bold text-[#4A3C31] tracking-wider leading-tight">923 282 069</span>
+            </div>
+            <button type="button" id="btn-copy-number"
+              class="shrink-0 bg-[#00B5B8] hover:bg-[#009da0] active:scale-95 text-white px-3.5 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
+              <svg id="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-text">Copiar</span>
+            </button>
+          </div>
+
+          <!-- Toggle / Visualizador de QR -->
+          <div class="space-y-2">
+            <button type="button" id="btn-toggle-qr"
+              class="w-full py-2 px-3 rounded-xl bg-white/80 hover:bg-white text-xs font-medium text-[#4A3C31] border border-[#EBE5DE] flex items-center justify-between transition-colors cursor-pointer">
+              <span class="inline-flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#00B5B8]">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Ver Código QR Oficial de Plin</span>
+              </span>
+              <svg id="qr-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#8C7A6B] transition-transform duration-200">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <div id="qr-container" class="hidden bg-white rounded-2xl p-4 border border-[#EBE5DE] text-center space-y-3 shadow-inner">
+              <div class="max-w-[200px] mx-auto bg-white p-2 rounded-xl border border-[#EBE5DE] shadow-xs">
+                <img src="/imagenes/Artesanitas/QR_pago_plin_artesanitas_1.jpg" alt="QR Plin Diana Cecilia Culqui - Artesanitas"
+                  class="w-full h-auto rounded-lg object-contain">
+              </div>
+              <p class="text-xs text-[#8C7A6B]">
+                Escanea este QR desde tu app <strong>Plin</strong> (BBVA, Interbank, Scotiabank o BanBif) para pagar tu reserva.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SUBIDA DE COMPROBANTE ── -->
+        <div class="space-y-2 pt-2">
+          <label class="block text-sm font-bold text-[#4A3C31]">Paso 3: Adjunta tu Comprobante de Pago (Plin)</label>
+          
+          <input type="file" id="comprobante-input" accept="image/*" required class="hidden">
+
+          <div id="dropzone-area"
+            class="relative group cursor-pointer border-2 border-dashed border-[#D5C9BD] hover:border-[#00B5B8] bg-[#F9F6F0]/60 hover:bg-[#F9F6F0] rounded-2xl p-6 transition-all text-center space-y-2">
+            
+            <div id="dropzone-empty-state" class="space-y-2">
+              <div class="w-12 h-12 rounded-full bg-white text-[#00B5B8] flex items-center justify-center mx-auto shadow-xs group-hover:scale-110 transition-transform">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#4A3C31]">Haz clic o arrastra tu captura de pago aquí</p>
+                <p class="text-xs text-[#8C7A6B] mt-0.5">Captura de Plin (JPG, PNG hasta 5MB)</p>
+              </div>
+              <span class="inline-block text-xs font-medium text-[#008C8E] bg-white px-3 py-1 rounded-full border border-[#00B5B8]/30 shadow-2xs">
+                Seleccionar captura
+              </span>
+            </div>
+
+            <div id="dropzone-file-state" class="hidden flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#00D09C]/40 text-left shadow-2xs">
+              <div class="flex items-center gap-3 min-w-0">
+                <img id="file-preview-img" src="" alt="Comprobante" class="w-12 h-12 rounded-lg object-cover border border-[#EBE5DE] shrink-0 bg-[#EBE5DE]">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1 text-xs font-bold text-[#008f6b]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Comprobante listo</span>
+                  </div>
+                  <p id="file-name-txt" class="text-xs font-medium text-[#4A3C31] truncate max-w-[180px] sm:max-w-[220px]">voucher.jpg</p>
+                  <p id="file-size-txt" class="text-[10px] text-[#8C7A6B]">-- KB</p>
+                </div>
+              </div>
+              <button type="button" id="btn-change-file" class="shrink-0 text-xs font-medium text-[#B87352] hover:underline px-2 py-1 cursor-pointer">
+                Cambiar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3"></div>
+
+      <button type="submit" id="submit-btn"
+        class="w-full bg-[#B87352] hover:bg-[#A36244] active:scale-[0.99] text-white py-4 rounded-2xl font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-base cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Confirmar Inscripción</span>
+      </button>
+    </form>
+
+    <!-- Estado: éxito -->
+    <div id="success-state" class="hidden text-center bg-white rounded-3xl shadow-sm border border-[#EBE5DE] p-8">
+      <div class="w-16 h-16 bg-[#EBE5DE] rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#B87352" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" class="w-8 h-8">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-serif text-[#4A3C31] mb-2">¡Inscripción registrada!</h2>
+      <p class="text-[#8C7A6B]" id="success-message">Te contactaremos por WhatsApp para confirmar tu lugar.</p>
+    </div>
+  </div>
+
+  <script src="/artesanitas/js/inscripcion.js?v=20260830_v4"></script>
+</body>
+
+</html>

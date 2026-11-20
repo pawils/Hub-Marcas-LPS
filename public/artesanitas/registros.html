@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel de Gestión - Artesanitas</title>
+  <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
+          colors: { brand: { dark: '#4A3C31', muted: '#8C7A6B', terracota: '#B87352', cream: '#F9F6F0', beige: '#D5C9BD' } }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    /* Tabla -> tarjetas en mobile */
+    @media (max-width: 768px) {
+      .artesanitas-table-wrap { background: transparent; border: none; overflow-x: visible; }
+      .artesanitas-table thead { display: none; }
+      .artesanitas-table, .artesanitas-table tbody { display: block; width: 100%; }
+      .artesanitas-table tbody { display: flex; flex-direction: column; gap: 12px; }
+      .artesanitas-table tr {
+        display: flex; flex-direction: column;
+        background: #fff; border: 1px solid #EBE5DE; border-radius: 14px; padding: 0 16px;
+      }
+      .artesanitas-table td {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px; padding: 10px 0; border-bottom: 1px solid #F1EDE7; text-align: right;
+      }
+      .artesanitas-table td:last-child { border-bottom: none; }
+      .artesanitas-table td::before {
+        content: attr(data-label); font-weight: 600; font-size: 0.72rem; color: #8C7A6B;
+        text-transform: uppercase; letter-spacing: 0.03em; flex-shrink: 0; text-align: left;
+      }
+
+      /* Título de la tarjeta (taller / inscrito / pedido): sin label, arriba, resaltado */
+      .artesanitas-table td[data-label="Taller"]:first-child,
+      .artesanitas-table td[data-label="Nombre"],
+      .artesanitas-table td[data-label="Cliente / DNI"] {
+        padding-top: 16px; font-size: 1rem; font-weight: 700; color: #4A3C31;
+        justify-content: flex-start; text-align: left;
+      }
+      .artesanitas-table td[data-label="Taller"]:first-child::before,
+      .artesanitas-table td[data-label="Nombre"]::before,
+      .artesanitas-table td[data-label="Cliente / DNI"]::before { display: none; }
+
+      /* Pago (select + botón + saldo) y Acciones (botones) */
+      .artesanitas-table td[data-label="Pago"],
+      .artesanitas-table td[data-label="Acciones"] {
+        flex-direction: column; align-items: flex-start; text-align: left;
+      }
+      .artesanitas-table td[data-label="Acciones"] { padding-bottom: 16px; }
+      .artesanitas-table td[data-label="Acciones"] button {
+        width: 100%; text-align: center; padding: 9px 0;
+        border: 1px solid #F1EDE7; border-radius: 8px; margin: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen">
+
+  <!-- Pantalla de login -->
+  <div id="key-gate" class="min-h-screen flex items-center justify-center px-5">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-sm border border-[#EBE5DE] p-8 text-center">
+      <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas"
+        class="h-14 w-14 object-cover rounded-full shadow-md mx-auto mb-4">
+      <h1 class="text-xl font-serif mb-1">Panel de Artesanitas</h1>
+      <p class="text-sm text-[#8C7A6B] mb-6">Ingresa con tu usuario y contraseña.</p>
+      <input type="text" id="username-input" placeholder="Usuario" autocomplete="username"
+        class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352] mb-3">
+      <input type="password" id="key-input" placeholder="Contraseña" autocomplete="current-password"
+        class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+      <button type="button" class="toggle-password-link text-xs font-medium text-[#B87352] hover:underline block text-right w-full mt-1 mb-3 cursor-pointer"
+        data-target="key-input" aria-pressed="false">Mostrar contraseña</button>
+      <div id="key-error" class="hidden text-sm text-red-600 mb-3">Usuario o contraseña incorrectos.</div>
+      <button id="key-submit" class="w-full bg-[#B87352] text-white py-3 rounded-xl font-medium hover:bg-[#A36244] transition-colors cursor-pointer">
+        Ingresar
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel -->
+  <div id="panel" class="hidden max-w-7xl mx-auto px-5 py-8">
+    <div class="flex justify-end mb-1">
+      <button id="btn-cambiar-password" class="text-xs text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">Cambiar contraseña</button>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <h1 class="text-xl sm:text-2xl font-serif">Panel de Control — <span id="panel-negocio-nombre">Artesanitas</span></h1>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-wrap gap-1 sm:gap-2 bg-white rounded-xl border border-[#EBE5DE] p-1 shadow-2xs">
+          <button id="tab-btn-talleres" class="px-3.5 py-2 rounded-lg text-sm font-medium bg-[#B87352] text-white transition-all cursor-pointer">Talleres</button>
+          <button id="tab-btn-registros" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Registros Talleres</button>
+          <button id="tab-btn-pedidos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
+            <span>📦 Pedidos & Preventas</span>
+            <span id="badge-pedidos-count" class="hidden bg-[#B87352] text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+          </button>
+          <button id="tab-btn-productos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Catálogo</button>
+        </div>
+        <button id="btn-cerrar-sesion" class="text-sm text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">Salir</button>
+      </div>
+    </div>
+
+    <!-- Form cambiar contraseña -->
+    <form id="form-cambiar-password" class="hidden bg-white rounded-2xl border border-[#EBE5DE] p-6 mb-6 space-y-4 max-w-sm">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Contraseña actual</label>
+        <input type="password" id="cp-actual" required autocomplete="current-password"
+          class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+        <button type="button" class="toggle-password-link text-xs font-medium text-[#B87352] hover:underline mt-1 cursor-pointer"
+          data-target="cp-actual" aria-pressed="false">Mostrar contraseña</button>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Contraseña nueva (mín. 8 caracteres)</label>
+        <input type="password" id="cp-nueva" required minlength="8" autocomplete="new-password"
+          class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+        <button type="button" class="toggle-password-link text-xs font-medium text-[#B87352] hover:underline mt-1 cursor-pointer"
+          data-target="cp-nueva" aria-pressed="false">Mostrar contraseña</button>
+      </div>
+      <div id="cp-error" class="hidden text-sm text-red-600"></div>
+      <div id="cp-success" class="hidden text-sm text-green-700">Contraseña actualizada.</div>
+      <div class="flex gap-3">
+        <button type="submit" class="bg-[#B87352] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#A36244] transition-colors cursor-pointer">
+          Guardar
+        </button>
+        <button type="button" id="btn-cancelar-password" class="px-5 py-2.5 rounded-xl text-sm font-medium border border-[#D5C9BD] hover:bg-[#F9F6F0] transition-colors cursor-pointer">
+          Cancelar
+        </button>
+      </div>
+    </form>
+
+    <!-- Tab: Talleres -->
+    <div id="tab-talleres">
+      <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado</label>
+            <select id="filtro-taller-estado" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Niños</label>
+            <select id="filtro-taller-ninos" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Desde</label>
+            <input type="date" id="filtro-taller-desde" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Hasta</label>
+            <input type="date" id="filtro-taller-hasta" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <button id="btn-limpiar-filtros-talleres" class="px-3 py-2 rounded-lg text-sm font-medium text-[#B87352] hover:underline cursor-pointer">
+            Limpiar filtros
+          </button>
+        </div>
+        <button id="btn-nuevo-taller" class="bg-[#4A3C31] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#322821] transition-colors whitespace-nowrap cursor-pointer">
+          + Nuevo Taller
+        </button>
+      </div>
+
+      <!-- Form nuevo taller / editar taller -->
+      <form id="form-nuevo-taller" class="hidden bg-white rounded-2xl border border-[#EBE5DE] p-6 mb-6 space-y-4">
+        <h3 id="form-taller-titulo" class="text-sm font-semibold text-[#4A3C31]">Nuevo Taller</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1.5">Nombre del taller</label>
+            <input type="text" id="nt-nombre" required maxlength="150"
+              class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1.5">Fecha</label>
+              <input type="date" id="nt-fecha" required
+                class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1.5">Hora</label>
+              <input type="text" id="nt-hora" placeholder="4:30pm"
+                class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5">Ubicación</label>
+            <input type="text" id="nt-ubicacion"
+              class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1.5">Precio (S/)</label>
+              <input type="number" id="nt-precio" min="0" step="0.01"
+                class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+            </div>
+            <div class="flex items-end pb-2.5">
+              <label class="inline-flex items-center gap-2 text-sm font-medium">
+                <input type="checkbox" id="nt-ninos" class="w-4 h-4 accent-[#B87352]">
+                Taller para niños
+              </label>
+            </div>
+          </div>
+        </div>
+        <div id="nt-error" class="hidden text-sm text-red-600"></div>
+        <div class="flex gap-3">
+          <button type="submit" id="btn-guardar-taller" class="bg-[#B87352] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#A36244] transition-colors cursor-pointer">
+            Crear Taller
+          </button>
+          <button type="button" id="btn-cancelar-taller" class="px-5 py-2.5 rounded-xl text-sm font-medium border border-[#D5C9BD] hover:bg-[#F9F6F0] transition-colors cursor-pointer">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+      <div class="artesanitas-table-wrap bg-white rounded-2xl border border-[#EBE5DE] overflow-x-auto">
+        <table class="artesanitas-table w-full text-sm">
+          <thead>
+            <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B]">
+              <th class="px-4 py-3 font-medium">Taller</th>
+              <th class="px-4 py-3 font-medium">Fecha</th>
+              <th class="px-4 py-3 font-medium">Precio</th>
+              <th class="px-4 py-3 font-medium">Niños</th>
+              <th class="px-4 py-3 font-medium">Inscritos</th>
+              <th class="px-4 py-3 font-medium">Estado</th>
+              <th class="px-4 py-3 font-medium"></th>
+            </tr>
+          </thead>
+          <tbody id="talleres-tbody"></tbody>
+        </table>
+        <p id="talleres-empty" class="hidden text-center text-[#8C7A6B] py-10">Aún no hay talleres creados.</p>
+      </div>
+    </div>
+
+    <!-- Tab: Registros -->
+    <div id="tab-registros" class="hidden">
+      <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Taller</label>
+            <select id="filtro-taller" class="w-full max-w-[220px] px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Canal</label>
+            <select id="filtro-origen" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="formulario">Formulario</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="llamada">Llamada</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Pago</label>
+            <select id="filtro-pago" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="parcial">Parcial</option>
+              <option value="completo">Completo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Desde</label>
+            <input type="date" id="filtro-desde" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Hasta</label>
+            <input type="date" id="filtro-hasta" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <button id="btn-limpiar-filtros" class="px-3 py-2 rounded-lg text-sm font-medium text-[#B87352] hover:underline cursor-pointer">
+            Limpiar filtros
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button id="btn-nueva-inscripcion" class="bg-[#4A3C31] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#322821] transition-colors whitespace-nowrap cursor-pointer">
+            + Registrar Manualmente
+          </button>
+          <button id="btn-exportar-csv" type="button"
+            class="bg-[#B87352] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#A36244] transition-colors inline-flex items-center gap-2 whitespace-nowrap cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            CSV
+          </button>
+          <button id="btn-exportar-xlsx" type="button"
+            class="bg-[#1D6F42] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#155331] transition-colors inline-flex items-center gap-2 whitespace-nowrap cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Form registro manual -->
+      <form id="form-inscripcion-manual" class="hidden bg-white rounded-2xl border border-[#EBE5DE] p-6 mb-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1.5">Taller</label>
+            <select id="im-taller" required class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]"></select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5">Canal</label>
+            <select id="im-origen" class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+              <option value="whatsapp">WhatsApp</option>
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="llamada">Llamada</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5">Nombre completo</label>
+            <input type="text" id="im-nombre" required maxlength="100" class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1.5">Edad</label>
+              <input type="number" id="im-edad" required min="1" max="119" class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1.5">WhatsApp</label>
+              <input type="tel" id="im-whatsapp" required class="w-full px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+            </div>
+          </div>
+          <div id="im-acompanante-field" class="hidden">
+            <label class="block text-sm font-medium mb-1.5">Acompañante(s) o madre</label>
+            <div id="im-acompanantes-list" class="space-y-2"></div>
+            <button type="button" id="im-btn-agregar-acompanante" class="mt-2 text-sm font-medium text-[#B87352] hover:underline cursor-pointer">
+              + Agregar otra persona
+            </button>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5">Captura de pago <span class="font-normal text-[#8C7A6B]">(opcional)</span></label>
+            <input type="file" id="im-comprobante" accept="image/*" class="w-full text-sm">
+          </div>
+        </div>
+        <div id="im-error" class="hidden text-sm text-red-600"></div>
+        <div class="flex gap-3">
+          <button type="submit" class="bg-[#B87352] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#A36244] transition-colors cursor-pointer">
+            Registrar
+          </button>
+          <button type="button" id="btn-cancelar-inscripcion" class="px-5 py-2.5 rounded-xl text-sm font-medium border border-[#D5C9BD] hover:bg-[#F9F6F0] transition-colors cursor-pointer">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+      <div class="artesanitas-table-wrap bg-white rounded-2xl border border-[#EBE5DE] overflow-x-auto">
+        <table class="artesanitas-table w-full text-sm">
+          <thead>
+            <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B]">
+              <th class="px-4 py-3 font-medium">Nombre</th>
+              <th class="px-4 py-3 font-medium">Edad</th>
+              <th class="px-4 py-3 font-medium">WhatsApp</th>
+              <th class="px-4 py-3 font-medium">Acompañante</th>
+              <th class="px-4 py-3 font-medium">Taller</th>
+              <th class="px-4 py-3 font-medium">Canal</th>
+              <th class="px-4 py-3 font-medium">Pago</th>
+              <th class="px-4 py-3 font-medium">Inscrito el</th>
+              <th class="px-4 py-3 font-medium"></th>
+            </tr>
+          </thead>
+          <tbody id="registros-tbody"></tbody>
+        </table>
+        <p id="registros-empty" class="hidden text-center text-[#8C7A6B] py-10">Aún no hay inscripciones.</p>
+      </div>
+    </div>
+
+    <!-- Tab: Pedidos & Preventas -->
+    <div id="tab-pedidos" class="hidden space-y-6">
+      
+      <!-- Tarjetas Métricas KPI -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Total Reservas</p>
+          <p id="kpi-pedidos-total" class="text-2xl font-bold text-[#4A3C31] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Tazas & Preventas</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Monto Reservas (Plin)</p>
+          <p id="kpi-pedidos-recaudado" class="text-2xl font-bold text-[#008f6b] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">S/ 20 por unidad</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Saldo por Cobrar</p>
+          <p id="kpi-pedidos-saldo" class="text-2xl font-bold text-[#B87352] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Al entregar</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Envíos Shalom (Delivery)</p>
+          <p id="kpi-pedidos-envios" class="text-2xl font-bold text-[#742284] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Entrega 10 de Diciembre</span>
+        </div>
+      </div>
+
+      <!-- Filtros y Exportación -->
+      <div class="flex flex-wrap justify-between items-end gap-3">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Buscar (Código / Nombre / DNI / WhatsApp / Guía Shalom)</label>
+            <input type="text" id="filtro-pedido-search" placeholder="Ej: 72839401 / Trujillo"
+              class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352] w-64">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Tipo de Entrega</label>
+            <select id="filtro-pedido-entrega" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todas las entregas</option>
+              <option value="provincia">Envío Shalom</option>
+              <option value="recojo_local">Recojo Taller Trujillo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado de Pago</label>
+            <select id="filtro-pedido-pago" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="parcial">Parcial (Reserva S/ 20)</option>
+              <option value="completo">Completo</option>
+              <option value="pendiente">Pendiente</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado del Pedido</label>
+            <select id="filtro-pedido-estado" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="cotizado">1. Cotizado / Solicitud</option>
+              <option value="reservado">2. Reserva Confirmada</option>
+              <option value="encargado_artesano">3. Encargado al Artesano</option>
+              <option value="en_produccion">4. En Pintura / Acabado</option>
+              <option value="recibido_taller">5. Recibido en Taller (Listo)</option>
+              <option value="enviado">6. Enviado (Shalom / Courier)</option>
+              <option value="entregado">7. Entregado al Cliente</option>
+              <option value="post_venta">8. Post-Venta</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+          <button id="btn-limpiar-filtros-pedidos" class="px-3 py-2 rounded-lg text-sm font-medium text-[#B87352] hover:underline cursor-pointer">
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-exportar-pedidos-csv" type="button"
+            class="bg-[#4A3C31] text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#322821] transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            CSV
+          </button>
+          <button id="btn-exportar-pedidos-xlsx" type="button"
+            class="bg-[#1D6F42] text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#155331] transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Excel (.xlsx)
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de Pedidos -->
+      <div class="artesanitas-table-wrap bg-white rounded-2xl border border-[#EBE5DE] overflow-x-auto shadow-2xs">
+        <table class="artesanitas-table w-full text-sm">
+          <thead>
+            <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B]">
+              <th class="px-4 py-3 font-medium">Cliente / DNI</th>
+              <th class="px-4 py-3 font-medium">WhatsApp</th>
+              <th class="px-4 py-3 font-medium">Entrega / Sede</th>
+              <th class="px-4 py-3 font-medium">Producto / Fecha</th>
+              <th class="px-4 py-3 font-medium">Pago</th>
+              <th class="px-4 py-3 font-medium">Estado Pedido</th>
+              <th class="px-4 py-3 font-medium text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="pedidos-tbody"></tbody>
+        </table>
+        <p id="pedidos-empty" class="hidden text-center text-[#8C7A6B] py-12">No hay pedidos registrados.</p>
+      </div>
+    </div>
+
+    <!-- Tab: Productos -->
+    <div id="tab-productos" class="hidden">
+      <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado</label>
+            <select id="filtro-producto-estado" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+          <button id="btn-limpiar-filtros-productos" class="px-3 py-2 rounded-lg text-sm font-medium text-[#B87352] hover:underline cursor-pointer">
+            Limpiar filtros
+          </button>
+        </div>
+        <button id="btn-nuevo-producto" class="bg-[#4A3C31] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#322821] transition-colors whitespace-nowrap cursor-pointer">
+          + Nuevo Producto
+        </button>
+      </div>
+
+      <!-- Form nuevo producto / editar producto (Ficha Técnica Retail & BI 2026) -->
+      <form id="form-nuevo-producto" class="hidden bg-white rounded-3xl border border-[#EBE5DE] p-6 mb-6 space-y-5 shadow-xs">
+        <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#B87352] block">Estándar Retail & BI</span>
+            <h3 id="form-producto-titulo" class="text-base font-serif font-bold text-[#4A3C31]">Ficha Técnica de Producto</h3>
+          </div>
+        </div>
+
+        <!-- 1. Identificación y Códigos (SKU / EAN) -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
+            <input type="text" id="np-nombre" required maxlength="150" placeholder="Ej: Taza Navideña Papá Noel"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">SKU (Autogenerable)</label>
+            <input type="text" id="np-sku" maxlength="60" placeholder="Ej: ART-VAJ-TAZ-01"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-mono focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Código EAN / Barras</label>
+            <input type="text" id="np-ean" maxlength="20" placeholder="Ej: 7750000000012"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-mono focus:outline-none focus:border-[#B87352]">
+          </div>
+        </div>
+
+        <!-- 2. Jerarquía Retail (Línea -> Sub-línea -> Sub-sub-línea -> Colección) -->
+        <div class="bg-[#F9F6F0] p-4 rounded-2xl border border-[#EBE5DE] space-y-3">
+          <p class="text-xs font-bold uppercase tracking-wider text-[#8C7A6B]">Jerarquía Comercial Retail (Para Reportes BI & IA)</p>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-[#4A3C31] mb-1">1. Línea</label>
+              <select id="np-linea" class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+                <option value="Vajilla Artesanal">Vajilla Artesanal</option>
+                <option value="Decoración & Maceteros">Decoración & Maceteros</option>
+                <option value="Kits Creativos">Kits Creativos</option>
+                <option value="Sets de Regalo">Sets de Regalo</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#4A3C31] mb-1">2. Sub-línea</label>
+              <select id="np-sublinea" class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+                <option value="Tazas & Mugs">Tazas & Mugs</option>
+                <option value="Platos & Bowls">Platos & Bowls</option>
+                <option value="Teteras & Azucareras">Teteras & Azucareras</option>
+                <option value="Adornos con Plantita">Adornos con Plantita</option>
+                <option value="Jarrones & Esculturas">Jarrones & Esculturas</option>
+                <option value="Cerámica para Pintar">Cerámica para Pintar</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#4A3C31] mb-1">3. Sub-sub-línea</label>
+              <input type="text" id="np-sub-sublinea" maxlength="80" placeholder="Ej: Taza Esculpida 3D / Set + Plato"
+                class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#4A3C31] mb-1">4. Colección / Temporada</label>
+              <input type="text" id="np-coleccion" maxlength="80" placeholder="Ej: Navidad 2026 / Van Gogh / Rapunzel"
+                class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Precios, Promoción, Costo Artesano y Stock -->
+        <div class="grid grid-cols-1 sm:grid-cols-6 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Precio Regular (S/) <span class="text-red-500">*</span></label>
+            <input type="number" id="np-precio" required min="0" step="0.01" placeholder="65.00"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-bold focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#B87352] mb-1">Precio Oferta (S/)</label>
+            <input type="number" id="np-precio-oferta" min="0" step="0.01" placeholder="Opcional: 59.90"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#B87352]/40 bg-[#F9F6F0] text-sm font-bold text-[#B87352] focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Etiqueta Promo</label>
+            <input type="text" id="np-etiqueta-promo" maxlength="40" placeholder="Ej: 🎄 Promo Navidad"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Costo Artesano (S/)</label>
+            <input type="number" id="np-costo-artesano" min="0" step="0.01" placeholder="Costo interno"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Stock Actual</label>
+            <input type="number" id="np-stock" min="0" step="1" value="0"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-bold focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Si Stock = 0</label>
+            <select id="np-politica-stock" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="preventa">Pasar a Preventa (S/ 20)</option>
+              <option value="agotado">Marcar Agotado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. Atributos Físicos (Tipo, Modelo, Color, Tamaño/Medidas, Características) -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Tipo de Pieza</label>
+            <input type="text" id="np-tipo" maxlength="60" placeholder="Ej: Taza / Adorno / Plato"
+              class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Modelo</label>
+            <input type="text" id="np-modelo" maxlength="80" placeholder="Ej: Papá Noel 3D"
+              class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Color Principal</label>
+            <input type="text" id="np-color" maxlength="60" placeholder="Ej: Rojo / Crema / Morado"
+              class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Tamaño / Capacidad</label>
+            <input type="text" id="np-tamano" maxlength="120" placeholder="Ej: 350 ml · 9x8.5 cm"
+              class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Descripción Comercial</label>
+            <textarea id="np-descripcion" rows="2" maxlength="600" placeholder="Historia y encanto de la pieza..."
+              class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Características Técnicas (Material, Microondas, Cuidados)</label>
+            <textarea id="np-caracteristicas" rows="2" maxlength="600" placeholder="Ej: Cerámica de alta temperatura, esmalte sin plomo, apta para bebidas calientes."
+              class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]"></textarea>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Fotos del Producto <span id="np-fotos-hint" class="font-normal text-[#8C7A6B]">(compresión WebP automática en navegador + caché CDN)</span></label>
+          <input type="file" id="np-imagenes" accept="image/*" multiple class="w-full text-sm">
+          <div id="np-imagenes-actuales" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+
+        <div id="np-error" class="hidden text-sm text-red-600"></div>
+        <div class="flex gap-3">
+          <button type="submit" id="btn-guardar-producto" class="bg-[#B87352] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#A36244] transition-colors cursor-pointer">
+            Crear Producto
+          </button>
+          <button type="button" id="btn-cancelar-producto" class="px-5 py-2.5 rounded-xl text-sm font-medium border border-[#D5C9BD] hover:bg-[#F9F6F0] transition-colors cursor-pointer">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+      <div id="productos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <p id="productos-empty" class="hidden text-center text-[#8C7A6B] py-10">Aún no hay productos creados.</p>
+
+      <div class="mt-12">
+        <h3 class="text-sm font-semibold text-[#4A3C31] mb-1">Productos del catálogo (código)</h3>
+        <p class="text-xs text-[#8C7A6B] mb-4">Estos productos están escritos directo en la página, no en este panel.
+          Solo se pueden pausar/activar acá; para cambiar foto, precio o descripción, pide el cambio por chat.</p>
+        <div id="productos-estaticos-lista" class="bg-white rounded-2xl border border-[#EBE5DE] divide-y divide-[#F1EDE7]"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Actualizar monto pagado (Ultra Premium) -->
+  <div id="modal-monto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-md transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 border border-[#EBE5DE] relative transform transition-all duration-300 space-y-5">
+      <!-- Header con botón cerrar -->
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="inline-flex items-center gap-1.5 bg-[#B87352]/10 text-[#B87352] text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1">
+            Gestión de Pagos
+          </span>
+          <h3 class="text-xl font-serif font-bold text-[#4A3C31]">Actualizar Pago</h3>
+          <p id="modal-monto-nombre" class="text-xs text-[#8C7A6B] font-medium mt-0.5"></p>
+        </div>
+        <button id="btn-cerrar-modal-monto" type="button"
+          class="text-[#8C7A6B] hover:text-[#4A3C31] hover:bg-[#F9F6F0] p-2 rounded-xl transition-all cursor-pointer"
+          title="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Resumen en chips -->
+      <div class="grid grid-cols-3 gap-2.5 text-center">
+        <div class="bg-[#F9F6F0] rounded-2xl py-3 px-2 border border-[#EBE5DE]/60">
+          <p class="text-[10px] font-bold text-[#8C7A6B] uppercase tracking-wider">Precio Total</p>
+          <p id="modal-monto-precio" class="text-sm font-bold text-[#4A3C31] mt-1">—</p>
+        </div>
+        <div class="bg-[#00D09C]/10 rounded-2xl py-3 px-2 border border-[#00D09C]/30">
+          <p class="text-[10px] font-bold text-[#008f6b] uppercase tracking-wider">Pagado</p>
+          <p id="modal-monto-pagado-actual" class="text-sm font-bold text-[#008f6b] mt-1">—</p>
+        </div>
+        <div class="bg-[#B87352]/10 rounded-2xl py-3 px-2 border border-[#B87352]/30">
+          <p class="text-[10px] font-bold text-[#B87352] uppercase tracking-wider">Falta</p>
+          <p id="modal-monto-falta" class="text-sm font-bold text-[#B87352] mt-1">—</p>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#4A3C31] uppercase tracking-wider mb-1.5">Nuevo monto pagado (S/)</label>
+        <input type="number" id="modal-monto-input" min="0" step="0.01"
+          class="w-full px-4 py-3 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] font-semibold text-base focus:outline-none focus:border-[#B87352] transition-colors font-mono">
+      </div>
+      <div id="modal-monto-error" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200"></div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button type="button" id="btn-cancelar-monto" class="flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold border border-[#D5C9BD] text-[#4A3C31] hover:bg-[#F9F6F0] transition-colors cursor-pointer">
+          Cancelar
+        </button>
+        <button type="button" id="btn-guardar-monto" class="flex-1 bg-[#B87352] hover:bg-[#A36244] text-white px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-md hover:shadow-lg cursor-pointer">
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmación Premium (Reemplaza confirm nativo) -->
+  <div id="modal-confirmacion" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-md transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 border border-[#EBE5DE] relative transform transition-all duration-300 space-y-5 text-center">
+      <div class="w-14 h-14 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto border border-red-200 shadow-xs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-7 h-7">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div>
+        <h3 id="modal-confirm-titulo" class="text-xl font-serif font-bold text-[#4A3C31]">¿Estás seguro?</h3>
+        <p id="modal-confirm-mensaje" class="text-xs sm:text-sm text-[#8C7A6B] mt-1.5 leading-relaxed">
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="flex items-center gap-3 pt-2">
+        <button type="button" id="btn-cancelar-confirm" class="flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold border border-[#D5C9BD] text-[#4A3C31] hover:bg-[#F9F6F0] transition-colors cursor-pointer">
+          Cancelar
+        </button>
+        <button type="button" id="btn-aceptar-confirm" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-md hover:shadow-lg cursor-pointer">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script modular externo con Cache-Buster -->
+  <script src="/artesanitas/js/registros.js?v=20261120_v2"></script>
+</body>
+
+</html>

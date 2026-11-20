@@ -1,0 +1,95 @@
+// server/server.js — Servidor Principal del Hub Multi-Tenant Marcas Aliadas LPS
+// Proyecto independiente en Railway (artesanitas.lospilares.pe y futuras marcas *.lospilares.pe)
+require('dotenv').config();
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const helmet = require('helmet');
+const compression = require('compression');
+const cors = require('cors');
+
+const { runMigrations } = require('./migrate');
+const { negocioSubdomainMiddleware, extractSubdomainSlug } = require('./middleware/negocio-subdomain.middleware');
+const negocioTalleresRoutes = require('./routes/negocio-talleres.routes');
+const negocioProductosRoutes = require('./routes/negocio-productos.routes');
+const negocioPedidosRoutes = require('./routes/negocio-pedidos.routes');
+const artesanitasRoutes = require('./routes/artesanitas.routes');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+const DEFAULT_TENANT = process.env.DEFAULT_TENANT_SLUG || 'artesanitas';
+
+app.set('trust proxy', 1);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+  })
+);
+app.use(compression());
+app.use(cors());
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Healthcheck para Railway
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', service: 'hub-marcas-lps', timestamp: new Date().toISOString() });
+});
+
+// API Multi-Tenant (/api/negocios/:negocioSlug/...)
+app.use('/api/negocios', negocioTalleresRoutes);
+app.use('/api/negocios', negocioProductosRoutes);
+app.use('/api/negocios', negocioPedidosRoutes);
+
+// Páginas Open Graph individuales de producto (/artesanitas/producto/:slug y /producto/:slug)
+app.use('/artesanitas-peru', artesanitasRoutes);
+app.use('/artesanitas', artesanitasRoutes);
+app.use('/', artesanitasRoutes);
+
+// Enrutador por subdominio (ej. artesanitas.lospilares.pe, latiendacafe.lospilares.pe)
+app.use(negocioSubdomainMiddleware);
+
+// Si se accede directamente al dominio Railway o a artesanitas.lospilares.pe en la raíz '/',
+// sirve los archivos de la marca activa (por defecto: artesanitas)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/imagenes/') || req.path.startsWith('/js/')) {
+    return next();
+  }
+  const tenant = req.tenantSubdomain || extractSubdomainSlug(req) || DEFAULT_TENANT;
+  const tenantDir = path.join(PUBLIC_DIR, tenant);
+  if (!fs.existsSync(tenantDir)) return next();
+
+  // Soportar URLs limpias como /pedido, /seguimiento, /registros, /inscripcion
+  let reqPath = req.path === '/' ? '/index.html' : req.path;
+  if (reqPath.startsWith(`/${tenant}/`)) {
+    reqPath = reqPath.slice(tenant.length + 1) || '/index.html';
+  }
+  if (!path.extname(reqPath)) {
+    const htmlCandidate = path.join(tenantDir, `${reqPath}.html`);
+    if (fs.existsSync(htmlCandidate)) {
+      return res.sendFile(htmlCandidate);
+    }
+  }
+  const directCandidate = path.join(tenantDir, reqPath);
+  if (directCandidate.startsWith(tenantDir) && fs.existsSync(directCandidate) && fs.statSync(directCandidate).isFile()) {
+    return res.sendFile(directCandidate);
+  }
+  next();
+});
+
+// Archivos estáticos generales (/imagenes/Artesanitas/..., /js/vendor/..., /artesanitas/...)
+app.use(
+  express.static(PUBLIC_DIR, {
+    extensions: ['html'],
+    maxAge: '7d'
+  })
+);
+
+// Iniciar servidor y migraciones
+runMigrations().finally(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
+  });
+});
