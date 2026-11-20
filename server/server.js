@@ -54,7 +54,7 @@ app.use(negocioSubdomainMiddleware);
 // Si se accede directamente al dominio Railway o a artesanitas.lospilares.pe en la raíz '/',
 // sirve los archivos de la marca activa (por defecto: artesanitas)
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/') || req.path.startsWith('/imagenes/') || req.path.startsWith('/js/')) {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/imagenes/') || req.path.startsWith('/js/vendor/')) {
     return next();
   }
   const tenant = req.tenantSubdomain || extractSubdomainSlug(req) || DEFAULT_TENANT;
