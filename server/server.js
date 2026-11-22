@@ -88,7 +88,9 @@ app.use(
   })
 );
 
-// Escuchar de inmediato en el puerto para que Railway Proxy nunca devuelva 502 durante el arranque
+// Escuchar de inmediato en el puerto para que Railway Proxy nunca devuelva 502 durante el arranque.
+// Si Railway inyecta PORT=8080 pero el Custom Domain se configuró apuntando al puerto 3000,
+// escuchamos en AMBOS puertos (8080 y 3000) simultáneamente para que siempre responda 200 OK.
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
   runMigrations().catch((err) => console.error('[Migrate Error]', err.message));
@@ -97,3 +99,9 @@ app.listen(PORT, '0.0.0.0', () => {
     syncFromOldDatabase().catch(() => {});
   }, 2 * 60 * 1000);
 });
+
+if (Number(PORT) !== 3000) {
+  app.listen(3000, '0.0.0.0', () => {
+    console.log('[Hub Marcas LPS] Escuchando también en puerto 3000 para Custom Domain de Railway');
+  });
+}
