@@ -80,6 +80,7 @@ async function runMigrations() {
         precio_oferta NUMERIC(10, 2),
         etiqueta_promo VARCHAR(40),
         costo_artesano NUMERIC(10, 2) NOT NULL DEFAULT 0,
+        moneda VARCHAR(10) NOT NULL DEFAULT 'PEN',
         sku VARCHAR(60),
         ean VARCHAR(30),
         stock_actual INTEGER NOT NULL DEFAULT 0,
@@ -191,6 +192,78 @@ async function runMigrations() {
          ON CONFLICT (username) DO NOTHING`,
         [artHash]
       );
+    }
+
+    // Seed inicial de los 6 productos dinámicos de Artesanitas si la BD nueva arranca vacía
+    const { rows: artRow } = await pool.query(`SELECT id FROM negocios WHERE slug = 'artesanitas' LIMIT 1`);
+    if (artRow.length > 0) {
+      const artId = artRow[0].id;
+      const { rows: prodCount } = await pool.query(`SELECT COUNT(*)::int AS c FROM negocio_productos WHERE negocio_id = $1`, [artId]);
+      if (prodCount[0].c === 0) {
+        const initialProducts = [
+          {
+            slug: 'taza-perry-el-ornitorrinco',
+            nombre: 'Taza Perry el Ornitorrinco',
+            precio: 65.00,
+            sku: 'ART-PRD-0001',
+            descripcion: '🦦 Taza Perry el Ornitorrinco 💙\n\nUna taza hecha a mano, inspirada en el divertido e icónico Perry el Ornitorrinco de Phineas y Ferb. ✨\n\n🎨 Elaborada artesanalmente con detalles cuidadosamente pintados.\n☕ Ideal para disfrutar tus bebidas favoritas o sorprender a un fan de Perry.\n🎁 ¡Un detalle original, divertido y hecho con mucho cariño!\n\nPrecio: S/ 65.00 💙\n\n✨ Hecho a mano por Artesanitas Perú.',
+            imagenes: ['/imagenes/Artesanitas/Fotos/taza_perry_el_ornitorrinco_1.jpg']
+          },
+          {
+            slug: 'tazas-caspianas',
+            nombre: 'Tazas Caspianas',
+            precio: 69.00,
+            sku: 'ART-PRD-0002',
+            descripcion: '🌸 Tazas Caspianas \n\nDelicadas, sutiles y llenas de encanto. ✨🌷\n\nNuestras tazas rosadas están inspiradas en esos pequeños detalles cute y delicados que hacen especial cada momento. Perfectas para acompañar tu café, té o bebida favorita y darle un toque dulce a tu día. ☕💗\n\n🎀 Diseño delicado y encantador\n🌸 Ideal para regalar o darte un gustito\n✨ Incluye platito en forma de margarita\n\nPrecio: S/ 69.00\n\n💕 Una taza bonita para hacer más bonitos tus momentos.',
+            imagenes: ['/imagenes/Artesanitas/Fotos/tazas_caspianas_1.jpeg']
+          },
+          {
+            slug: 'corazon-de-ceramica-para-pintar',
+            nombre: '🤍 Corazón de Cerámica para Pintar',
+            precio: 65.00,
+            sku: 'ART-PRD-0003',
+            descripcion: '🤍 Corazón de Cerámica para Pintar \n\nUn detalle lleno de amor para dejar volar tu creatividad. 🎨✨\n\nEste hermoso corazón de cerámica viene listo para que lo pintes y personalices a tu estilo. Perfecto para disfrutar un momento de relajación, crear algo bonito con tus manos o compartir una tarde creativa. 🌸🖌️\n\n🎨 Incluye kit de 5 pinturas\n🖌️ Incluye pinceles\n🤍 Corazón de cerámica listo para pintar\n✨ Ideal para regalar o disfrutar de una experiencia creativa en casa\n\nPrecio: S/ 65.00\n\n💕 Pinta, crea y convierte un corazón en una pieza única hecha por ti.',
+            imagenes: ['/imagenes/Artesanitas/Fotos/corazon_ceramica_para_pintar_1.jpeg']
+          },
+          {
+            slug: 'taza-artesanal-con-salpicado',
+            nombre: 'Taza artesanal con salpicado',
+            precio: 52.00,
+            sku: 'ART-PRD-0004',
+            descripcion: '🤎 Taza artesanal con salpicado\n\nUna taza con un estilo minimalista, cálido y único, perfecta para disfrutar tu café, té o bebida favorita. ☕✨\n\nSu acabado en tono crema con delicadas salpicaduras oscuras le da ese toque artesanal y moderno que combina con cualquier espacio. 🌿🤎\n\n✨ Hecha a mano\n☕ Ideal para el día a día\n🎁 Perfecta para regalar o darte un gustito\n\nPrecio: S/ 52.00 🤎\n\nUna taza sencilla, bonita y con personalidad.',
+            imagenes: ['/imagenes/Artesanitas/Fotos/taza_artesanal_con_salpicado_1.jpeg']
+          },
+          {
+            slug: 'set-de-2-tazas-personalizadas',
+            nombre: 'Set de 2 tazas personalizadas',
+            precio: 149.00,
+            sku: 'ART-PRD-0005',
+            descripcion: '✨ Set de 2 tazas personalizadas 💕\n\nUn detalle único para compartir con esa persona especial. ☕🤍\n\n✨ Incluye:\n☕ 2 tazas personalizadas\n🍽️ 2 platitos\n🎨 Puedes elegir el color\n💬 Personaliza cada taza con la frase que prefieras\n\n💰 Precio: S/149 el set\n\n📌 Elaborado especialmente a pedido.\n⏳ Plazo de producción: 35 días.\n\n☕ Aptas para bebidas calientes y microondas.\n\nUn set creado especialmente para ustedes, con ese toque único que lo hace especial. 💕',
+            imagenes: ['/imagenes/Artesanitas/Fotos/set_de_2_tazas_personalizadas_1.jpeg']
+          },
+          {
+            slug: 'taza-formula-1',
+            nombre: '🏎‍🔥 Taza Fórmula 1 🏁',
+            precio: 69.00,
+            sku: 'ART-PRD-0006',
+            descripcion: 'Para los amantes de la velocidad y los detalles únicos 🏎‍🟀✨\nNuestras tazas de Fórmula 1 son perfectas para disfrutar tu café, chocolate o bebida favorita ☕️❤️\n\n✨ Precio: S/ 69\n🔥 Aptas para bebidas calientes\n🔥 Aptas para microondas\n🎨 Diseño artesanal y hecho con mucho detalle\n\nUn detalle diferente para sorprender a ese fan de la F1',
+            imagenes: ['/imagenes/Artesanitas/Fotos/taza_formula1_1.jpg']
+          }
+        ];
+
+        for (const p of initialProducts) {
+          await pool.query(
+            `INSERT INTO negocio_productos (
+              negocio_id, slug, nombre, precio, sku, stock_actual, stock_minimo,
+              politica_sin_stock, linea, sublinea, sub_sublinea, coleccion,
+              tipo_producto, descripcion, imagenes, activo
+            ) VALUES ($1, $2, $3, $4, $5, 0, 1, 'preventa', 'Vajilla Artesanal', 'Tazas & Mugs', 'Cerámica Pintada a Mano', 'Catálogo General', 'Taza', $6, $7, TRUE)
+            ON CONFLICT (negocio_id, slug) DO NOTHING`,
+            [artId, p.slug, p.nombre, p.precio, p.sku, p.descripcion, JSON.stringify(p.imagenes)]
+          );
+        }
+        logger.info('Seed inicial de 6 productos dinámicos de Artesanitas completado.');
+      }
     }
 
     logger.info('Migraciones del Hub Marcas Aliadas LPS completadas con éxito.');
