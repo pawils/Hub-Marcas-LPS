@@ -116,10 +116,6 @@ app.use(
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
   runMigrations().catch((err) => console.error('[Migrate Error]', err.message));
-  // Re-sincronizar reservas nuevas desde lospilares.pe cada 2 minutos mientras convivan ambos dominios
-  setInterval(() => {
-    syncFromOldDatabase().catch(() => {});
-  }, 2 * 60 * 1000);
 });
 
 if (Number(PORT) !== 3000) {
