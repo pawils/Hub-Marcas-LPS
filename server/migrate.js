@@ -117,6 +117,18 @@ async function runMigrations() {
     `);
 
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS negocio_producto_fotos (
+        id SERIAL PRIMARY KEY,
+        producto_id INTEGER NOT NULL REFERENCES negocio_productos(id) ON DELETE CASCADE,
+        negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+        posicion INTEGER NOT NULL DEFAULT 0,
+        mime_type VARCHAR(40) NOT NULL DEFAULT 'image/webp',
+        foto_data BYTEA NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS negocio_productos_estaticos (
         negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
         slug VARCHAR(120) NOT NULL,
