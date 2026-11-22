@@ -81,8 +81,12 @@ app.use((req, res, next) => {
     return next();
   }
   const tenant = req.tenantSubdomain || extractSubdomainSlug(req) || DEFAULT_TENANT;
-  const tenantDir = path.join(PUBLIC_DIR, tenant);
-  if (!fs.existsSync(tenantDir)) return next();
+  const candidateDirs = [
+    path.join(PUBLIC_DIR, tenant),
+    path.join(PUBLIC_DIR, 'aliados', tenant)
+  ];
+  const tenantDir = candidateDirs.find((d) => fs.existsSync(d) && fs.statSync(d).isDirectory());
+  if (!tenantDir) return next();
 
   // Soportar URLs limpias como /pedido, /seguimiento, /registros, /inscripcion
   let reqPath = req.path === '/' ? '/index.html' : req.path;
@@ -116,6 +120,10 @@ app.use(
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
   runMigrations().catch((err) => console.error('[Migrate Error]', err.message));
+  // Re-sincronizar reservas nuevas desde lospilares.pe cada 2 minutos mientras convivan ambos dominios
+  setInterval(() => {
+    syncFromOldDatabase().catch(() => {});
+  }, 2 * 60 * 1000);
 });
 
 if (Number(PORT) !== 3000) {
