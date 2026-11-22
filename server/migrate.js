@@ -2,6 +2,7 @@
 const pool = require('./db.config');
 const bcrypt = require('bcryptjs');
 const logger = require('./utils/logger');
+const { syncFromOldDatabase } = require('./sync-from-main-db');
 
 async function runMigrations() {
   try {
@@ -265,6 +266,8 @@ async function runMigrations() {
         logger.info('Seed inicial de 6 productos dinámicos de Artesanitas completado.');
       }
     }
+
+    await syncFromOldDatabase();
 
     logger.info('Migraciones del Hub Marcas Aliadas LPS completadas con éxito.');
   } catch (err) {
