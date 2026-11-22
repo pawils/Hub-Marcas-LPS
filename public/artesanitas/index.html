@@ -99,7 +99,7 @@
         <a href="#coleccion-van-gogh" class="hover:text-[#B87352] transition-colors">Colección Van Gogh</a>
         <a href="#talleres" class="hover:text-[#B87352] transition-colors">Talleres</a>
         <a href="#cumpleanos" class="hover:text-[#B87352] transition-colors">Cumpleaños</a>
-        <a href="/artesanitas/seguimiento" class="text-[#4A3C31] font-semibold hover:text-[#B87352] transition-colors flex items-center gap-1"><span>📦</span> Rastrear Pedido</a>
+        <a href="/seguimiento" class="text-[#4A3C31] font-semibold hover:text-[#B87352] transition-colors flex items-center gap-1"><span>📦</span> Rastrear Pedido</a>
       </div>
       <a href="https://wa.me/51929938466?text=Hola!%20Me%20interesa%20consultar%20por%20sus%20productos%20de%20cerámica."
         target="_blank" rel="noreferrer"
@@ -133,7 +133,7 @@
           class="py-3 px-4 text-sm font-medium uppercase tracking-wide text-[#8C7A6B] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors">Talleres</a>
         <a href="#cumpleanos" onclick="toggleMenu()"
           class="py-3 px-4 text-sm font-medium uppercase tracking-wide text-[#8C7A6B] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors">Cumpleaños</a>
-        <a href="/artesanitas/seguimiento" onclick="toggleMenu()"
+        <a href="/seguimiento" onclick="toggleMenu()"
           class="py-3 px-4 text-sm font-semibold uppercase tracking-wide text-[#4A3C31] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors">📦 Rastrear Pedido</a>
         <a href="https://wa.me/51929938466?text=Hola!%20Me%20interesa%20consultar%20por%20sus%20productos%20de%20cerámica."
           target="_blank" rel="noreferrer" onclick="toggleMenu()"
@@ -478,12 +478,12 @@
             </p>
           </div>
           <div class="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
-            <a href="/artesanitas-pedido.html"
+            <a href="/pedido"
               class="w-full sm:w-auto bg-[#B87352] hover:bg-[#A36244] text-white font-semibold px-6 py-3.5 rounded-2xl text-sm transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group">
               <span>Hacer Reserva Ahora</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 group-hover:translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
-            <a href="/artesanitas/seguimiento"
+            <a href="/seguimiento"
               class="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-[#F9F6F0] border border-white/25 font-semibold px-5 py-3.5 rounded-2xl text-sm transition-all flex items-center justify-center gap-2">
               <span>📦 Rastrear mi Pedido</span>
             </a>
@@ -553,7 +553,7 @@
           </div>
 
           <div class="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-            <a href="/artesanitas-pedido.html?producto=taza-navidad-papa-noel"
+            <a href="/pedido?producto=taza-navidad-papa-noel"
               class="w-full sm:w-auto bg-[#B87352] hover:bg-[#A36244] text-white font-semibold px-8 py-4 rounded-2xl text-sm transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2.5 group">
               <span>Reservar Mi Taza Navideña (S/ 20)</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 group-hover:translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -583,7 +583,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-navidad-papa-noel')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-navidad-papa-noel')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -592,7 +592,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-navidad-papa-noel', 'Taza Navideña Papá Noel')"
+              <button type="button" onclick="shareProducto('/producto/taza-navidad-papa-noel', 'Taza Navideña Papá Noel')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -607,7 +607,7 @@
               🎅 Más Popular
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=taza-navidad-papa-noel"
+              <a href="/pedido?producto=taza-navidad-papa-noel"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -651,7 +651,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-muneco-de-nieve')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-muneco-de-nieve')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -660,7 +660,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-muneco-de-nieve', 'Taza Muñeco de Nieve')"
+              <button type="button" onclick="shareProducto('/producto/taza-muneco-de-nieve', 'Taza Muñeco de Nieve')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -675,7 +675,7 @@
               ⛄ Edición Invernal
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=taza-muneco-de-nieve"
+              <a href="/pedido?producto=taza-muneco-de-nieve"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -719,7 +719,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-arbolito-chocolatosa')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-arbolito-chocolatosa')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -728,7 +728,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-arbolito-chocolatosa', 'Taza Arbolito Chocolatosa')"
+              <button type="button" onclick="shareProducto('/producto/taza-arbolito-chocolatosa', 'Taza Arbolito Chocolatosa')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -743,7 +743,7 @@
               🍫 Tono Chocolate
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=taza-arbolito-chocolatosa"
+              <a href="/pedido?producto=taza-arbolito-chocolatosa"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -787,7 +787,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-arbolito-rosa')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-arbolito-rosa')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -796,7 +796,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-arbolito-rosa', 'Taza Arbolito Rosa')"
+              <button type="button" onclick="shareProducto('/producto/taza-arbolito-rosa', 'Taza Arbolito Rosa')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -811,7 +811,7 @@
               🌸 Rosa Pastel
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=taza-arbolito-rosa"
+              <a href="/pedido?producto=taza-arbolito-rosa"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -871,7 +871,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-corazon-y-plato')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-corazon-y-plato')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -881,7 +881,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/taza-corazon-y-plato', 'Taza corazón y plato')"
+                onclick="shareProducto('/producto/taza-corazon-y-plato', 'Taza corazón y plato')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -919,7 +919,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-castellana')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-castellana')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -929,7 +929,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/taza-castellana', 'Taza Castellana')"
+                onclick="shareProducto('/producto/taza-castellana', 'Taza Castellana')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -968,7 +968,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/elefantitos-decorativos')"
+              <button type="button" onclick="copyProductoLink('/producto/elefantitos-decorativos')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -978,7 +978,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/elefantitos-decorativos', 'Elefantitos decorativos')"
+                onclick="shareProducto('/producto/elefantitos-decorativos', 'Elefantitos decorativos')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1017,7 +1017,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-lavanda-abejita')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-lavanda-abejita')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1027,7 +1027,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/taza-lavanda-abejita', 'Taza lavanda abejita')"
+                onclick="shareProducto('/producto/taza-lavanda-abejita', 'Taza lavanda abejita')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1068,7 +1068,7 @@
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
               <button type="button"
-                onclick="copyProductoLink('/artesanitas-peru/producto/elefantitos-decorativos-variante')"
+                onclick="copyProductoLink('/producto/elefantitos-decorativos-variante')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1078,7 +1078,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/elefantitos-decorativos-variante', 'Elefantitos decorativos (Variante)')"
+                onclick="shareProducto('/producto/elefantitos-decorativos-variante', 'Elefantitos decorativos (Variante)')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1117,7 +1117,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/jarron-prada')"
+              <button type="button" onclick="copyProductoLink('/producto/jarron-prada')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1126,7 +1126,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/jarron-prada', 'Jarrón Prada')"
+              <button type="button" onclick="shareProducto('/producto/jarron-prada', 'Jarrón Prada')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1165,7 +1165,7 @@
                     <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
                     </div>
                     <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-                      <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/jarron-silueta-y-flores')"
+                      <button type="button" onclick="copyProductoLink('/producto/jarron-silueta-y-flores')"
                         class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                         title="Copiar link de este producto" aria-label="Copiar link de este producto">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1175,7 +1175,7 @@
                         </svg>
                       </button>
                       <button type="button"
-                        onclick="shareProducto('/artesanitas-peru/producto/jarron-silueta-y-flores', 'Jarrón Silueta y Flores')"
+                        onclick="shareProducto('/producto/jarron-silueta-y-flores', 'Jarrón Silueta y Flores')"
                         class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                         title="Compartir este producto" aria-label="Compartir este producto">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1214,7 +1214,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/munequitas')"
+              <button type="button" onclick="copyProductoLink('/producto/munequitas')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1223,7 +1223,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/munequitas', 'Muñequitas')"
+              <button type="button" onclick="shareProducto('/producto/munequitas', 'Muñequitas')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1261,7 +1261,7 @@
                     <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
                     </div>
                     <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-                      <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-flor')"
+                      <button type="button" onclick="copyProductoLink('/producto/taza-flor')"
                         class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                         title="Copiar link de este producto" aria-label="Copiar link de este producto">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1270,7 +1270,7 @@
                           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                         </svg>
                       </button>
-                      <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-flor', 'Taza Flor')"
+                      <button type="button" onclick="shareProducto('/producto/taza-flor', 'Taza Flor')"
                         class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                         title="Compartir este producto" aria-label="Compartir este producto">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1312,7 +1312,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-rapunzel-palo-rosa')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-rapunzel-palo-rosa')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1322,7 +1322,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/taza-rapunzel-palo-rosa', 'Taza Rapunzel Palo Rosa')"
+                onclick="shareProducto('/producto/taza-rapunzel-palo-rosa', 'Taza Rapunzel Palo Rosa')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1361,7 +1361,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-stich-celeste')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-stich-celeste')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1370,7 +1370,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-stich-celeste', 'Taza Stich celeste')"
+              <button type="button" onclick="shareProducto('/producto/taza-stich-celeste', 'Taza Stich celeste')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1407,7 +1407,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-stich-azul')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-stich-azul')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1416,7 +1416,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-stich-azul', 'Taza Stich azul')"
+              <button type="button" onclick="shareProducto('/producto/taza-stich-azul', 'Taza Stich azul')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1453,7 +1453,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-rapunzel-moradito')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-rapunzel-moradito')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1463,7 +1463,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/taza-rapunzel-moradito', 'Taza Rapunzel Moradito')"
+                onclick="shareProducto('/producto/taza-rapunzel-moradito', 'Taza Rapunzel Moradito')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1474,7 +1474,7 @@
                 </svg>
               </button>
             </div>
-            <a href="/artesanitas-pedido.html?producto=taza-rapunzel-moradito"
+            <a href="/pedido?producto=taza-rapunzel-moradito"
               target="_blank" rel="noreferrer"
               class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1513,7 +1513,7 @@
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300">
             </div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-runner')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-runner')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1522,7 +1522,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-runner', 'Taza Runner')"
+              <button type="button" onclick="shareProducto('/producto/taza-runner', 'Taza Runner')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1598,7 +1598,7 @@
               </svg>
             </button>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/tetera-corazon')"
+              <button type="button" onclick="copyProductoLink('/producto/tetera-corazon')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1608,7 +1608,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/tetera-corazon', 'Tetera Corazón')"
+                onclick="shareProducto('/producto/tetera-corazon', 'Tetera Corazón')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1650,12 +1650,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/palo-rosa-lb')"
+              <button type="button" onclick="copyProductoLink('/producto/palo-rosa-lb')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/palo-rosa-lb', 'Palo Rosa LB')"
+              <button type="button" onclick="shareProducto('/producto/palo-rosa-lb', 'Palo Rosa LB')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -1684,18 +1684,18 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/palo-rosa-full')"
+              <button type="button" onclick="copyProductoLink('/producto/palo-rosa-full')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/palo-rosa-full', 'Palo Rosa full')"
+              <button type="button" onclick="shareProducto('/producto/palo-rosa-full', 'Palo Rosa full')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
               </button>
             </div>
-            <a href="/artesanitas-pedido.html?producto=taza-rapunzel-palo-rosa-sin-plato"
+            <a href="/pedido?producto=taza-rapunzel-palo-rosa-sin-plato"
               target="_blank" rel="noreferrer"
               class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white z-10">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />              </svg> Reservar para el 10 de Diciembre (S/ 20)
@@ -1729,18 +1729,18 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/morada-full')"
+              <button type="button" onclick="copyProductoLink('/producto/morada-full')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/morada-full', 'Morada full')"
+              <button type="button" onclick="shareProducto('/producto/morada-full', 'Morada full')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
               </button>
             </div>
-            <a href="/artesanitas-pedido.html?producto=taza-rapunzel-morada-sin-plato"
+            <a href="/pedido?producto=taza-rapunzel-morada-sin-plato"
               target="_blank" rel="noreferrer"
               class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white z-10">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />              </svg> Reservar para el 10 de Diciembre (S/ 20)
@@ -1774,18 +1774,18 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/morada-con-lineas')"
+              <button type="button" onclick="copyProductoLink('/producto/morada-con-lineas')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/morada-con-lineas', 'Morada con líneas')"
+              <button type="button" onclick="shareProducto('/producto/morada-con-lineas', 'Morada con líneas')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
               </button>
             </div>
-            <a href="/artesanitas-pedido.html?producto=taza-rapunzel-morada-lineas"
+            <a href="/pedido?producto=taza-rapunzel-morada-lineas"
               target="_blank" rel="noreferrer"
               class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white z-10">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />              </svg> Reservar para el 10 de Diciembre (S/ 20)
@@ -1819,12 +1819,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-rosada')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-rosada')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-rosada', 'Taza rosada')"
+              <button type="button" onclick="shareProducto('/producto/taza-rosada', 'Taza rosada')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -1853,12 +1853,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-snoopy')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-snoopy')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-snoopy', 'Taza Snoopy')"
+              <button type="button" onclick="shareProducto('/producto/taza-snoopy', 'Taza Snoopy')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -1887,12 +1887,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-shrek')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-shrek')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-shrek', 'Taza Shrek')"
+              <button type="button" onclick="shareProducto('/producto/taza-shrek', 'Taza Shrek')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -1921,12 +1921,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/platos-uva')"
+              <button type="button" onclick="copyProductoLink('/producto/platos-uva')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/platos-uva', 'Platos uva')"
+              <button type="button" onclick="shareProducto('/producto/platos-uva', 'Platos uva')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -1955,12 +1955,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/plato-morado-full')"
+              <button type="button" onclick="copyProductoLink('/producto/plato-morado-full')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/plato-morado-full', 'Plato morado full')"
+              <button type="button" onclick="shareProducto('/producto/plato-morado-full', 'Plato morado full')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -1989,12 +1989,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-van-gogh')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-van-gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-van-gogh', 'Taza Van Gogh')"
+              <button type="button" onclick="shareProducto('/producto/taza-van-gogh', 'Taza Van Gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -2023,12 +2023,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/vaso-van-gogh')"
+              <button type="button" onclick="copyProductoLink('/producto/vaso-van-gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/vaso-van-gogh', 'Vaso Van Gogh')"
+              <button type="button" onclick="shareProducto('/producto/vaso-van-gogh', 'Vaso Van Gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -2057,12 +2057,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/adorno-paltita')"
+              <button type="button" onclick="copyProductoLink('/producto/adorno-paltita')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/adorno-paltita', 'Adorno Paltita')"
+              <button type="button" onclick="shareProducto('/producto/adorno-paltita', 'Adorno Paltita')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -2091,12 +2091,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-copa-piston')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-copa-piston')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-copa-piston', 'Taza Copa Pistón')"
+              <button type="button" onclick="shareProducto('/producto/taza-copa-piston', 'Taza Copa Pistón')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -2125,12 +2125,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/adorno-oso-sentado')"
+              <button type="button" onclick="copyProductoLink('/producto/adorno-oso-sentado')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/adorno-oso-sentado', 'Adorno Oso sentado')"
+              <button type="button" onclick="shareProducto('/producto/adorno-oso-sentado', 'Adorno Oso sentado')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -2159,12 +2159,12 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/adorno-munequitas')"
+              <button type="button" onclick="copyProductoLink('/producto/adorno-munequitas')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/adorno-munequitas', 'Adorno muñequitas')"
+              <button type="button" onclick="shareProducto('/producto/adorno-munequitas', 'Adorno muñequitas')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -2252,7 +2252,7 @@
               </svg>
             </button>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/taza-van-gogh')"
+              <button type="button" onclick="copyProductoLink('/producto/taza-van-gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2261,7 +2261,7 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </button>
-              <button type="button" onclick="shareProducto('/artesanitas-peru/producto/taza-van-gogh', 'Taza Van Gogh')"
+              <button type="button" onclick="shareProducto('/producto/taza-van-gogh', 'Taza Van Gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2273,7 +2273,7 @@
               </button>
             </div>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=taza-van-gogh"
+              <a href="/pedido?producto=taza-van-gogh"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -2359,7 +2359,7 @@
               </svg>
             </button>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/azucarera-van-gogh')"
+              <button type="button" onclick="copyProductoLink('/producto/azucarera-van-gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2369,7 +2369,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/azucarera-van-gogh', 'Azucarera Van Gogh')"
+                onclick="shareProducto('/producto/azucarera-van-gogh', 'Azucarera Van Gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2381,7 +2381,7 @@
               </button>
             </div>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=azucarera-van-gogh"
+              <a href="/pedido?producto=azucarera-van-gogh"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -2471,7 +2471,7 @@
               </svg>
             </button>
             <div class="absolute top-3 right-3 z-10 flex flex-col gap-2">
-              <button type="button" onclick="copyProductoLink('/artesanitas-peru/producto/vasito-van-gogh')"
+              <button type="button" onclick="copyProductoLink('/producto/vasito-van-gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Copiar link de este producto" aria-label="Copiar link de este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2481,7 +2481,7 @@
                 </svg>
               </button>
               <button type="button"
-                onclick="shareProducto('/artesanitas-peru/producto/vasito-van-gogh', 'Vasito Van Gogh')"
+                onclick="shareProducto('/producto/vasito-van-gogh', 'Vasito Van Gogh')"
                 class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all"
                 title="Compartir este producto" aria-label="Compartir este producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2493,7 +2493,7 @@
               </button>
             </div>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
-              <a href="/artesanitas-pedido.html?producto=vasito-van-gogh"
+              <a href="/pedido?producto=vasito-van-gogh"
                 class="w-full bg-[#B87352] text-white py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold shadow-md hover:bg-[#A36244] transition-all">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -2955,7 +2955,7 @@
             <li><a href="#coleccion-van-gogh" class="hover:text-[#B87352] transition-colors">Colección Van Gogh</a>
             </li>
             <li><a href="#talleres" class="hover:text-[#B87352] transition-colors">Talleres Presenciales</a></li>
-            <li><a href="/artesanitas-inscripcion.html"
+            <li><a href="/inscripcion"
                 class="hover:text-[#B87352] transition-colors font-medium text-[#B87352]">Inscripción a Talleres</a>
             </li>
             <li><a href="#cumpleanos" class="hover:text-[#B87352] transition-colors">Paquetes de Cumpleaños</a></li>
@@ -3032,12 +3032,12 @@
       <div
         class="pt-8 border-t border-[#D5C9BD] flex flex-col md:flex-row justify-between items-center gap-8 md:gap-10">
         <div class="text-xs text-[#8C7A6B] text-center md:text-left">
-          <a href="/artesanitas-registros"
+          <a href="https://artesanitas.lospilares.pe/registros"
             class="block mb-2 font-medium text-[#4A3C31] hover:text-[#B87352] hover:underline transition-colors">Ingresar</a>
           <span>© 2026 Artesanitas Perú. Realizamos tacitas con propósito.</span>
         </div>
 
-        <a href="/contacto"
+        <a href="https://lospilares.pe/contacto" target="_blank" rel="noreferrer"
           class="group flex flex-col md:flex-row items-center gap-3 md:gap-5 bg-[#EBE5DE] hover:bg-[#D5C9BD] py-4 px-6 rounded-2xl transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
           <span class="text-sm text-[#6B5D50] text-center md:text-left">
             Diseñado y desarrollado por

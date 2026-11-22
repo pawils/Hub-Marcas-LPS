@@ -44,6 +44,28 @@ app.use('/api/negocios', negocioTalleresRoutes);
 app.use('/api/negocios', negocioProductosRoutes);
 app.use('/api/negocios', negocioPedidosRoutes);
 
+// Redirecciones 301 de URLs históricas dentro del subdominio artesanitas.lospilares.pe
+app.get(['/artesanitas-registros', '/artesanitas-registros.html', '/artesanitas/registros'], (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/registros' + q);
+});
+app.get(['/artesanitas-pedido', '/artesanitas-pedido.html', '/artesanitas/pedido'], (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/pedido' + q);
+});
+app.get(['/artesanitas-seguimiento', '/artesanitas-seguimiento.html', '/artesanitas/seguimiento'], (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/seguimiento' + q);
+});
+app.get(['/artesanitas-inscripcion', '/artesanitas-inscripcion.html', '/artesanitas/inscripcion'], (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/inscripcion' + q);
+});
+app.get(['/artesanitas-peru', '/artesanitas-peru.html'], (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/' + q);
+});
+
 // Páginas Open Graph individuales de producto (/artesanitas/producto/:slug y /producto/:slug)
 app.use('/artesanitas-peru', artesanitasRoutes);
 app.use('/artesanitas', artesanitasRoutes);

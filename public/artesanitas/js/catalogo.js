@@ -267,7 +267,7 @@ initSlider('slider-taza-navidad');
 
   function cardHtml(p) {
     var img = resolverFotoProducto(p);
-    var path = '/artesanitas/producto/' + p.slug;
+    var path = '/producto/' + p.slug;
     var nombre = escapeHtml(p.nombre);
     var nombreJs = nombre.replace(/'/g, "\\'");
     var hasPromo = p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio);
@@ -305,7 +305,7 @@ initSlider('slider-taza-navidad');
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
       '</button>' +
       '</div>' +
-      (agotado ? '' : '<a href="/artesanitas/pedido?producto=' + encodeURIComponent(p.slug) + '" class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white z-10">' +
+      (agotado ? '' : '<a href="/pedido?producto=' + encodeURIComponent(p.slug) + '" class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white z-10">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (stockNum > 0 ? 'Comprar Online' : 'Reservar Pieza') +
       '</a>') +
       '</div>' +

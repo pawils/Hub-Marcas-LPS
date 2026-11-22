@@ -1238,7 +1238,7 @@
                 </button>
               </div>
             </div>
-            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! ✨ Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.guia_envio ? '. Tu guía Shalom es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/artesanitas/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
+            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! ✨ Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.guia_envio ? '. Tu guía Shalom es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
               target="_blank" rel="noreferrer"
               class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#B87352] hover:underline pt-0.5">
               <span>📲 Enviar link de tracking</span>

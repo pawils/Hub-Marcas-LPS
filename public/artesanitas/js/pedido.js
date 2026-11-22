@@ -1034,7 +1034,7 @@
           if (codPedido) {
             if (codEl) codEl.textContent = codPedido;
             if (trackingBox) trackingBox.classList.remove('hidden');
-            if (btnTracking) btnTracking.href = `/artesanitas/seguimiento?codigo=${encodeURIComponent(codPedido)}`;
+            if (btnTracking) btnTracking.href = `/seguimiento?codigo=${encodeURIComponent(codPedido)}`;
           }
 
           const itemsSummary = itemsReserva.map(i => `${i.cantidad > 1 ? `${i.cantidad}x ` : ''}${i.nombre}`).join(', ');

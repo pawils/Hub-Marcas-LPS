@@ -1,6 +1,6 @@
 // server/routes/artesanitas.routes.js
 // Páginas individuales de producto para Artesanitas Perú.
-// Objetivo: que cada producto tenga su propio link (ej. /artesanitas-peru/producto/taza-stich)
+// Objetivo: que cada producto tenga su propio link (ej. /producto/taza-stich)
 // con meta tags Open Graph propias, para que al compartirse en redes sociales / WhatsApp
 // se vea la foto y el nombre de ESE producto (no el preview genérico del catálogo).
 //
@@ -104,7 +104,7 @@ router.get('/producto/:slug', async (req, res, next) => {
 </head>
 <body class="bg-[#F9F6F0] text-[#4A3C31]" style="font-family:'Inter',sans-serif;">
   <div class="max-w-md mx-auto min-h-screen flex flex-col px-6 py-10">
-    <a href="/artesanitas-peru#catalogo" class="text-sm text-[#8C7A6B] hover:text-[#B87352] transition-colors mb-6 inline-flex items-center gap-1.5">
+    <a href="/#catalogo" class="text-sm text-[#8C7A6B] hover:text-[#B87352] transition-colors mb-6 inline-flex items-center gap-1.5">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><polyline points="15 18 9 12 15 6"/></svg>
       Ver catálogo completo
     </a>
@@ -125,7 +125,7 @@ router.get('/producto/:slug', async (req, res, next) => {
 
     ${['taza-navidad-papa-noel', 'taza-muneco-de-nieve', 'taza-arbolito-chocolatosa', 'taza-arbolito-rosa', 'taza-van-gogh', 'taza-piston-cup', 'taza-rapunzel', 'taza-rapunzel-sin-plato', 'taza-rapunzel-lineas', 'taza-rapunzel-con-plato', 'taza-rapunzel-palo-rosa', 'taza-rapunzel-moradito'].includes(producto.slug) ? `
     <div class="mt-8 space-y-3">
-      <a href="/artesanitas/pedido?producto=${producto.slug}"
+      <a href="/pedido?producto=${producto.slug}"
         class="w-full bg-[#B87352] text-white py-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:bg-[#A36244] transition-all shadow-md">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
           <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
