@@ -1,5 +1,5 @@
 // server/server.js — Servidor Principal del Hub Multi-Tenant Marcas Aliadas LPS
-// Proyecto independiente en Railway (artesanitas.lospilares.pe y futuras marcas *.lospilares.pe)
+// Arquitectura 100% Modular: Cada marca está encapsulada en public/<marca>/ (con sus propios html, js e imagenes)
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -9,7 +9,6 @@ const compression = require('compression');
 const cors = require('cors');
 
 const { runMigrations } = require('./migrate');
-const { syncFromOldDatabase } = require('./sync-from-main-db');
 const { negocioSubdomainMiddleware, extractSubdomainSlug } = require('./middleware/negocio-subdomain.middleware');
 const negocioTalleresRoutes = require('./routes/negocio-talleres.routes');
 const negocioProductosRoutes = require('./routes/negocio-productos.routes');
@@ -74,39 +73,42 @@ app.use('/', artesanitasRoutes);
 // Enrutador por subdominio (ej. artesanitas.lospilares.pe, latiendacafe.lospilares.pe)
 app.use(negocioSubdomainMiddleware);
 
-// Si se accede directamente al dominio Railway o a artesanitas.lospilares.pe en la raíz '/',
-// sirve los archivos de la marca activa (por defecto: artesanitas)
+// Resuelve todos los archivos (HTML, /js/..., /imagenes/..., /css/...) directamente desde public/<marca>/
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/') || req.path.startsWith('/imagenes/') || req.path.startsWith('/js/vendor/')) {
+  if (req.path.startsWith('/api/')) {
     return next();
   }
   const tenant = req.tenantSubdomain || extractSubdomainSlug(req) || DEFAULT_TENANT;
-  const candidateDirs = [
-    path.join(PUBLIC_DIR, tenant),
-    path.join(PUBLIC_DIR, 'aliados', tenant)
-  ];
-  const tenantDir = candidateDirs.find((d) => fs.existsSync(d) && fs.statSync(d).isDirectory());
-  if (!tenantDir) return next();
+  const tenantDir = path.resolve(PUBLIC_DIR, tenant);
+  if (!tenantDir.startsWith(PUBLIC_DIR + path.sep) || !fs.existsSync(tenantDir) || !fs.statSync(tenantDir).isDirectory()) {
+    return next();
+  }
 
-  // Soportar URLs limpias como /pedido, /seguimiento, /registros, /inscripcion
   let reqPath = req.path === '/' ? '/index.html' : req.path;
-  if (reqPath.startsWith(`/${tenant}/`)) {
+  if (reqPath === `/${tenant}` || reqPath.startsWith(`/${tenant}/`)) {
     reqPath = reqPath.slice(tenant.length + 1) || '/index.html';
   }
+
+  // Soportar URLs limpias sin .html (ej. /pedido, /seguimiento, /registros, /inscripcion)
   if (!path.extname(reqPath)) {
-    const htmlCandidate = path.join(tenantDir, `${reqPath}.html`);
-    if (fs.existsSync(htmlCandidate)) {
+    const htmlCandidate = path.resolve(tenantDir, '.' + reqPath + '.html');
+    if (htmlCandidate.startsWith(tenantDir) && fs.existsSync(htmlCandidate) && fs.statSync(htmlCandidate).isFile()) {
       return res.sendFile(htmlCandidate);
     }
   }
-  const directCandidate = path.join(tenantDir, reqPath);
+
+  const directCandidate = path.resolve(tenantDir, '.' + reqPath);
   if (directCandidate.startsWith(tenantDir) && fs.existsSync(directCandidate) && fs.statSync(directCandidate).isFile()) {
+    const ext = path.extname(directCandidate).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.svg', '.ico', '.gif', '.avif'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    }
     return res.sendFile(directCandidate);
   }
   next();
 });
 
-// Archivos estáticos generales (/imagenes/Artesanitas/..., /js/vendor/..., /artesanitas/...)
+// Fallback estático por si se accede con ruta explícita /<marca>/...
 app.use(
   express.static(PUBLIC_DIR, {
     extensions: ['html'],
@@ -114,16 +116,9 @@ app.use(
   })
 );
 
-// Escuchar de inmediato en el puerto para que Railway Proxy nunca devuelva 502 durante el arranque.
-// Si Railway inyecta PORT=8080 pero el Custom Domain se configuró apuntando al puerto 3000,
-// escuchamos en AMBOS puertos (8080 y 3000) simultáneamente para que siempre responda 200 OK.
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
   runMigrations().catch((err) => console.error('[Migrate Error]', err.message));
-  // Re-sincronizar reservas nuevas desde lospilares.pe cada 2 minutos mientras convivan ambos dominios
-  setInterval(() => {
-    syncFromOldDatabase().catch(() => {});
-  }, 2 * 60 * 1000);
 });
 
 if (Number(PORT) !== 3000) {

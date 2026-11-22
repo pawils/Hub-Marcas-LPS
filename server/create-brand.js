@@ -1,6 +1,9 @@
-// server/create-brand.js — Generador Automático de Nueva Marca Aliada en Hub Marcas LPS
+// server/create-brand.js — Generador Automático de Nueva Marca Aliada (100% Encapsulada)
 // Uso: node server/create-brand.js <slug> "<Nombre de la Marca>"
 // Ejemplo: node server/create-brand.js latiendacafe "La Tienda Café"
+//
+// Crea una única carpeta autocontenida en public/<slug>/ con sus propias subcarpetas js/ e imagenes/
+// para que public/ solo tenga una carpeta limpia por cada marca aliada.
 
 const fs = require('fs');
 const path = require('path');
@@ -16,11 +19,18 @@ if (!slug || !/^[a-z0-9-]{2,50}$/.test(slug) || ['artesanitas', 'www', 'aula', '
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const brandDir = path.join(PUBLIC_DIR, slug);
-const brandJsDir = path.join(brandDir, 'js');
-const brandImgDir = path.join(PUBLIC_DIR, 'imagenes', slug);
+const brandJsVendorDir = path.join(brandDir, 'js', 'vendor');
+const brandImgDir = path.join(brandDir, 'imagenes');
 
-fs.mkdirSync(brandJsDir, { recursive: true });
+fs.mkdirSync(brandJsVendorDir, { recursive: true });
 fs.mkdirSync(brandImgDir, { recursive: true });
+
+// Copiar Tailwind local dentro de la carpeta propia de la marca para que sea 100% autónoma
+const tailwindSrc = path.join(PUBLIC_DIR, 'artesanitas', 'js', 'vendor', 'tailwindcss.3.4.17.js');
+const tailwindDest = path.join(brandJsVendorDir, 'tailwindcss.3.4.17.js');
+if (fs.existsSync(tailwindSrc) && !fs.existsSync(tailwindDest)) {
+  fs.copyFileSync(tailwindSrc, tailwindDest);
+}
 
 const indexHtml = path.join(brandDir, 'index.html');
 if (!fs.existsSync(indexHtml)) {
@@ -51,7 +61,8 @@ if (!fs.existsSync(indexHtml)) {
   );
 }
 
-console.log(`✅ Marca "${nombre}" creada con éxito y 100% separada de Artesanitas:`);
-console.log(`   📁 Carpeta Web HTML/JS : public/${slug}/`);
-console.log(`   🖼️ Carpeta Imágenes    : public/imagenes/${slug}/`);
-console.log(`   🌐 Subdominio en vivo  : https://${slug}.lospilares.pe`);
+console.log(`✅ Marca "${nombre}" creada y 100% encapsulada en su propia carpeta:`);
+console.log(`   📁 Carpeta única de la marca : public/${slug}/`);
+console.log(`   🖼️ Imágenes de la marca      : public/${slug}/imagenes/`);
+console.log(`   📜 Scripts JS de la marca    : public/${slug}/js/`);
+console.log(`   🌐 Subdominio en vivo        : https://${slug}.lospilares.pe`);
