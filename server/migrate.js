@@ -1,4 +1,5 @@
 // server/migrate.js — Migraciones autónomas del Hub Multi-Tenant Marcas Aliadas LPS
+// Esquema 100% idéntico y compatible con las tablas de producción de Artesanitas
 const pool = require('./db.config');
 const bcrypt = require('bcryptjs');
 const logger = require('./utils/logger');
@@ -80,21 +81,21 @@ async function runMigrations() {
         precio NUMERIC(10, 2) NOT NULL,
         precio_oferta NUMERIC(10, 2),
         etiqueta_promo VARCHAR(40),
-        costo_artesano NUMERIC(10, 2) NOT NULL DEFAULT 0,
+        costo_artesano NUMERIC(10, 2) DEFAULT 0,
         moneda VARCHAR(10) NOT NULL DEFAULT 'PEN',
         sku VARCHAR(60),
         ean VARCHAR(30),
         stock_actual INTEGER NOT NULL DEFAULT 0,
-        stock_minimo INTEGER NOT NULL DEFAULT 2,
+        stock_minimo INTEGER NOT NULL DEFAULT 1,
         politica_sin_stock VARCHAR(20) NOT NULL DEFAULT 'preventa',
-        linea VARCHAR(80) NOT NULL DEFAULT 'Hogar y Decoración',
-        sublinea VARCHAR(80) NOT NULL DEFAULT 'Vajilla Artesanal',
-        sub_sublinea VARCHAR(80) NOT NULL DEFAULT 'Tazas Escultóricas',
-        coleccion VARCHAR(80) DEFAULT 'Colección General',
-        tipo_producto VARCHAR(60) DEFAULT 'Cerámica Esmaltada',
+        linea VARCHAR(80) DEFAULT 'Vajilla Artesanal',
+        sublinea VARCHAR(80) DEFAULT 'Tazas & Mugs',
+        sub_sublinea VARCHAR(80) DEFAULT 'Cerámica Pintada a Mano',
+        coleccion VARCHAR(80) DEFAULT 'Catálogo General',
+        tipo_producto VARCHAR(60) DEFAULT 'Taza',
         modelo VARCHAR(80),
         color VARCHAR(60),
-        tamano_dimensiones VARCHAR(80),
+        tamano_dimensiones VARCHAR(120),
         caracteristicas TEXT,
         descripcion TEXT,
         imagenes JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -103,17 +104,7 @@ async function runMigrations() {
         created_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE (negocio_id, slug)
       );
-    `);
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS negocio_producto_imagenes (
-        id SERIAL PRIMARY KEY,
-        producto_id INTEGER NOT NULL REFERENCES negocio_productos(id) ON DELETE CASCADE,
-        orden INTEGER NOT NULL DEFAULT 0,
-        mime_type VARCHAR(40) NOT NULL,
-        data BYTEA NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      );
+      ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS moneda VARCHAR(10) NOT NULL DEFAULT 'PEN';
     `);
 
     await pool.query(`
@@ -122,65 +113,99 @@ async function runMigrations() {
         producto_id INTEGER NOT NULL REFERENCES negocio_productos(id) ON DELETE CASCADE,
         negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
         posicion INTEGER NOT NULL DEFAULT 0,
-        mime_type VARCHAR(40) NOT NULL DEFAULT 'image/webp',
+        mime_type VARCHAR(50) NOT NULL DEFAULT 'image/webp',
         foto_data BYTEA NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      CREATE INDEX IF NOT EXISTS idx_negocio_producto_fotos_prod ON negocio_producto_fotos (producto_id, posicion);
     `);
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS negocio_productos_estaticos (
+        id SERIAL PRIMARY KEY,
         negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
         slug VARCHAR(120) NOT NULL,
+        nombre VARCHAR(150) NOT NULL DEFAULT '',
         activo BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW(),
-        PRIMARY KEY (negocio_id, slug)
+        UNIQUE (negocio_id, slug)
       );
+      ALTER TABLE negocio_productos_estaticos ADD COLUMN IF NOT EXISTS nombre VARCHAR(150) NOT NULL DEFAULT '';
+      ALTER TABLE negocio_productos_estaticos ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
     `);
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS negocio_pedidos (
         id SERIAL PRIMARY KEY,
         negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
-        codigo_pedido VARCHAR(32) UNIQUE,
-        producto_slug VARCHAR(120) NOT NULL,
-        producto_nombre VARCHAR(200) NOT NULL,
-        producto_precio NUMERIC(10, 2) NOT NULL,
-        cantidad INTEGER NOT NULL DEFAULT 1,
-        items JSONB NOT NULL DEFAULT '[]'::jsonb,
-        modalidad_pago VARCHAR(20) NOT NULL DEFAULT 'reserva_20',
-        monto_pagado NUMERIC(10, 2) NOT NULL DEFAULT 0,
-        costo_envio NUMERIC(10, 2) NOT NULL DEFAULT 0,
-        saldo_pendiente NUMERIC(10, 2) NOT NULL DEFAULT 0,
+        codigo_pedido VARCHAR(32),
+        producto_slug VARCHAR(120) NOT NULL DEFAULT 'taza-van-gogh',
+        producto_nombre VARCHAR(200) NOT NULL DEFAULT 'Taza Van Gogh',
+        producto_precio NUMERIC(10, 2) NOT NULL DEFAULT 69.00,
+        monto_reserva NUMERIC(10, 2) NOT NULL DEFAULT 20.00,
+        costo_envio NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
+        tipo_entrega VARCHAR(50) NOT NULL DEFAULT 'provincia',
+        fecha_entrega DATE NOT NULL DEFAULT '2026-12-10',
+        nombre VARCHAR(150),
+        dni VARCHAR(20),
+        whatsapp VARCHAR(25),
+        sede_shalom TEXT,
+        direccion_adicional TEXT,
         estado_pago VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+        monto_pagado NUMERIC(10, 2) NOT NULL DEFAULT 20.00,
         estado_pedido VARCHAR(30) NOT NULL DEFAULT 'reservado',
-        tipo_entrega VARCHAR(30) NOT NULL DEFAULT 'shalom_agencia',
-        empresa_envio VARCHAR(40) DEFAULT 'Shalom',
-        guia_envio VARCHAR(60),
+        comprobante_mime VARCHAR(50),
+        comprobante_data BYTEA,
+        origen VARCHAR(30) NOT NULL DEFAULT 'formulario',
+        notas TEXT,
+        cantidad INTEGER NOT NULL DEFAULT 1,
+        items JSONB DEFAULT '[]'::jsonb,
+        guia_envio VARCHAR(80),
+        empresa_envio VARCHAR(50) DEFAULT 'Shalom',
+        metodo_pago VARCHAR(30) DEFAULT 'plin_yape',
         mp_preference_id VARCHAR(120),
         mp_payment_id VARCHAR(80),
-        mp_status VARCHAR(40),
-        cliente_nombre VARCHAR(150) NOT NULL,
-        cliente_dni VARCHAR(15) NOT NULL,
-        cliente_whatsapp VARCHAR(25) NOT NULL,
-        departamento VARCHAR(80),
-        provincia VARCHAR(80),
-        distrito VARCHAR(80),
-        sede_shalom VARCHAR(200) NOT NULL,
-        notas TEXT,
-        origen VARCHAR(30) NOT NULL DEFAULT 'web',
-        fecha_entrega DATE NOT NULL DEFAULT '2026-12-10',
         artesano_nombre VARCHAR(120),
-        costo_artesano_total NUMERIC(10, 2) DEFAULT 0,
+        costo_artesano_total NUMERIC(10, 2),
         fecha_encargo_artesano DATE,
         fecha_compromiso_artesano DATE,
-        fecha_recepcion_taller DATE,
-        fecha_despacho_courier DATE,
-        fecha_entrega_final DATE,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
+        fecha_recepcion_taller TIMESTAMPTZ,
+        fecha_despacho_courier TIMESTAMPTZ,
+        fecha_entrega_final TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      -- Self-healing por si la tabla se creó con columnas preliminares en el primer deploy
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS nombre VARCHAR(150);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS dni VARCHAR(20);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(25);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS direccion_adicional TEXT;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS monto_reserva NUMERIC(10, 2) NOT NULL DEFAULT 20.00;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS comprobante_mime VARCHAR(50);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS comprobante_data BYTEA;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(30) DEFAULT 'plin_yape';
+      ALTER TABLE negocio_pedidos ALTER COLUMN sede_shalom DROP NOT NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_negocio_pedidos_codigo_unique ON negocio_pedidos (codigo_pedido) WHERE codigo_pedido IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_negocio_pedidos_negocio ON negocio_pedidos (negocio_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_negocio_pedidos_dni ON negocio_pedidos (negocio_id, dni);
     `);
+
+    // Quitar NOT NULL de columnas antiguas si existieran del primer deploy
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='negocio_pedidos' AND column_name='cliente_nombre') THEN
+          ALTER TABLE negocio_pedidos ALTER COLUMN cliente_nombre DROP NOT NULL;
+        END IF;
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='negocio_pedidos' AND column_name='cliente_dni') THEN
+          ALTER TABLE negocio_pedidos ALTER COLUMN cliente_dni DROP NOT NULL;
+        END IF;
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='negocio_pedidos' AND column_name='cliente_whatsapp') THEN
+          ALTER TABLE negocio_pedidos ALTER COLUMN cliente_whatsapp DROP NOT NULL;
+        END IF;
+      END $$;
+    `).catch(() => {});
 
     // Seed inicial del negocio piloto Artesanitas
     await pool.query(`
@@ -207,10 +232,36 @@ async function runMigrations() {
       );
     }
 
-    // Seed inicial de los 6 productos dinámicos de Artesanitas si la BD nueva arranca vacía
+    // Seed inicial de productos estáticos y de los 6 productos dinámicos de Artesanitas
     const { rows: artRow } = await pool.query(`SELECT id FROM negocios WHERE slug = 'artesanitas' LIMIT 1`);
     if (artRow.length > 0) {
       const artId = artRow[0].id;
+
+      const staticProducts = [
+        ['taza-corazon-y-plato', 'Taza corazón y plato', true],
+        ['taza-castellana', 'Taza Castellana', true],
+        ['elefantitos-decorativos', 'Elefantitos decorativos', true],
+        ['taza-lavanda-abejita', 'Taza lavanda abejita', true],
+        ['elefantitos-decorativos-variante', 'Elefantitos decorativos (Variante)', true],
+        ['jarron-prada', 'Jarrón Prada', true],
+        ['jarron-silueta-y-flores', 'Jarrón Silueta y Flores', true],
+        ['munequitas', 'Muñequitas', true],
+        ['taza-flor', 'Taza Flor', true],
+        ['taza-stich', 'Taza Stich', true],
+        ['taza-rapunzel-moradito', 'Taza Rapunzel Moradito', true],
+        ['taza-runner', 'Taza Runner', true],
+        ['taza-rapunzel-palo-rosa', 'Taza Rapunzel Palo Rosa', false],
+        ['tetera-corazon', 'Tetera Corazón', false]
+      ];
+      for (const [slug, nombre, activo] of staticProducts) {
+        await pool.query(
+          `INSERT INTO negocio_productos_estaticos (negocio_id, slug, nombre, activo)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (negocio_id, slug) DO NOTHING`,
+          [artId, slug, nombre, activo]
+        );
+      }
+
       const { rows: prodCount } = await pool.query(`SELECT COUNT(*)::int AS c FROM negocio_productos WHERE negocio_id = $1`, [artId]);
       if (prodCount[0].c === 0) {
         const initialProducts = [

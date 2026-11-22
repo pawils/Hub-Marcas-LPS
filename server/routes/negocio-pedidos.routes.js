@@ -1101,4 +1101,64 @@ router.get('/:negocioSlug/pedidos/export.xlsx', requireNegocioAuth, async (req, 
     }
 });
 
+// GET /api/negocios/:negocioSlug/migration-snapshot — Exportación segura HTTPS (Zero-Data-Loss)
+// Permite que Hub Marcas LPS (artesanitas.lospilares.pe) sincronice automáticamente todas las reservas,
+// comprobantes, talleres, inscritos y estados sin necesidad de exponer el puerto privado de PostgreSQL.
+const MIGRATION_SNAPSHOT_KEY = crypto
+    .createHash('sha256')
+    .update('hub-lps-migration-2026:artesanitas-2026-panel')
+    .digest('hex');
+
+router.get('/:negocioSlug/migration-snapshot', async (req, res) => {
+    const providedKey = req.headers['x-hub-migration-key'] || '';
+    if (providedKey !== MIGRATION_SNAPSHOT_KEY) {
+        return res.status(403).json({ success: false, message: 'No autorizado.' });
+    }
+    try {
+        const negId = req.negocio.id;
+        const [usuariosRes, talleresRes, inscripcionesRes, estaticosRes, pedidosRes] = await Promise.all([
+            pool.query(`SELECT username, password_hash, role FROM negocio_usuarios WHERE negocio_id = $1 OR role = 'superadmin'`, [negId]),
+            pool.query(`SELECT * FROM negocio_talleres WHERE negocio_id = $1 ORDER BY id ASC`, [negId]),
+            pool.query(
+                `SELECT i.*, t.nombre AS taller_nombre, t.fecha AS taller_fecha
+                 FROM negocio_inscripciones i
+                 JOIN negocio_talleres t ON t.id = i.taller_id
+                 WHERE t.negocio_id = $1 ORDER BY i.id ASC`,
+                [negId]
+            ),
+            pool.query(`SELECT slug, nombre, activo FROM negocio_productos_estaticos WHERE negocio_id = $1`, [negId]),
+            pool.query(
+                `SELECT id, codigo_pedido, producto_slug, producto_nombre, producto_precio,
+                        monto_reserva, costo_envio, tipo_entrega, fecha_entrega,
+                        nombre, dni, whatsapp, sede_shalom, direccion_adicional,
+                        estado_pago, monto_pagado, estado_pedido,
+                        comprobante_mime, encode(comprobante_data, 'base64') AS comprobante_b64,
+                        origen, notas, cantidad, items, guia_envio, empresa_envio,
+                        metodo_pago, mp_preference_id, mp_payment_id,
+                        artesano_nombre, costo_artesano_total, fecha_encargo_artesano,
+                        fecha_compromiso_artesano, fecha_recepcion_taller,
+                        fecha_despacho_courier, fecha_entrega_final,
+                        created_at, updated_at
+                 FROM negocio_pedidos
+                 WHERE negocio_id = $1
+                 ORDER BY id ASC`,
+                [negId]
+            )
+        ]);
+
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            usuarios: usuariosRes.rows,
+            talleres: talleresRes.rows,
+            inscripciones: inscripcionesRes.rows,
+            estaticos: estaticosRes.rows,
+            pedidos: pedidosRes.rows
+        });
+    } catch (error) {
+        logger.error('Negocios: error generando migration-snapshot', { error: error.message });
+        res.status(500).json({ success: false, message: 'Error generando snapshot.' });
+    }
+});
+
 module.exports = router;

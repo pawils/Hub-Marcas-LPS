@@ -9,6 +9,7 @@ const compression = require('compression');
 const cors = require('cors');
 
 const { runMigrations } = require('./migrate');
+const { syncFromOldDatabase } = require('./sync-from-main-db');
 const { negocioSubdomainMiddleware, extractSubdomainSlug } = require('./middleware/negocio-subdomain.middleware');
 const negocioTalleresRoutes = require('./routes/negocio-talleres.routes');
 const negocioProductosRoutes = require('./routes/negocio-productos.routes');
@@ -34,7 +35,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Healthcheck para Railway
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({ status: 'ok', service: 'hub-marcas-lps', timestamp: new Date().toISOString() });
 });
 
@@ -87,9 +88,12 @@ app.use(
   })
 );
 
-// Iniciar servidor y migraciones
-runMigrations().finally(() => {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
-  });
+// Escuchar de inmediato en el puerto para que Railway Proxy nunca devuelva 502 durante el arranque
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[Hub Marcas LPS] Servidor activo en puerto ${PORT} (Tenant por defecto: ${DEFAULT_TENANT})`);
+  runMigrations().catch((err) => console.error('[Migrate Error]', err.message));
+  // Re-sincronizar reservas nuevas desde lospilares.pe cada 2 minutos mientras convivan ambos dominios
+  setInterval(() => {
+    syncFromOldDatabase().catch(() => {});
+  }, 2 * 60 * 1000);
 });
