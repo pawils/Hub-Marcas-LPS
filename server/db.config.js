@@ -11,7 +11,7 @@ function createPool(useSsl) {
   return new Pool({
     connectionString: connStr,
     ssl: useSsl ? { rejectUnauthorized: false } : false,
-    max: 10,
+    max: parseInt(process.env.DB_POOL_MAX || '5', 10),
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000
   });
