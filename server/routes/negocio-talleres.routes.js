@@ -7,6 +7,8 @@
 // requiera cambiar rutas, solo una fila nueva.
 const express = require('express');
 const router = express.Router({ mergeParams: true });
+const fs = require('fs');
+const path = require('path');
 const multer = require('multer');
 const ExcelJS = require('exceljs');
 const jwt = require('jsonwebtoken');
@@ -120,6 +122,31 @@ router.post('/auth/change-password', async (req, res) => {
 });
 
 // ── PÚBLICO ──────────────────────────────────────────────────────────────────
+
+// Sprint 7 (Punto 7): Motor White-Label (brand.config.json) para desplegar nuevas marcas en 15 min
+router.get('/:negocioSlug/brand-config', (req, res) => {
+    try {
+        const configPath = path.resolve(__dirname, '..', '..', 'brand.config.json');
+        let fileConfig = {};
+        if (fs.existsSync(configPath)) {
+            fileConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        }
+        res.json({
+            success: true,
+            brand: {
+                ...fileConfig,
+                slug: req.negocio.slug || fileConfig.slug || 'artesanitas',
+                nombre: req.negocio.nombre || fileConfig.nombre || 'Artesanitas Perú',
+                subdominio: req.negocio.subdominio || fileConfig.subdominio || 'artesanitas.lospilares.pe',
+                whatsapp: req.negocio.whatsapp_contacto || fileConfig.whatsapp || '51929938466',
+                metaPixelId: req.negocio.meta_pixel_id || fileConfig.metaPixelId || '851775257895823'
+            }
+        });
+    } catch (error) {
+        logger.error('Negocios: error leyendo brand.config.json', { error: error.message });
+        res.status(500).json({ success: false, message: 'Error al cargar configuración de marca.' });
+    }
+});
 
 // GET /api/negocios/:negocioSlug/talleres — talleres activos, para el selector del formulario.
 // Un taller deja de listarse solo 2 días después de su fecha (día del evento +

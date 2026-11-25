@@ -31,9 +31,13 @@ function shareProducto(path, nombre) {
   window.open(url, '_blank');
 }
 
-function showShareToast() {
+function showShareToast(customText) {
   var toast = document.getElementById('share-toast');
   if (!toast) return;
+  var toastTxt = document.getElementById('share-toast-text');
+  if (toastTxt) {
+    toastTxt.textContent = typeof customText === 'string' && customText ? customText : 'Link copiado al portapapeles';
+  }
   toast.classList.remove('opacity-0', 'pointer-events-none');
   toast.classList.add('opacity-100');
   clearTimeout(toast._hideTimeout);
@@ -291,8 +295,11 @@ initSlider('slider-taza-navidad');
     var specsHtml = fichaSpecs.length > 0
       ? '<p class="text-xs text-[#B87352] font-medium mt-1.5">' + fichaSpecs.join(' · ') + '</p>'
       : '';
+    var precioEfectivo = hasPromo ? Number(p.precio_oferta) : Number(p.precio);
+    var imgJs = escapeHtml(img).replace(/'/g, "\\'");
+    var slugJs = escapeHtml(p.slug).replace(/'/g, "\\'");
     return '' +
-      '<div class="group flex flex-col space-y-5">' +
+      '<div class="group flex flex-col space-y-5" data-slug="' + escapeHtml(p.slug) + '">' +
       '<div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EBE5DE]">' +
       '<img src="' + escapeHtml(img) + '" alt="' + nombre + '" loading="lazy" onerror="this.onerror=null; this.src=\'/imagenes/Artesanitas/logo_artesanitas.peru.jpg\';" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />' +
       '<div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300"></div>' +
@@ -305,9 +312,14 @@ initSlider('slider-taza-navidad');
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
       '</button>' +
       '</div>' +
-      (agotado ? '' : '<a href="/pedido?producto=' + encodeURIComponent(p.slug) + '" class="absolute bottom-4 left-4 right-4 bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-3.5 rounded-xl flex items-center justify-center gap-2 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 font-medium shadow-lg hover:bg-[#B87352] hover:text-white z-10">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (stockNum > 0 ? 'Comprar Online' : 'Reservar Pieza') +
-      '</a>') +
+      (agotado ? '' : '<div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">' +
+      '<button type="button" onclick="window.ArtesanitasCart.addItem({slug:\'' + slugJs + '\',nombre:\'' + nombreJs + '\',precio:' + precioEfectivo.toFixed(2) + ',reserva:20,imagen:\'' + imgJs + '\'}, this)" class="w-full bg-[#B87352] hover:bg-[#A36244] text-white py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold shadow-lg transition-all cursor-pointer">' +
+      '<span>+ Agregar a mi reserva</span>' +
+      '</button>' +
+      '<a href="/pedido?producto=' + encodeURIComponent(p.slug) + '" class="w-full bg-[#F9F6F0]/95 backdrop-blur-sm text-[#4A3C31] py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold shadow hover:bg-[#4A3C31] hover:text-white transition-all">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (stockNum > 0 ? 'Reservar directo' : 'Reservar ahora (S/ 20)') +
+      '</a>' +
+      '</div>') +
       '</div>' +
       '<div class="flex flex-col flex-grow">' +
       '<div class="flex justify-between items-start gap-4 mb-2">' +
@@ -316,9 +328,246 @@ initSlider('slider-taza-navidad');
       '</div>' +
       '<p class="text-sm text-[#8C7A6B] leading-relaxed whitespace-pre-line">' + escapeHtml(p.descripcion || '') + '</p>' +
       specsHtml +
+      '<button type="button" onclick="window.ArtesanitasCart.addItem({slug:\'' + slugJs + '\',nombre:\'' + nombreJs + '\',precio:' + precioEfectivo.toFixed(2) + ',reserva:20,imagen:\'' + imgJs + '\'}, this)" class="mt-3 w-full py-2.5 px-4 rounded-xl border border-[#B87352]/40 bg-[#B87352]/10 hover:bg-[#B87352] text-[#B87352] hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">' +
+      '<span>+ Agregar a mi reserva</span>' +
+      '</button>' +
       '</div>' +
       '</div>';
   }
+
+  // ── Sprint 1: Carrito Persistente en LocalStorage + Burbuja y Cajón Flotante ──
+  var CART_STORAGE_KEY = 'artesanitas_cart_v1';
+
+  function loadCartFromStorage() {
+    try {
+      var raw = localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(function (i) { return i && i.slug && i.cantidad > 0; }) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveCartToStorage(items) {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {}
+  }
+
+  var cartItems = loadCartFromStorage();
+
+  function updateCartUI() {
+    var floatingBar = document.getElementById('cart-floating-bar');
+    var bubbleBadge = document.getElementById('cart-bubble-badge');
+    var bubbleText = document.getElementById('cart-bubble-text');
+    var drawerItemsEl = document.getElementById('cart-drawer-items');
+    var drawerSubtotalEl = document.getElementById('cart-drawer-subtotal');
+    var drawerReservaEl = document.getElementById('cart-drawer-reserva');
+    var drawerSubtitleEl = document.getElementById('cart-drawer-subtitle');
+
+    var totalPiezas = cartItems.reduce(function (acc, item) { return acc + (Number(item.cantidad) || 0); }, 0);
+    var totalPrecio = cartItems.reduce(function (acc, item) { return acc + ((Number(item.precio) || 0) * (Number(item.cantidad) || 0)); }, 0);
+    var totalReserva = cartItems.reduce(function (acc, item) { return acc + ((Number(item.reserva) || 20) * (Number(item.cantidad) || 0)); }, 0);
+
+    if (floatingBar) {
+      if (totalPiezas > 0) {
+        floatingBar.classList.remove('hidden');
+      } else {
+        floatingBar.classList.add('hidden');
+      }
+    }
+
+    if (bubbleBadge) bubbleBadge.textContent = String(totalPiezas);
+    if (bubbleText) {
+      bubbleText.textContent = '🛒 Mi Reserva (' + totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza' : 'piezas') + ' · S/ ' + totalPrecio.toFixed(2) + ')';
+    }
+    if (drawerSubtotalEl) drawerSubtotalEl.textContent = 'S/ ' + totalPrecio.toFixed(2);
+    if (drawerReservaEl) drawerReservaEl.textContent = 'S/ ' + totalReserva.toFixed(2);
+    if (drawerSubtitleEl) {
+      drawerSubtitleEl.textContent = totalPiezas > 0
+        ? totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza seleccionada' : 'piezas seleccionadas') + ' · Guardado en tu navegador'
+        : 'Aún no has agregado piezas a tu reserva';
+    }
+
+    if (drawerItemsEl) {
+      if (cartItems.length === 0) {
+        drawerItemsEl.innerHTML =
+          '<div class="text-center py-12 px-4 space-y-3">' +
+          '<div class="w-14 h-14 rounded-full bg-[#EBE5DE] text-[#8C7A6B] flex items-center justify-center mx-auto text-2xl">🛒</div>' +
+          '<p class="text-sm font-bold text-[#4A3C31]">Tu reserva está vacía</p>' +
+          '<p class="text-xs text-[#8C7A6B]">Toca el botón "+ Agregar a mi reserva" en cualquier pieza del catálogo para armar tu pedido.</p>' +
+          '</div>';
+      } else {
+        drawerItemsEl.innerHTML = cartItems.map(function (item) {
+          var slugAttr = escapeHtml(item.slug).replace(/'/g, "\\'");
+          var subItem = (Number(item.precio) || 0) * (Number(item.cantidad) || 1);
+          var resItem = (Number(item.reserva) || 20) * (Number(item.cantidad) || 1);
+          return '' +
+            '<div class="bg-white p-3.5 rounded-2xl border border-[#EBE5DE] shadow-2xs flex items-center justify-between gap-3">' +
+            '<div class="flex items-center gap-3 min-w-0">' +
+            '<img src="' + escapeHtml(item.imagen || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg') + '" alt="' + escapeHtml(item.nombre) + '" onerror="this.onerror=null;this.src=\'/imagenes/Artesanitas/logo_artesanitas.peru.jpg\';" class="w-14 h-14 rounded-xl object-cover border border-[#EBE5DE] shrink-0 bg-[#F9F6F0]" />' +
+            '<div class="min-w-0">' +
+            '<h4 class="text-xs sm:text-sm font-bold text-[#4A3C31] truncate">' + escapeHtml(item.nombre) + '</h4>' +
+            '<span class="text-[11px] text-[#8C7A6B] block">S/ ' + Number(item.precio).toFixed(2) + ' c/u</span>' +
+            '<span class="text-[10px] font-semibold text-[#007A78] block">Reserva Plin: S/ ' + resItem.toFixed(2) + '</span>' +
+            '</div>' +
+            '</div>' +
+            '<div class="flex flex-col items-end gap-1.5 shrink-0">' +
+            '<span class="text-xs font-bold text-[#B87352]">S/ ' + subItem.toFixed(2) + '</span>' +
+            '<div class="flex items-center gap-1 bg-[#F9F6F0] rounded-xl border border-[#D5C9BD] p-0.5">' +
+            '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', -1)" class="w-6 h-6 rounded-lg bg-white hover:bg-[#B87352] hover:text-white text-[#4A3C31] font-bold text-xs flex items-center justify-center transition-colors cursor-pointer">−</button>' +
+            '<span class="w-6 text-center font-bold text-xs text-[#4A3C31]">' + Number(item.cantidad) + '</span>' +
+            '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', 1)" class="w-6 h-6 rounded-lg bg-white hover:bg-[#B87352] hover:text-white text-[#4A3C31] font-bold text-xs flex items-center justify-center transition-colors cursor-pointer">+</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        }).join('');
+      }
+    }
+  }
+
+  window.ArtesanitasCart = {
+    addItem: function (prod, btnEl) {
+      if (!prod || !prod.slug) return;
+      var idx = -1;
+      for (var i = 0; i < cartItems.length; i++) {
+        if (cartItems[i].slug === prod.slug) { idx = i; break; }
+      }
+      if (idx > -1) {
+        cartItems[idx].cantidad = Math.min(50, (Number(cartItems[idx].cantidad) || 1) + 1);
+      } else {
+        cartItems.push({
+          slug: prod.slug,
+          nombre: prod.nombre || prod.slug,
+          precio: Number(prod.precio) || 59.90,
+          reserva: Number(prod.reserva) || 20.00,
+          cantidad: 1,
+          imagen: prod.imagen || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
+          descripcion: prod.descripcion || ''
+        });
+      }
+      saveCartToStorage(cartItems);
+      updateCartUI();
+
+      if (typeof fbq === 'function') {
+        try {
+          fbq('trackSingle', '851775257895823', 'AddToCart', {
+            content_ids: [prod.slug],
+            content_name: prod.nombre,
+            value: Number(prod.precio) || 59.90,
+            currency: 'PEN'
+          });
+        } catch (e) {}
+      }
+
+      if (btnEl) {
+        var prevHtml = btnEl.innerHTML;
+        btnEl.innerHTML = '<span>✓ Agregado a tu reserva</span>';
+        btnEl.classList.add('bg-[#007A78]', 'text-white', 'border-[#007A78]');
+        setTimeout(function () {
+          btnEl.innerHTML = prevHtml;
+          btnEl.classList.remove('bg-[#007A78]', 'border-[#007A78]');
+        }, 1200);
+      }
+      showShareToast('🛒 Pieza agregada a Mi Reserva');
+    },
+    changeQty: function (slug, delta) {
+      for (var i = 0; i < cartItems.length; i++) {
+        if (cartItems[i].slug === slug) {
+          cartItems[i].cantidad = (Number(cartItems[i].cantidad) || 1) + delta;
+          if (cartItems[i].cantidad <= 0) {
+            cartItems.splice(i, 1);
+          } else if (cartItems[i].cantidad > 50) {
+            cartItems[i].cantidad = 50;
+          }
+          break;
+        }
+      }
+      saveCartToStorage(cartItems);
+      updateCartUI();
+    },
+    clearCart: function () {
+      cartItems = [];
+      saveCartToStorage(cartItems);
+      updateCartUI();
+      this.closeDrawer();
+    },
+    openDrawer: function () {
+      var overlay = document.getElementById('cart-drawer-overlay');
+      if (overlay) overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    },
+    closeDrawer: function () {
+      var overlay = document.getElementById('cart-drawer-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+  };
+
+  // Inyecta el botón "+ Agregar a mi reserva" en todas las tarjetas estáticas del catálogo (Navidad, Catálogo General y Colección Van Gogh)
+  function injectCartButtonsOnStaticCards() {
+    var cards = document.querySelectorAll('#coleccion-navidad .group, #catalogo [data-slug], #coleccion-van-gogh .group');
+    cards.forEach(function (card) {
+      if (card.dataset.cartBound === 'true') return;
+      card.dataset.cartBound = 'true';
+
+      var slug = card.getAttribute('data-slug') || '';
+      if (!slug) {
+        var linkPedido = card.querySelector('a[href*="/pedido?producto="]');
+        if (linkPedido) {
+          var m = linkPedido.getAttribute('href').match(/producto=([^&]+)/);
+          if (m && m[1]) slug = decodeURIComponent(m[1]);
+        }
+      }
+      if (!slug) {
+        var btnCopy = card.querySelector('button[onclick*="copyProductoLink"]');
+        if (btnCopy) {
+          var mc = btnCopy.getAttribute('onclick').match(/\/producto\/([^'"]+)/);
+          if (mc && mc[1]) slug = mc[1];
+        }
+      }
+      if (!slug) return;
+
+      var titleEl = card.querySelector('h3, h4');
+      var nombre = titleEl ? titleEl.textContent.trim() : slug;
+
+      var precio = 59.90;
+      var spans = card.querySelectorAll('span');
+      for (var i = 0; i < spans.length; i++) {
+        var txt = spans[i].textContent.trim();
+        var mp = txt.match(/S\/\s*(\d+(?:\.\d+)?)/);
+        if (mp && !spans[i].classList.contains('line-through')) {
+          precio = parseFloat(mp[1]);
+          break;
+        }
+      }
+
+      var imgEl = card.querySelector('img');
+      var imagen = imgEl ? imgEl.getAttribute('src') : '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
+
+      var infoContainer = card.querySelector('.flex.flex-col.flex-grow');
+      if (infoContainer) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mt-3 w-full py-2.5 px-4 rounded-xl border border-[#B87352]/40 bg-[#B87352]/10 hover:bg-[#B87352] text-[#B87352] hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs';
+        btn.innerHTML = '<span>+ Agregar a mi reserva</span>';
+        btn.addEventListener('click', function () {
+          window.ArtesanitasCart.addItem({
+            slug: slug,
+            nombre: nombre,
+            precio: precio,
+            reserva: 20.00,
+            imagen: imagen
+          }, btn);
+        });
+        infoContainer.appendChild(btn);
+      }
+    });
+  }
+
+  injectCartButtonsOnStaticCards();
+  updateCartUI();
 
   function cargarProductosDinamicos() {
     var contenedor = document.getElementById('productos-dinamicos');
@@ -347,4 +596,26 @@ initSlider('slider-taza-navidad');
 
   cargarProductosDinamicos();
   ocultarProductosEstaticosPausados();
+
+  // Sprint 6: Registrar Service Worker PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    });
+  }
+
+  // Sprint 7: Motor White-Label (brand.config.json)
+  fetch('/api/negocios/artesanitas/brand-config')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
+      if (!data || !data.brand) return;
+      window.ARTESANITAS_BRAND = data.brand;
+      if (data.brand.whatsapp) {
+        WHATSAPP_NUM = String(data.brand.whatsapp).replace(/\D/g, '') || WHATSAPP_NUM;
+      }
+      if (data.brand.colores && data.brand.colores.primario) {
+        document.documentElement.style.setProperty('--brand-primario', data.brand.colores.primario);
+      }
+    })
+    .catch(function () {});
 })();

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Portal de Taller Artesano - Artesanitas Perú</title>
+  <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4A3C31">
+
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
+          colors: {
+            brand: { dark: '#4A3C31', muted: '#8C7A6B', terracota: '#B87352', cream: '#F9F6F0', beige: '#D5C9BD' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Barra superior -->
+  <header class="bg-[#4A3C31] text-[#F9F6F0] sticky top-0 z-40 shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas"
+          class="h-11 w-11 rounded-full object-cover border-2 border-[#B87352]">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-[#D5C9BD] block">Portal Oficial de Producción</span>
+          <h1 id="header-artesano-nombre" class="font-serif font-bold text-base sm:text-lg leading-tight">Taller Artesano Aliado</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btn-reload-portal"
+          class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors cursor-pointer">
+          ↻ Actualizar
+        </button>
+        <a id="btn-wa-admin" href="https://wa.me/51929938466" target="_blank" rel="noreferrer"
+          class="bg-[#008f6b] hover:bg-[#007759] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+          <span>📲 Admin Artesanitas</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6">
+
+    <!-- Estado de Carga o Error de Token -->
+    <div id="portal-error" class="hidden bg-red-50 border-2 border-red-200 text-red-700 p-6 rounded-3xl text-center space-y-2">
+      <p class="text-base font-bold">Enlace Magic Link no válido o expirado</p>
+      <p class="text-xs text-red-600">Solicita al Administrador de Artesanitas Perú tu enlace personal actualizado por WhatsApp.</p>
+    </div>
+
+    <!-- Resumen de Carga de Trabajo del Artesano (Puede recibir 3, 5, 10+ solicitudes de clientes distintos) -->
+    <section id="portal-dashboard" class="hidden space-y-5">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-3.5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[#8C7A6B] block">Solicitudes Activas</span>
+          <span id="kpi-art-activos" class="text-2xl font-extrabold text-[#4A3C31] mt-0.5 block">0</span>
+          <span class="text-[10px] text-[#8C7A6B]">De distintos pedidos</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-red-600 block">Urgentes / Vencidos</span>
+          <span id="kpi-art-urgentes" class="text-2xl font-extrabold text-red-600 mt-0.5 block">0</span>
+          <span class="text-[10px] text-[#8C7A6B]">Prioridad de horno</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">En Revisión QA</span>
+          <span id="kpi-art-qa" class="text-2xl font-extrabold text-amber-700 mt-0.5 block">0</span>
+          <span class="text-[10px] text-[#8C7A6B]">Validando onzas/logos</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[#008f6b] block">Cotización Total</span>
+          <span id="kpi-art-cotizacion" class="text-2xl font-extrabold text-[#008f6b] mt-0.5 block">S/ 0.00</span>
+          <span class="text-[10px] text-[#8C7A6B]">Acordada con Admin</span>
+        </div>
+      </div>
+
+      <!-- Guía rápida del flujo artesanal con Control de Calidad (QA) -->
+      <div class="bg-white rounded-2xl p-4 border border-[#D5C9BD] text-xs text-[#4A3C31] space-y-1.5 shadow-2xs">
+        <p class="font-bold text-[#B87352] uppercase tracking-wider text-[11px]">🏺 Flujo de Trabajo y Revisión QA Artesanitas</p>
+        <p class="text-[#8C7A6B] leading-relaxed">
+          Revisa en cada solicitud la <strong>Ficha de Especificaciones del Administrador</strong> (cotización, onzas, tamaños, colores y logos personalizados). Avanza tu etapa con 1 toque:
+          <strong>Modelado</strong> → <strong>1° Horno</strong> → <strong>2° Horno</strong> → <strong>Pintado y detalles</strong> → <strong>Listo para Revisión QA</strong>.
+          Una vez que Artesanitas valide que las onzas, logos y colores están conformes, marca <strong>Enviado al Taller Artesanitas</strong>.
+        </p>
+      </div>
+
+      <!-- Filtros rápidos por etapa -->
+      <div class="flex flex-wrap gap-2">
+        <button type="button" data-filter="todos" class="btn-art-filter px-3.5 py-2 rounded-xl text-xs font-bold bg-[#4A3C31] text-white cursor-pointer">
+          Todas las Solicitudes
+        </button>
+        <button type="button" data-filter="hornos" class="btn-art-filter px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-[#D5C9BD] text-[#4A3C31] cursor-pointer">
+          🔥 Modelado y Hornos (1° y 2°)
+        </button>
+        <button type="button" data-filter="pintado" class="btn-art-filter px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-[#D5C9BD] text-[#4A3C31] cursor-pointer">
+          🎨 Pintado y Acabados
+        </button>
+        <button type="button" data-filter="qa" class="btn-art-filter px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-[#D5C9BD] text-[#4A3C31] cursor-pointer">
+          🔍 En Revisión QA / Listos
+        </button>
+      </div>
+
+      <!-- Lista de Solicitudes Asignadas -->
+      <div id="solicitudes-container" class="space-y-4"></div>
+      <p id="solicitudes-empty" class="hidden text-center text-sm text-[#8C7A6B] py-12 bg-white rounded-3xl border border-[#EBE5DE]">
+        No tienes solicitudes en esta categoría por el momento.
+      </p>
+    </section>
+  </main>
+
+  <footer class="border-t border-[#EBE5DE] bg-white py-5 text-center text-xs text-[#8C7A6B]">
+    <span>© 2026 Artesanitas Perú · Portal de Proveedores y Control de Calidad Artesanal</span>
+  </footer>
+
+  <script src="/js/taller-artesano.js?v=20261125_s3"></script>
+</body>
+
+</html>

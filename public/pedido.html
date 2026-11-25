@@ -10,6 +10,8 @@
   <title>Reserva tu Pieza Artesanal - Preventa Exclusiva Artesanitas</title>
   <meta name="description" content="Reserva en preventa tus piezas de cerámica artesanales pintadas a mano por Artesanitas. Entrega el 10 de Diciembre.">
   <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4A3C31">
 
   <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
   <script>
@@ -100,19 +102,43 @@
                 <path d="m9 12 2 2 4-4"></path>
               </svg>
             </div>
-            <select id="producto-select" required
+            <select id="producto-select"
               class="w-full pl-11 pr-10 py-3.5 rounded-2xl border-2 border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] font-semibold text-xs sm:text-sm focus:outline-none focus:border-[#B87352] focus:bg-white transition-all cursor-pointer appearance-none shadow-2xs">
-              <option value="" disabled selected>— Selecciona tu producto —</option>
-              <option value="taza-navidad-papa-noel">🎄 Taza Navideña Papá Noel (S/ 59.90)</option>
-              <option value="taza-muneco-de-nieve">⛄ Taza Muñeco de Nieve (S/ 59.90)</option>
-              <option value="taza-arbolito-chocolatosa">🍫 Taza Arbolito Chocolatosa (S/ 59.90)</option>
-              <option value="taza-arbolito-rosa">🌸 Taza Arbolito Rosa (S/ 59.90)</option>
-              <option value="taza-rapunzel">01 · Colección Rapunzel</option>
-              <option value="taza-stich">02 · Taza Stich</option>
-              <option value="taza-van-gogh">03 · Taza Van Gogh</option>
-              <option value="taza-piston-cup">04 · Taza Piston Cup</option>
-              <option value="azucarera-van-gogh">05 · Azucarera Van Gogh</option>
-              <option value="vasito-van-gogh">06 · Vasito Van Gogh</option>
+              <option value="" disabled selected>— Selecciona o agrega otra pieza a tu reserva —</option>
+              <optgroup label="🎄 Colección Navidad 2026">
+                <option value="taza-navidad-papa-noel">🎄 Taza Navideña Papá Noel (S/ 59.90)</option>
+                <option value="taza-muneco-de-nieve">⛄ Taza Muñeco de Nieve (S/ 59.90)</option>
+                <option value="taza-arbolito-chocolatosa">🍫 Taza Arbolito Chocolatosa (S/ 59.90)</option>
+                <option value="taza-arbolito-rosa">🌸 Taza Arbolito Rosa (S/ 59.90)</option>
+              </optgroup>
+              <optgroup label="✨ Colecciones Destacadas & Preventa">
+                <option value="taza-rapunzel">01 · Colección Rapunzel (9 variantes)</option>
+                <option value="taza-stich">02 · Taza Stich (S/ 65.00)</option>
+                <option value="taza-van-gogh">03 · Taza Van Gogh (S/ 69.00)</option>
+                <option value="taza-piston-cup">04 · Taza Piston Cup (S/ 59.00)</option>
+                <option value="azucarera-van-gogh">05 · Azucarera Van Gogh (S/ 65.00)</option>
+                <option value="vasito-van-gogh">06 · Vasito Van Gogh (S/ 59.00)</option>
+              </optgroup>
+              <optgroup label="🏺 Catálogo General Artesanitas" id="optgroup-catalogo-general">
+                <option value="taza-corazon-y-plato">Taza corazón y plato (S/ 75.00)</option>
+                <option value="taza-castellana">Taza Castellana (S/ 55.00)</option>
+                <option value="taza-lavanda-abejita">Taza lavanda abejita (S/ 55.00)</option>
+                <option value="taza-stich-celeste">Taza Stich celeste (S/ 65.00)</option>
+                <option value="taza-stich-azul">Taza Stich azul (S/ 65.00)</option>
+                <option value="taza-runner">Taza Runner (S/ 42.00)</option>
+                <option value="tetera-corazon">Tetera Corazón (S/ 85.00)</option>
+                <option value="palo-rosa-lb">Palo Rosa LB (S/ 69.00)</option>
+                <option value="taza-rosada">Taza rosada (S/ 65.00)</option>
+                <option value="taza-snoopy">Taza Snoopy (S/ 55.00)</option>
+                <option value="taza-shrek">Taza Shrek (S/ 69.00)</option>
+                <option value="platos-uva">Platos uva (S/ 29.00)</option>
+                <option value="plato-morado-full">Plato morado full (S/ 32.00)</option>
+                <option value="adorno-paltita">Adorno Paltita (S/ 35.00)</option>
+                <option value="adorno-oso-sentado">Adorno Oso sentado (S/ 32.00)</option>
+                <option value="adorno-munequitas">Adorno muñequitas (S/ 29.00)</option>
+                <option value="elefantitos-decorativos">Elefantitos decorativos (S/ 49.00)</option>
+                <option value="jarron-prada">Jarrón Prada (S/ 85.00)</option>
+              </optgroup>
             </select>
             <input type="hidden" id="producto-variante-input" name="producto_slug" value="">
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#8C7A6B]">
@@ -800,7 +826,7 @@
   </div>
 
   <!-- Script modular externo con Cache-Buster -->
-  <script src="/artesanitas/js/pedido.js?v=20261120_v1"></script>
+  <script src="/js/pedido.js?v=20261125_s1"></script>
 </body>
 
 </html>

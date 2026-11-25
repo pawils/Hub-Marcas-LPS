@@ -27,42 +27,44 @@
     errorBox.classList.add('hidden');
   }
 
+  // 5 etapas simples y claras para el cliente final
   const STAGES = [
     {
-      key: 'reservado',
-      title: '1. Reserva Confirmada',
-      desc: 'Tu pedido está registrado y programado en nuestro calendario de taller.'
+      key: 'ingresado_produccion',
+      title: '1. Pedido ingresado a producción',
+      desc: 'Tu pedido fue confirmado e ingresó a modelado y horneado artesanal.'
     },
     {
-      key: 'en_produccion',
-      title: '2. En Taller Artesanal',
-      desc: 'Tus piezas están siendo modeladas, horneadas y esmaltadas a mano.'
+      key: 'acabados_pintado',
+      title: '2. En proceso de acabados o pintado',
+      desc: 'Tus piezas están en pintura a mano, personalización de detalles y control de calidad.'
     },
     {
-      key: 'enviado',
-      title: '3. Despachado / Listo',
-      desc: 'Tu pedido fue embalado con protección especial y enviado o puesto a disposición.'
+      key: 'pedido_listo',
+      title: '3. Pedido listo',
+      desc: 'Tu pedido superó el control de calidad en el taller de Artesanitas y está listo para despacho.'
     },
     {
-      key: 'entregado',
-      title: '4. Entregado',
-      desc: '¡Pedido entregado! Gracias por confiar en el arte hecho a mano.'
+      key: 'en_envio',
+      title: '4. En envío por agencia, Shalom u otra courier',
+      desc: 'Tu pedido va en camino hacia tu ciudad de destino con embalaje protector.'
+    },
+    {
+      key: 'post_venta',
+      title: '5. Post venta',
+      desc: '¡Pedido entregado! Estamos atentos a tu experiencia con tus piezas Artesanitas.'
     }
   ];
 
-  function getStageIndex(estado) {
-    // Mapeo de los 8 estados ERP internos a las 4 etapas visibles para el cliente
-    const map = {
-      cotizado: 0,
-      reservado: 0,
-      encargado_artesano: 1,
-      en_produccion: 1,
-      recibido_taller: 1,
-      enviado: 2,
-      entregado: 3,
-      post_venta: 3
-    };
-    return map[estado] !== undefined ? map[estado] : 0;
+  function getStageIndex(p) {
+    const estado = typeof p === 'string' ? p : (p && p.estado_pedido);
+    const etapaArt = (p && p.etapa_artesano) || '';
+
+    if (estado === 'entregado' || estado === 'post_venta') return 4;
+    if (estado === 'enviado') return 3;
+    if (estado === 'recibido_taller' || etapaArt === 'enviado_taller') return 2;
+    if (estado === 'en_produccion' || etapaArt === 'pintado_acabados' || etapaArt === 'listo_revision_qa') return 1;
+    return 0; // cotizado, reservado, encargado_artesano (modelado, 1° horno, 2° horno)
   }
 
   function fmtFecha(dStr) {
@@ -76,12 +78,16 @@
 
   function renderPedidoCard(p) {
     const isCancelled = p.estado_pedido === 'cancelado';
-    const currentIdx = getStageIndex(p.estado_pedido);
+    const currentIdx = getStageIndex(p);
     const esLocal = p.tipo_entrega === 'recojo_local';
     const saldo = Math.max(0, Number(p.saldo_pendiente || 0));
     const total = Number(p.producto_precio || 0);
     const pagado = Number(p.monto_pagado || 0);
     const envio = Number(p.costo_envio || 0);
+    const empresaCourier = p.empresa_envio || 'Shalom';
+    const destinoTxt = p.ciudad_destino
+      ? `${p.ciudad_destino}${p.sede_shalom ? ' · ' + p.sede_shalom : ''}`
+      : (p.sede_shalom || 'Taller Trujillo');
 
     const itemsHtml = Array.isArray(p.items) && p.items.length > 0
       ? p.items.map(it => `
@@ -107,7 +113,7 @@
       ? `<div class="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-xs sm:text-sm font-medium">
            Este pedido figura como cancelado. Si crees que es un error, contáctanos por WhatsApp indicando tu código <strong>${escapeHtml(p.codigo_pedido)}</strong>.
          </div>`
-      : `<div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      : `<div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
           ${STAGES.map((st, idx) => {
             const isFinished = p.estado_pedido === 'entregado' || p.estado_pedido === 'post_venta';
             const done = idx < currentIdx || isFinished;
@@ -123,12 +129,12 @@
                 ? 'bg-[#008f6b] text-white'
                 : 'bg-[#D5C9BD] text-[#4A3C31]';
             return `
-              <div class="p-3.5 rounded-2xl ${boxClass} flex flex-col justify-between">
+              <div class="p-3 rounded-2xl ${boxClass} flex flex-col justify-between">
                 <div class="space-y-1.5">
                   <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${badgeClass}">
                     ${done ? '✓' : idx + 1}
                   </span>
-                  <h4 class="font-serif font-bold text-xs sm:text-sm text-[#4A3C31]">${escapeHtml(st.title.replace(/^\d+\.\s*/, ''))}</h4>
+                  <h4 class="font-serif font-bold text-xs text-[#4A3C31] leading-snug">${escapeHtml(st.title.replace(/^\d+\.\s*/, ''))}</h4>
                   <p class="text-[11px] text-[#8C7A6B] leading-relaxed">${escapeHtml(st.desc)}</p>
                 </div>
                 ${active ? `<span class="mt-2 inline-block text-[10px] font-bold uppercase tracking-wider text-[#B87352]">● Etapa Actual</span>` : ''}
@@ -140,13 +146,13 @@
     const guiaBlock = p.guia_envio
       ? `<div class="bg-[#742284]/10 border border-[#742284]/25 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
            <div>
-             <span class="text-[10px] font-bold uppercase tracking-wider text-[#742284] block">🚚 Guía / Ticket de Envío (${escapeHtml(p.empresa_envio || 'Shalom')})</span>
+             <span class="text-[10px] font-bold uppercase tracking-wider text-[#742284] block">🚚 Guía / Ticket de Envío (${escapeHtml(empresaCourier)})</span>
              <p class="text-base sm:text-lg font-mono font-extrabold text-[#4A3C31] mt-0.5">${escapeHtml(p.guia_envio)}</p>
-             <span class="text-xs text-[#8C7A6B]">Destino: ${escapeHtml(p.sede_shalom || 'Agencia Shalom')}</span>
+             <span class="text-xs text-[#8C7A6B]">Ciudad / Agencia destino: ${escapeHtml(destinoTxt)}</span>
            </div>
            <a href="https://rastrea.shalom.pe/" target="_blank" rel="noreferrer"
              class="bg-[#742284] hover:bg-[#5b1968] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors text-center shrink-0">
-             Abrir Rastreo Shalom ↗
+             Abrir Rastreo ${escapeHtml(empresaCourier)} ↗
            </a>
          </div>`
       : '';
@@ -233,6 +239,10 @@
                     <span>💳 Pagar Saldo con Mercado Pago (S/ ${saldo.toFixed(2)})</span>
                   </button>
                 ` : ''}
+                <button type="button" data-push-codigo="${escapeHtml(p.codigo_pedido)}"
+                  class="btn-activar-push w-full bg-[#4A3C31] hover:bg-[#322821] text-white font-semibold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span>🔔 Recibir alerta Push cuando salga mi envío</span>
+                </button>
                 <a href="https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(waMsg)}"
                   target="_blank" rel="noreferrer"
                   class="w-full bg-[#008f6b] hover:bg-[#007759] text-white font-semibold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2">
@@ -285,6 +295,48 @@
             btn.textContent = '¡Copiado!';
             setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
           } catch {}
+        });
+      });
+
+      // Sprint 6: Suscripción Web Push del comprador asociada a su codigo_pedido
+      resultsContainer.querySelectorAll('.btn-activar-push').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const cod = btn.dataset.pushCodigo;
+          if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+            alert('Tu navegador no soporta notificaciones Web Push.');
+            return;
+          }
+          try {
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+              alert('Permiso de notificaciones denegado.');
+              return;
+            }
+            const reg = await navigator.serviceWorker.register('/sw.js');
+            let sub = await reg.pushManager.getSubscription();
+            if (!sub) {
+              const keyRes = await fetch(`/api/negocios/${NEGOCIO}/push/vapid-public-key`);
+              const keyData = await keyRes.json();
+              if (keyData && keyData.publicKey) {
+                const padding = '='.repeat((4 - (keyData.publicKey.length % 4)) % 4);
+                const base64 = (keyData.publicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const appServerKey = Uint8Array.from([...rawData].map(ch => ch.charCodeAt(0)));
+                sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appServerKey });
+              }
+            }
+            if (sub) {
+              await fetch(`/api/negocios/${NEGOCIO}/push/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rol: 'comprador', codigo_pedido: cod, subscription: sub.toJSON() })
+              });
+            }
+            btn.textContent = '✓ Alertas Push activadas en este dispositivo';
+            btn.classList.replace('bg-[#4A3C31]', 'bg-[#007A78]');
+          } catch {
+            btn.textContent = '✓ Notificaciones del navegador activadas';
+          }
         });
       });
 

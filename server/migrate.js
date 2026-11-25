@@ -105,6 +105,31 @@ async function runMigrations() {
         UNIQUE (negocio_id, slug)
       );
       ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS moneda VARCHAR(10) NOT NULL DEFAULT 'PEN';
+      ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS ubicacion_almacen VARCHAR(80) DEFAULT 'Almacén Principal Trujillo';
+      ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS unidad_medida VARCHAR(20) DEFAULT 'UND';
+      ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS ultimo_conteo_at TIMESTAMPTZ;
+      CREATE INDEX IF NOT EXISTS idx_negocio_productos_sku ON negocio_productos (negocio_id, sku);
+      CREATE INDEX IF NOT EXISTS idx_negocio_productos_ean ON negocio_productos (negocio_id, ean);
+    `);
+
+    // Kardex de Movimientos de Inventario y Conteo Físico (Estándar Shopify WMS)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS negocio_inventario_movimientos (
+        id SERIAL PRIMARY KEY,
+        negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+        producto_id INTEGER NOT NULL REFERENCES negocio_productos(id) ON DELETE CASCADE,
+        tipo_movimiento VARCHAR(40) NOT NULL DEFAULT 'entrada_mercaderia',
+        cantidad_anterior INTEGER NOT NULL DEFAULT 0,
+        delta INTEGER NOT NULL DEFAULT 0,
+        cantidad_nueva INTEGER NOT NULL DEFAULT 0,
+        costo_unitario NUMERIC(10, 2),
+        ubicacion VARCHAR(80) DEFAULT 'Almacén Principal Trujillo',
+        motivo_referencia TEXT,
+        usuario VARCHAR(80) DEFAULT 'admin',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_negocio_inv_mov_negocio ON negocio_inventario_movimientos (negocio_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_negocio_inv_mov_prod ON negocio_inventario_movimientos (producto_id, created_at DESC);
     `);
 
     await pool.query(`
@@ -186,9 +211,63 @@ async function runMigrations() {
       ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS comprobante_data BYTEA;
       ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(30) DEFAULT 'plin_yape';
       ALTER TABLE negocio_pedidos ALTER COLUMN sede_shalom DROP NOT NULL;
+
+      -- Sprint 3: Flujo detallado de Artesanos (Modelado -> 1° Horno -> 2° Horno -> Pintado -> QA Artesanitas -> Envío Taller)
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS artesano_id INTEGER;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS etapa_artesano VARCHAR(40) DEFAULT 'recibido';
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS especificaciones_artesano TEXT;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS qa_estado VARCHAR(30) DEFAULT 'pendiente';
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS qa_checklist JSONB DEFAULT '{"onzas":false,"logos":false,"colores":false,"acabados":false}'::jsonb;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS qa_observaciones TEXT;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS ciudad_destino VARCHAR(120);
+
+      -- Sprint 4: Meta Conversions API (CAPI Server-Side)
+      ALTER TABLE negocios ADD COLUMN IF NOT EXISTS meta_capi_token TEXT;
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS meta_event_id VARCHAR(64);
+
+      -- Sprint 5: Validación Inteligente de Vouchers Yape/Plin con Visión IA (Anti-Fraude)
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS voucher_nro_operacion VARCHAR(40);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS voucher_monto_detectado NUMERIC(10, 2);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS voucher_entidad_detectada VARCHAR(40);
+      ALTER TABLE negocio_pedidos ADD COLUMN IF NOT EXISTS voucher_verificacion_ia VARCHAR(30) DEFAULT 'pendiente';
+
       CREATE UNIQUE INDEX IF NOT EXISTS idx_negocio_pedidos_codigo_unique ON negocio_pedidos (codigo_pedido) WHERE codigo_pedido IS NOT NULL;
       CREATE INDEX IF NOT EXISTS idx_negocio_pedidos_negocio ON negocio_pedidos (negocio_id, created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_negocio_pedidos_dni ON negocio_pedidos (negocio_id, dni);
+      CREATE INDEX IF NOT EXISTS idx_negocio_pedidos_voucher_op ON negocio_pedidos (negocio_id, voucher_nro_operacion) WHERE voucher_nro_operacion IS NOT NULL;
+    `);
+
+    // Sprint 3: Tabla de Artesanos Tercerizados (Magic Link Portal)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS negocio_artesanos (
+        id SERIAL PRIMARY KEY,
+        negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+        nombre VARCHAR(120) NOT NULL,
+        whatsapp VARCHAR(25),
+        especialidad VARCHAR(120) DEFAULT 'Modelado y Pintura Cerámica',
+        access_token VARCHAR(64) UNIQUE NOT NULL,
+        activo BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE (negocio_id, nombre)
+      );
+      CREATE INDEX IF NOT EXISTS idx_negocio_artesanos_token ON negocio_artesanos (access_token);
+    `);
+
+    // Sprint 6: Tabla de Suscripciones Web Push (Admin & Comprador por codigo_pedido)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS negocio_push_subscriptions (
+        id SERIAL PRIMARY KEY,
+        negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+        rol VARCHAR(20) NOT NULL DEFAULT 'comprador' CHECK (rol IN ('admin', 'comprador', 'artesano')),
+        codigo_pedido VARCHAR(32),
+        endpoint TEXT UNIQUE NOT NULL,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        user_agent TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_negocio_push_negocio_rol ON negocio_push_subscriptions (negocio_id, rol);
+      CREATE INDEX IF NOT EXISTS idx_negocio_push_codigo ON negocio_push_subscriptions (negocio_id, codigo_pedido);
     `);
 
     // Quitar NOT NULL de columnas antiguas si existieran del primer deploy

@@ -10,6 +10,8 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Panel de Gestión - Artesanitas</title>
   <link rel="icon" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4A3C31">
 
   <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
   <script>
@@ -107,8 +109,17 @@
             <span>📦 Pedidos & Preventas</span>
             <span id="badge-pedidos-count" class="hidden bg-[#B87352] text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
           </button>
+          <button id="tab-btn-bi" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
+            <span>📊 BI & Rentabilidad</span>
+          </button>
+          <button id="tab-btn-inventario" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
+            <span>📋 Inventario & SKU/EAN</span>
+          </button>
           <button id="tab-btn-productos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Catálogo</button>
         </div>
+        <button id="btn-push-admin" type="button" class="text-xs font-semibold bg-[#4A3C31] text-white px-3 py-2 rounded-xl hover:bg-[#322821] transition-colors cursor-pointer">
+          🔔 Activar Push Admin
+        </button>
         <button id="btn-cerrar-sesion" class="text-sm text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">Salir</button>
       </div>
     </div>
@@ -414,6 +425,30 @@
         </div>
       </div>
 
+      <!-- Sprint 3: Directorio de Artesanos Aliados & Magic Links (Portal Proveedores) -->
+      <div class="bg-white rounded-2xl border border-[#EBE5DE] p-4 sm:p-5 shadow-2xs space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#B87352] block">Sprint 3 · Portal de Proveedores (Magic Link)</span>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31]">🏺 Artesanos Tercerizados & Enlaces de Seguimiento de Taller</h3>
+            <p class="text-xs text-[#8C7A6B]">Cada artesano recibe su Magic Link privado donde ve sus solicitudes asignadas (con cotización, onzas, tamaños, colores y logos) sin ver precios de venta al cliente ni DNI.</p>
+          </div>
+          <form id="form-nuevo-artesano" class="flex flex-wrap items-center gap-2 shrink-0">
+            <input type="text" id="na-nombre" required maxlength="100" placeholder="Nombre del Artesano / Taller"
+              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:outline-none focus:border-[#B87352]">
+            <input type="tel" id="na-whatsapp" maxlength="20" placeholder="WhatsApp (ej. 987654321)"
+              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:outline-none focus:border-[#B87352] w-44">
+            <button type="submit"
+              class="bg-[#B87352] hover:bg-[#A36244] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+              + Crear / Obtener Magic Link
+            </button>
+          </form>
+        </div>
+        <div id="artesanos-magic-links-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+          <!-- Renderizado dinámico por registros.js -->
+        </div>
+      </div>
+
       <!-- Filtros y Exportación -->
       <div class="flex flex-wrap justify-between items-end gap-3">
         <div class="flex flex-wrap gap-3 items-end">
@@ -497,6 +532,355 @@
       </div>
     </div>
 
+    <!-- Tab: Dashboard BI & Rentabilidad (Sprint 2) -->
+    <div id="tab-bi" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-3xl border border-[#EBE5DE] shadow-2xs">
+        <div>
+          <span class="inline-flex items-center gap-1.5 bg-[#B87352]/10 text-[#B87352] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1">
+            Inteligencia de Negocios en Tiempo Real
+          </span>
+          <h2 class="text-lg sm:text-xl font-serif font-bold text-[#4A3C31]">📊 Dashboard BI & Rentabilidad por Línea y Artesano</h2>
+          <p class="text-xs text-[#8C7A6B]">Visibilidad financiera consolidada: Ventas, Abonos Plin, Saldos por Cobrar, Costo de Artesanos y Margen Bruto Real.</p>
+        </div>
+        <button type="button" id="btn-refresh-bi"
+          class="self-start sm:self-auto bg-[#4A3C31] hover:bg-[#322821] text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0">
+          <span>↻ Actualizar Métricas</span>
+        </button>
+      </div>
+
+      <!-- 5 Tarjetas Financieras Principales -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#8C7A6B] uppercase tracking-wider">Ventas Totales</p>
+          <p id="bi-kpi-ventas" class="text-2xl font-extrabold text-[#4A3C31] mt-1">S/ 0.00</p>
+          <span id="bi-kpi-pedidos-sub" class="text-[11px] text-[#8C7A6B] block mt-0.5">0 pedidos · 0 piezas</span>
+        </div>
+
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#008f6b] uppercase tracking-wider">Total Abonado</p>
+          <p id="bi-kpi-abonado" class="text-2xl font-extrabold text-[#008f6b] mt-1">S/ 0.00</p>
+          <span id="bi-kpi-abonado-sub" class="text-[11px] text-[#8C7A6B] block mt-0.5">Liquidez en caja (Plin/MP)</span>
+        </div>
+
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#B87352] uppercase tracking-wider">Saldos por Cobrar</p>
+          <p id="bi-kpi-saldos" class="text-2xl font-extrabold text-[#B87352] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B] block mt-0.5">Contra entrega / envío</span>
+        </div>
+
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#742284] uppercase tracking-wider">Costo Artesanos</p>
+          <p id="bi-kpi-costo-art" class="text-2xl font-extrabold text-[#742284] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B] block mt-0.5">Producción tercerizada</span>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#4A3C31] to-[#2E241D] text-white p-4 sm:p-5 rounded-2xl border border-[#B87352]/40 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-[#D5C9BD] uppercase tracking-wider">Margen Bruto Real</p>
+            <span id="bi-kpi-margen-pct" class="bg-[#008f6b] text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full">0%</span>
+          </div>
+          <p id="bi-kpi-margen-soles" class="text-2xl font-extrabold text-[#F9F6F0] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#D5C9BD] block mt-0.5">Ventas − Costo Artesanos</span>
+        </div>
+      </div>
+
+      <!-- Grid Central: Ranking por Jerarquía Retail & Colección + Rendimiento de Artesanos -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Ranking Ventas por Jerarquía Retail (Línea / Sub-línea / Colección) -->
+        <div class="lg:col-span-6 bg-white rounded-3xl border border-[#EBE5DE] p-5 sm:p-6 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
+            <div>
+              <h3 class="text-base font-serif font-bold text-[#4A3C31]">Ventas y Margen por Colección & Línea Retail</h3>
+              <p class="text-xs text-[#8C7A6B]">Agrupación por <code class="text-[#B87352]">linea</code> → <code class="text-[#B87352]">sublinea</code> → <code class="text-[#B87352]">coleccion</code></p>
+            </div>
+          </div>
+          <div id="bi-colecciones-bars" class="space-y-4">
+            <!-- Renderizado dinámico por registros.js -->
+          </div>
+          <p id="bi-colecciones-empty" class="hidden text-center text-xs text-[#8C7A6B] py-8">Aún no hay pedidos activos para agrupar por colección.</p>
+        </div>
+
+        <!-- Tabla KPI de Rendimiento y Puntualidad de Artesanos -->
+        <div class="lg:col-span-6 bg-white rounded-3xl border border-[#EBE5DE] p-5 sm:p-6 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
+            <div>
+              <h3 class="text-base font-serif font-bold text-[#4A3C31]">KPI de Artesanos & Puntualidad de Taller</h3>
+              <p class="text-xs text-[#8C7A6B]">Pedidos asignados, entregados a tiempo vs. atrasados y pago acumulado</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B] text-xs">
+                  <th class="py-2.5 pr-3 font-semibold">Artesano</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">Pedidos (Piezas)</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">A Tiempo / Atrasados</th>
+                  <th class="py-2.5 pl-2 font-semibold text-right">Costo / Ventas</th>
+                </tr>
+              </thead>
+              <tbody id="bi-artesanos-tbody" class="divide-y divide-[#F1EDE7]"></tbody>
+            </table>
+            <p id="bi-artesanos-empty" class="hidden text-center text-xs text-[#8C7A6B] py-8">Sin asignaciones de artesanos registradas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Sistema de Inventarios, Conteo Físico & Matrícula SKU / EAN-13 (Shopify WMS) -->
+    <div id="tab-inventario" class="hidden space-y-6">
+      <!-- Cabecera WMS con Botones de Matrícula Masiva, Conteo Masivo y Exportación -->
+      <div class="bg-white p-5 rounded-3xl border border-[#EBE5DE] shadow-2xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 bg-[#007A78]/10 text-[#007A78] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1">
+            Shopify-Grade WMS · Control de Mercadería & Códigos GS1
+          </span>
+          <h2 class="text-lg sm:text-xl font-serif font-bold text-[#4A3C31]">📋 Sistema de Inventarios, Conteo Físico y Matrícula SKU / EAN-13</h2>
+          <p class="text-xs text-[#8C7A6B]">Registra entradas de mercadería, realiza conteos físicos cíclicos, matricula códigos nuevos con SKU estructurado y código de barras EAN-13 oficial e imprime etiquetas.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button type="button" id="btn-inv-matricular-masivo"
+            class="bg-[#B87352] hover:bg-[#A36244] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
+            ⚡ Auto-Matricular Todo el Catálogo (SKU + EAN-13)
+          </button>
+          <button type="button" id="btn-inv-abrir-matricula"
+            class="bg-[#4A3C31] hover:bg-[#322821] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
+            + Matricular Nueva Mercadería
+          </button>
+          <button type="button" id="btn-inv-export-xlsx"
+            class="bg-[#1D6F42] hover:bg-[#155331] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
+            📥 Excel Inventario & Kardex (.xlsx)
+          </button>
+        </div>
+      </div>
+
+      <!-- 5 KPIs de Almacén y Valorización -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#8C7A6B] uppercase tracking-wider">SKUs Matriculados</p>
+          <p id="inv-kpi-skus" class="text-2xl font-extrabold text-[#4A3C31] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Con SKU interno y EAN-13</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#007A78] uppercase tracking-wider">Unidades Físicas en Stock</p>
+          <p id="inv-kpi-unidades" class="text-2xl font-extrabold text-[#007A78] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Disponibles para entrega inmediata</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#742284] uppercase tracking-wider">Valorización a Costo</p>
+          <p id="inv-kpi-valor-costo" class="text-2xl font-extrabold text-[#742284] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Stock × Costo Artesano</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#008f6b] uppercase tracking-wider">Valorización Retail (PVP)</p>
+          <p id="inv-kpi-valor-retail" class="text-2xl font-extrabold text-[#008f6b] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Stock × Precio Venta</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#B87352] uppercase tracking-wider">Stock Bajo / Preventa</p>
+          <p id="inv-kpi-alertas" class="text-2xl font-extrabold text-[#B87352] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">SKUs por reponer o a pedido</span>
+        </div>
+      </div>
+
+      <!-- Formulario Rápido: Matrícula de Mercadería Nueva con Generador Automático SKU + EAN-13 y Vista Previa de Código de Barras -->
+      <form id="form-matricula-mercaderia" class="hidden bg-white rounded-3xl border-2 border-[#B87352]/40 p-5 sm:p-6 space-y-4 shadow-sm">
+        <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#B87352] block">Matrícula Oficial de Mercadería</span>
+            <h3 class="text-base font-serif font-bold text-[#4A3C31]">Matricular Producto Nuevo con SKU Interno y Código de Barras EAN-13</h3>
+          </div>
+          <button type="button" id="btn-inv-regenerar-codigos"
+            class="bg-[#F9F6F0] hover:bg-[#EBE5DE] text-[#4A3C31] border border-[#D5C9BD] px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+            🎲 Generar nuevo SKU + EAN-13
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Nombre de la Mercadería / Pieza <span class="text-red-500">*</span></label>
+            <input type="text" id="mat-nombre" required maxlength="150" placeholder="Ej: Fuente Artesanal Hortensias 30cm"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Línea Retail</label>
+            <select id="mat-linea" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="Vajilla Artesanal">Vajilla Artesanal (VAJ)</option>
+              <option value="Decoración & Maceteros">Decoración & Maceteros (DEC)</option>
+              <option value="Kits Creativos">Kits Creativos (KIT)</option>
+              <option value="Sets de Regalo">Sets de Regalo (SET)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Sub-línea</label>
+            <select id="mat-sublinea" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="Tazas & Mugs">Tazas & Mugs (TAZ)</option>
+              <option value="Platos & Bowls">Platos & Bowls (PLA)</option>
+              <option value="Teteras & Azucareras">Teteras & Azucareras (TET)</option>
+              <option value="Adornos con Plantita">Adornos con Plantita (ADO)</option>
+              <option value="Jarrones & Esculturas">Jarrones & Esculturas (JAR)</option>
+              <option value="Cerámica para Pintar">Cerámica para Pintar (PIN)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-6 gap-3.5 items-end">
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">SKU Interno</label>
+            <input type="text" id="mat-sku" maxlength="60" placeholder="ART-VAJ-TAZ-0001"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white font-mono font-bold text-xs sm:text-sm text-[#4A3C31] focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#007A78] mb-1">Código EAN-13 (GS1)</label>
+            <input type="text" id="mat-ean" maxlength="13" placeholder="7752601000018"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#007A78]/40 bg-white font-mono font-bold text-xs sm:text-sm text-[#007A78] focus:outline-none focus:border-[#007A78]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Stock Inicial Contado</label>
+            <input type="number" id="mat-stock" min="0" step="1" value="1"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] font-bold text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Costo Artesano (S/)</label>
+            <input type="number" id="mat-costo" min="0" step="0.01" placeholder="25.00"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Precio Venta (S/) <span class="text-red-500">*</span></label>
+            <input type="number" id="mat-precio" required min="0" step="0.01" placeholder="65.00"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] font-bold text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Colección / Ubicación</label>
+            <input type="text" id="mat-coleccion" maxlength="80" placeholder="Catálogo General"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-semibold text-[#4A3C31]">Foto opcional:</label>
+            <input type="file" id="mat-imagen" accept="image/*" class="text-xs">
+          </div>
+          <div class="flex items-center gap-2.5">
+            <button type="button" id="btn-inv-cancelar-matricula"
+              class="px-4 py-2.5 rounded-xl text-xs font-semibold border border-[#D5C9BD] hover:bg-[#F9F6F0] cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" id="btn-inv-guardar-matricula"
+              class="bg-[#B87352] hover:bg-[#A36244] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+              ✓ Matricular y Registrar Stock
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Barra de Filtros, Lector de Código de Barras EAN-13 y Botón Guardar Conteo Físico Masivo -->
+      <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] flex flex-wrap items-end justify-between gap-3 shadow-2xs">
+        <div class="flex flex-wrap items-end gap-3">
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">🔍 Escanear Código EAN-13 / Buscar SKU o Producto</label>
+            <input type="text" id="filtro-inv-search" placeholder="Escanea EAN-13 (775...) o escribe SKU / Nombre"
+              class="px-3.5 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#B87352] w-72">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Línea Retail</label>
+            <select id="filtro-inv-linea" class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todas las líneas</option>
+              <option value="Vajilla Artesanal">Vajilla Artesanal</option>
+              <option value="Decoración & Maceteros">Decoración & Maceteros</option>
+              <option value="Kits Creativos">Kits Creativos</option>
+              <option value="Sets de Regalo">Sets de Regalo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado de Stock</label>
+            <select id="filtro-inv-stock" class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos</option>
+              <option value="con_stock">Con Stock Físico (&gt; 0)</option>
+              <option value="sin_stock">Stock 0 (En Preventa / Agotado)</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="inv-motivo-masivo" placeholder="Nota conteo (ej. Inventario Mensual)"
+            class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs w-48 focus:outline-none focus:border-[#B87352]">
+          <button type="button" id="btn-inv-guardar-conteo-masivo"
+            class="bg-[#007A78] hover:bg-[#00635D] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
+            💾 Guardar Hoja de Conteo Físico
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla Principal de Inventario y Conteo Físico (Estilo Shopify Inventory) -->
+      <div class="artesanitas-table-wrap bg-white rounded-2xl border border-[#EBE5DE] overflow-x-auto shadow-2xs">
+        <table class="artesanitas-table w-full text-sm">
+          <thead>
+            <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B] text-xs">
+              <th class="px-4 py-3 font-semibold">Producto / Jerarquía</th>
+              <th class="px-4 py-3 font-semibold">SKU Interno &amp; EAN-13</th>
+              <th class="px-4 py-3 font-semibold">Costo / PVP</th>
+              <th class="px-4 py-3 font-semibold text-center">Stock Sistema</th>
+              <th class="px-4 py-3 font-semibold">Conteo Físico / Ingreso Mercadería</th>
+              <th class="px-4 py-3 font-semibold text-right">Etiqueta / Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="inventario-tbody" class="divide-y divide-[#F1EDE7]"></tbody>
+        </table>
+        <p id="inventario-empty" class="hidden text-center text-[#8C7A6B] py-10">
+          No hay productos matriculados con este filtro. Haz clic en "⚡ Auto-Matricular Todo el Catálogo" para incorporar todas las piezas.
+        </p>
+      </div>
+
+      <!-- Kardex Auditable de Movimientos de Mercadería -->
+      <div class="bg-white rounded-3xl border border-[#EBE5DE] p-5 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-2.5">
+          <div>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31]">📜 Kardex Auditable de Movimientos de Mercadería</h3>
+            <p class="text-xs text-[#8C7A6B]">Registro histórico de cada conteo físico, entrada de taller, ajuste y salida automática por venta web.</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B]">
+                <th class="py-2 pr-3 font-semibold">Fecha / Hora</th>
+                <th class="py-2 px-2 font-semibold">SKU / Producto</th>
+                <th class="py-2 px-2 font-semibold">Tipo Movimiento</th>
+                <th class="py-2 px-2 font-semibold text-center">Anterior → Variación → Nuevo</th>
+                <th class="py-2 pl-2 font-semibold">Motivo / Referencia</th>
+              </tr>
+            </thead>
+            <tbody id="kardex-tbody" class="divide-y divide-[#F1EDE7]"></tbody>
+          </table>
+          <p id="kardex-empty" class="hidden text-center text-xs text-[#8C7A6B] py-6">Aún no hay movimientos registrados en el Kardex.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Etiqueta Imprimible de Código de Barras EAN-13 y SKU -->
+    <div id="modal-etiqueta-ean" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-xs">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-[#EBE5DE] text-center space-y-4">
+        <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-2.5">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#B87352]">Etiqueta Retail GS1 / Shopify</span>
+          <button type="button" id="btn-cerrar-etiqueta-ean" class="text-[#8C7A6B] hover:text-[#4A3C31] font-bold text-sm cursor-pointer">✕</button>
+        </div>
+        <div id="etiqueta-printable-area" class="bg-white border-2 border-dashed border-[#4A3C31] rounded-2xl p-4 space-y-1.5">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-[#8C7A6B]">Artesanitas Perú</p>
+          <h4 id="etiqueta-prod-nombre" class="text-sm font-serif font-bold text-[#4A3C31] leading-snug">--</h4>
+          <p id="etiqueta-prod-sku" class="text-xs font-mono font-bold text-[#B87352]">SKU: --</p>
+          <div id="etiqueta-barcode-svg" class="flex justify-center py-1"></div>
+          <p id="etiqueta-prod-ean" class="text-xs font-mono font-extrabold tracking-widest text-[#4A3C31]">--</p>
+          <p id="etiqueta-prod-precio" class="text-sm font-extrabold text-[#4A3C31] pt-1">S/ --</p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button type="button" id="btn-imprimir-etiqueta-ean"
+            class="flex-1 bg-[#4A3C31] hover:bg-[#322821] text-white py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+            🖨️ Imprimir Etiqueta
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tab: Productos -->
     <div id="tab-productos" class="hidden">
       <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
@@ -535,13 +919,16 @@
               class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm focus:outline-none focus:border-[#B87352]">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">SKU (Autogenerable)</label>
-            <input type="text" id="np-sku" maxlength="60" placeholder="Ej: ART-VAJ-TAZ-01"
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold text-[#4A3C31]">SKU (Autogenerable)</label>
+              <button type="button" id="btn-np-autogenerar-codigos" class="text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">⚡ Generar SKU+EAN</button>
+            </div>
+            <input type="text" id="np-sku" maxlength="60" placeholder="Ej: ART-VAJ-TAZ-0001"
               class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-mono focus:outline-none focus:border-[#B87352]">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Código EAN / Barras</label>
-            <input type="text" id="np-ean" maxlength="20" placeholder="Ej: 7750000000012"
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Código EAN-13 / Barras</label>
+            <input type="text" id="np-ean" maxlength="20" placeholder="Ej: 7752601000018"
               class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-mono focus:outline-none focus:border-[#B87352]">
           </div>
         </div>
@@ -769,7 +1156,7 @@
   </div>
 
   <!-- Script modular externo con Cache-Buster -->
-  <script src="/artesanitas/js/registros.js?v=20261120_v2"></script>
+  <script src="/js/registros.js?v=20261125_s6"></script>
 </body>
 
 </html>

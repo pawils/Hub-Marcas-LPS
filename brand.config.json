@@ -1,0 +1,61 @@
+{
+  "slug": "artesanitas",
+  "nombre": "Artesanitas Perú",
+  "lema": "Cerámica con alma de artista · Realizamos tacitas con propósito",
+  "subdominio": "artesanitas.lospilares.pe",
+  "ciudad": "Trujillo, Perú",
+  "whatsapp": "51929938466",
+  "email": "artesanitasperu@gmail.com",
+  "instagram": "@artesanitas.peru",
+  "metaPixelId": "851775257895823",
+  "hubPixelId": "1563612551863150",
+  "colores": {
+    "primario": "#B87352",
+    "secundario": "#007A78",
+    "fondo": "#F9F6F0",
+    "superficie": "#EBE5DE",
+    "texto": "#4A3C31",
+    "textoSecundario": "#8C7A6B",
+    "acento": "#D5C9BD"
+  },
+  "logo": "/imagenes/Artesanitas/logo_artesanitas.peru.jpg",
+  "cuentasPago": {
+    "billeteraPrincipal": "Plin",
+    "titular": "Diana Cecilia Culqui",
+    "numeroPlin": "923282069",
+    "plinQr": "/imagenes/Artesanitas/QR_pago_plin_artesanitas_1.jpg",
+    "yapeQr": "/imagenes/Artesanitas/QR_pago_plin_artesanitas_1.jpg",
+    "montoReservaDefault": 20.00,
+    "moneda": "PEN"
+  },
+  "modalidadesEntrega": [
+    {
+      "codigo": "provincia",
+      "titulo": "Envío a Provincia (Agencia Shalom / Courier)",
+      "costo": 10.00,
+      "empresaDefault": "Shalom"
+    },
+    {
+      "codigo": "recojo_local",
+      "titulo": "Recojo en Taller Trujillo",
+      "costo": 0.00,
+      "empresaDefault": "Taller Trujillo"
+    }
+  ],
+  "etapasProduccionArtesano": [
+    { "key": "recibido", "label": "1. Solicitud recibida por artesano" },
+    { "key": "modelado", "label": "2. En modelado de arcilla (onzas y forma)" },
+    { "key": "primer_horno", "label": "3. Primer horno (Bizcocho)" },
+    { "key": "segundo_horno", "label": "4. Segundo horno (Alta temperatura)" },
+    { "key": "pintado_acabados", "label": "5. Pintado, logos y detalles" },
+    { "key": "listo_revision_qa", "label": "6. Listo para revisión QA Artesanitas" },
+    { "key": "enviado_taller", "label": "7. Validado QA y enviado al Taller Artesanitas" }
+  ],
+  "etapasClienteFinal": [
+    { "key": "ingresado_produccion", "label": "Pedido ingresado a producción" },
+    { "key": "acabados_pintado", "label": "Pedido en proceso de acabados o pintado" },
+    { "key": "pedido_listo", "label": "Pedido listo" },
+    { "key": "en_envio", "label": "Pedido en envío por agencia, Shalom u otra courier" },
+    { "key": "post_venta", "label": "Post venta" }
+  ]
+}

@@ -57,6 +57,9 @@
     loadTalleres();
     loadRegistros();
     loadPedidos();
+    loadArtesanos();
+    loadBiResumen();
+    loadInventario();
     loadProductos();
   }
 
@@ -109,31 +112,43 @@
   const tabBtnTalleres = document.getElementById('tab-btn-talleres');
   const tabBtnRegistros = document.getElementById('tab-btn-registros');
   const tabBtnPedidos = document.getElementById('tab-btn-pedidos');
+  const tabBtnBi = document.getElementById('tab-btn-bi');
+  const tabBtnInventario = document.getElementById('tab-btn-inventario');
   const tabBtnProductos = document.getElementById('tab-btn-productos');
   const tabTalleres = document.getElementById('tab-talleres');
   const tabRegistros = document.getElementById('tab-registros');
   const tabPedidos = document.getElementById('tab-pedidos');
+  const tabBi = document.getElementById('tab-bi');
+  const tabInventario = document.getElementById('tab-inventario');
   const tabProductos = document.getElementById('tab-productos');
 
   function activeTabClass(btn, active) {
     if (!btn) return;
     btn.className = active
-      ? 'px-3.5 py-2 rounded-lg text-sm font-medium bg-[#B87352] text-white shadow-xs cursor-pointer'
-      : 'px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] cursor-pointer';
+      ? 'px-3.5 py-2 rounded-lg text-sm font-medium bg-[#B87352] text-white shadow-xs flex items-center gap-1.5 cursor-pointer'
+      : 'px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] flex items-center gap-1.5 cursor-pointer';
   }
 
   function mostrarTab(tab, btn) {
-    [tabTalleres, tabRegistros, tabPedidos, tabProductos].forEach(t => {
+    [tabTalleres, tabRegistros, tabPedidos, tabBi, tabInventario, tabProductos].forEach(t => {
       if (t) t.classList.toggle('hidden', t !== tab);
     });
-    [tabBtnTalleres, tabBtnRegistros, tabBtnPedidos, tabBtnProductos].forEach(b => {
+    [tabBtnTalleres, tabBtnRegistros, tabBtnPedidos, tabBtnBi, tabBtnInventario, tabBtnProductos].forEach(b => {
       if (b) activeTabClass(b, b === btn);
     });
+    if (tab === tabBi) {
+      loadBiResumen();
+    }
+    if (tab === tabInventario) {
+      loadInventario();
+    }
   }
 
   if (tabBtnTalleres) tabBtnTalleres.addEventListener('click', () => mostrarTab(tabTalleres, tabBtnTalleres));
   if (tabBtnRegistros) tabBtnRegistros.addEventListener('click', () => mostrarTab(tabRegistros, tabBtnRegistros));
   if (tabBtnPedidos) tabBtnPedidos.addEventListener('click', () => mostrarTab(tabPedidos, tabBtnPedidos));
+  if (tabBtnBi) tabBtnBi.addEventListener('click', () => mostrarTab(tabBi, tabBtnBi));
+  if (tabBtnInventario) tabBtnInventario.addEventListener('click', () => mostrarTab(tabInventario, tabBtnInventario));
   if (tabBtnProductos) tabBtnProductos.addEventListener('click', () => mostrarTab(tabProductos, tabBtnProductos));
 
   // ── Talleres ──
@@ -1047,12 +1062,21 @@
     cotizado: '1. Cotizado / Solicitud',
     reservado: '2. Reserva Confirmada',
     encargado_artesano: '3. Encargado a Artesano',
-    en_produccion: '4. En Pintura / Taller',
-    recibido_taller: '5. Listo en Taller Artesanitas',
+    en_produccion: '4. En Pintura / Acabados',
+    recibido_taller: '5. Listo en Taller Artesanitas (QA OK)',
     enviado: '6. Enviado (Shalom / Courier)',
     entregado: '7. Entregado al Cliente',
     post_venta: '8. Post-Venta Completada',
     cancelado: 'Cancelado'
+  };
+  const ETAPA_ARTESANO_LABELS = {
+    recibido: '1. Solicitud recibida',
+    modelado: '2. En Modelado (arcilla/onzas)',
+    primer_horno: '3. 1° Horno (Bizcocho)',
+    segundo_horno: '4. 2° Horno (Alta temp.)',
+    pintado_acabados: '5. Pintado y logos',
+    listo_revision_qa: '6. Listo p/ Revisión QA',
+    enviado_taller: '7. Enviado a Taller Artesanitas'
   };
   const ESTADO_PEDIDO_CLASSES = {
     cotizado: 'bg-stone-100 text-stone-700 border border-stone-200',
@@ -1196,7 +1220,7 @@
               ${esLocal ? 'Envío: S/ 0.00 (Taller)' : `Flete Shalom: S/ ${Number(p.costo_envio).toFixed(2)}`}
             </span>
           </td>
-          <td data-label="Pago" class="px-4 py-3">
+          <td data-label="Pago" class="px-4 py-3 space-y-1">
             <select data-id="${p.id}" class="select-pedido-pago text-xs font-medium px-2.5 py-1 rounded-lg border-0 ${PAGO_CLASSES[p.estado_pago] || ''}">
               ${pagoOpts}
             </select>
@@ -1206,20 +1230,58 @@
             ${Number(p.saldo_pendiente) > 0
               ? `<div class="text-[10px] font-semibold text-red-600">Saldo pendiente: S/ ${Number(p.saldo_pendiente).toFixed(2)}</div>`
               : `<div class="text-[10px] font-semibold text-green-700">Producto pagado 100%</div>`}
+            ${(() => {
+              const verif = p.voucher_verificacion_ia || 'pendiente';
+              const op = p.voucher_nro_operacion ? `Op #${escapeHtml(p.voucher_nro_operacion)}` : 'Sin N° Op';
+              const mDet = p.voucher_monto_detectado !== null && p.voucher_monto_detectado !== undefined
+                ? ` · S/ ${Number(p.voucher_monto_detectado).toFixed(2)}`
+                : '';
+              const ent = p.voucher_entidad_detectada ? ` (${escapeHtml(p.voucher_entidad_detectada)})` : '';
+              if (verif === 'verificado') {
+                return `<div class="inline-block text-[10px] font-bold bg-green-50 text-green-800 border border-green-200 px-2 py-0.5 rounded-md">🤖 IA: ${op}${mDet}${ent} (OK)</div>`;
+              }
+              if (verif === 'duplicado') {
+                return `<div class="inline-block text-[10px] font-extrabold bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded-md">🚨 IA: Voucher Duplicado (${op})</div>`;
+              }
+              if (verif === 'monto_difiere') {
+                return `<div class="inline-block text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-md">⚠️ IA: Monto difiere (${op}${mDet})</div>`;
+              }
+              return `<div class="inline-block text-[10px] font-medium bg-[#F1EDE7] text-[#8C7A6B] px-2 py-0.5 rounded-md">🤖 IA: ${p.voucher_nro_operacion ? op + mDet : 'Pendiente validación'}</div>`;
+            })()}
+            ${p.tiene_comprobante ? `
+              <div>
+                <a href="/api/negocios/${NEGOCIO}/pedidos/${p.id}/comprobante" target="_blank" rel="noreferrer"
+                  class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] hover:underline">
+                  <span>🖼️ Ver voucher subido</span>
+                </a>
+              </div>
+            ` : ''}
           </td>
-          <td data-label="Estado Pedido" class="px-4 py-3 space-y-1.5">
-            <select data-id="${p.id}" class="select-pedido-estado text-xs font-semibold px-2.5 py-1 rounded-lg border-0 ${ESTADO_PEDIDO_CLASSES[p.estado_pedido] || ''}">
+          <td data-label="Estado Pedido" class="px-4 py-3 space-y-1.5 min-w-[290px]">
+            <select data-id="${p.id}" class="select-pedido-estado text-xs font-semibold px-2.5 py-1 rounded-lg border-0 w-full ${ESTADO_PEDIDO_CLASSES[p.estado_pedido] || ''}">
               ${estadoOpts}
             </select>
-            <div class="bg-[#F9F6F0] p-2 rounded-xl border border-[#EBE5DE] space-y-1.5 mt-1">
-              <div class="text-[10px] font-bold text-[#8C7A6B] uppercase">Trazabilidad Artesano & Envío</div>
-              <input type="text" data-artesano-id="${p.id}" value="${escapeHtml(p.artesano_nombre || '')}" placeholder="Artesano asignado"
-                class="input-pedido-artesano w-full px-2 py-1 text-[11px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">
-              <div class="flex items-center gap-1">
-                <span class="text-[10px] text-[#8C7A6B] shrink-0">Entrega artesano:</span>
-                <input type="date" data-fecha-art-id="${p.id}" value="${p.fecha_compromiso_artesano ? String(p.fecha_compromiso_artesano).slice(0, 10) : ''}"
-                  class="input-pedido-fecha-art flex-1 px-1.5 py-0.5 text-[10px] rounded-lg border border-[#D5C9BD] bg-white">
+            <div class="bg-[#F9F6F0] p-2.5 rounded-xl border border-[#EBE5DE] space-y-1.5 mt-1 text-left">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-[#8C7A6B] uppercase">1. Encargo al Artesano</span>
+                <span class="text-[10px] font-bold text-[#B87352]">${escapeHtml(ETAPA_ARTESANO_LABELS[p.etapa_artesano] || '1. Recibido')}</span>
               </div>
+              <div class="grid grid-cols-2 gap-1">
+                <input type="text" data-artesano-id="${p.id}" value="${escapeHtml(p.artesano_nombre || '')}" placeholder="Artesano asignado"
+                  class="input-pedido-artesano w-full px-2 py-1 text-[11px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">
+                <input type="number" step="0.01" min="0" data-costo-art-id="${p.id}" value="${p.costo_artesano_total !== null && p.costo_artesano_total !== undefined ? Number(p.costo_artesano_total) : ''}" placeholder="Cotización S/ (Art.)"
+                  class="input-pedido-costo-art w-full px-2 py-1 text-[11px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]"
+                  title="Cotización / Costo total pactado con el artesano">
+              </div>
+              <div class="grid grid-cols-2 gap-1">
+                <select data-etapa-art-id="${p.id}" class="input-pedido-etapa-art px-1.5 py-1 text-[10px] font-semibold rounded-lg border border-[#D5C9BD] bg-white text-[#4A3C31]">
+                  ${Object.keys(ETAPA_ARTESANO_LABELS).map(k => `<option value="${k}" ${(p.etapa_artesano || 'recibido') === k ? 'selected' : ''}>${ETAPA_ARTESANO_LABELS[k]}</option>`).join('')}
+                </select>
+                <input type="date" data-fecha-art-id="${p.id}" value="${p.fecha_compromiso_artesano ? String(p.fecha_compromiso_artesano).slice(0, 10) : ''}"
+                  class="input-pedido-fecha-art px-1.5 py-1 text-[10px] rounded-lg border border-[#D5C9BD] bg-white" title="Fecha compromiso del artesano">
+              </div>
+              <textarea rows="2" data-espec-art-id="${p.id}" placeholder="Detalles para el artesano: onzas (ej. 12oz), tamaños, colores, logo de marca personalizada, etc."
+                class="input-pedido-espec-art w-full px-2 py-1 text-[11px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">${escapeHtml(p.especificaciones_artesano || '')}</textarea>
               ${(() => {
                 if (!p.fecha_compromiso_artesano || ['recibido_taller', 'enviado', 'entregado', 'post_venta', 'cancelado'].includes(p.estado_pedido)) return '';
                 const hoy = new Date().toISOString().slice(0, 10);
@@ -1228,20 +1290,58 @@
                   ? `<div class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">⚠️ Artesano demorado (venció ${comp})</div>`
                   : '';
               })()}
-              <div class="flex items-center gap-1">
-                <input type="text" data-guia-id="${p.id}" value="${escapeHtml(p.guia_envio || '')}" placeholder="N° Guía Shalom"
-                  class="input-pedido-guia flex-1 px-2 py-1 text-[11px] font-mono rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">
-                <button type="button" data-save-guia="${p.id}"
-                  class="btn-guardar-guia text-[10px] font-bold bg-[#4A3C31] text-white px-2.5 py-1 rounded-lg hover:bg-[#B87352] transition-colors cursor-pointer"
-                  title="Guardar Artesano, Fecha y Guía Shalom">
-                  Guardar
-                </button>
+
+              <!-- 2. Revisión QA Artesanitas (Onzas, Logos, Colores, Medidas) -->
+              <div class="pt-1.5 border-t border-[#EBE5DE] space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-[#8C7A6B] uppercase">2. Validación QA Artesanitas</span>
+                  <select data-qa-estado-id="${p.id}" class="input-pedido-qa-estado text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-[#D5C9BD] ${p.qa_estado === 'aprobado' ? 'bg-green-100 text-green-800' : (p.qa_estado === 'observado' ? 'bg-red-100 text-red-800' : 'bg-white text-[#4A3C31]')}">
+                    <option value="pendiente" ${(p.qa_estado || 'pendiente') === 'pendiente' ? 'selected' : ''}>⏳ QA Pendiente</option>
+                    <option value="aprobado" ${p.qa_estado === 'aprobado' ? 'selected' : ''}>✅ QA Aprobado (OK)</option>
+                    <option value="observado" ${p.qa_estado === 'observado' ? 'selected' : ''}>⚠️ QA Observado</option>
+                  </select>
+                </div>
+                ${(() => {
+                  const chk = (p.qa_checklist && typeof p.qa_checklist === 'object') ? p.qa_checklist : {};
+                  return `
+                    <div class="grid grid-cols-2 gap-1 text-[10px] text-[#4A3C31] bg-white p-1.5 rounded-lg border border-[#EBE5DE]">
+                      <label class="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" data-qa-onzas="${p.id}" ${chk.onzas ? 'checked' : ''} class="accent-[#008f6b]"> Onzas / Tam.</label>
+                      <label class="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" data-qa-logos="${p.id}" ${chk.logos ? 'checked' : ''} class="accent-[#008f6b]"> Logos / Marca</label>
+                      <label class="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" data-qa-colores="${p.id}" ${chk.colores ? 'checked' : ''} class="accent-[#008f6b]"> Colores</label>
+                      <label class="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" data-qa-acabados="${p.id}" ${chk.acabados ? 'checked' : ''} class="accent-[#008f6b]"> Acabados</label>
+                    </div>
+                  `;
+                })()}
+                <input type="text" data-qa-obs-id="${p.id}" value="${escapeHtml(p.qa_observaciones || '')}" placeholder="Observación QA (si varía onzas/logo/color)"
+                  class="input-pedido-qa-obs w-full px-2 py-1 text-[10px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">
+              </div>
+
+              <!-- 3. Ciudad Destino, Fecha Entrega Cliente y Guía Courier -->
+              <div class="pt-1.5 border-t border-[#EBE5DE] space-y-1">
+                <span class="text-[10px] font-bold text-[#8C7A6B] uppercase block">3. Destino, Fecha Cliente & Courier</span>
+                <div class="grid grid-cols-2 gap-1">
+                  <input type="text" data-ciudad-id="${p.id}" value="${escapeHtml(p.ciudad_destino || '')}" placeholder="Ciudad destino"
+                    class="input-pedido-ciudad px-2 py-1 text-[10px] rounded-lg border border-[#D5C9BD] bg-white">
+                  <input type="date" data-fecha-cli-id="${p.id}" value="${p.fecha_entrega ? String(p.fecha_entrega).slice(0, 10) : ''}"
+                    class="input-pedido-fecha-cli px-1.5 py-1 text-[10px] rounded-lg border border-[#D5C9BD] bg-white" title="Fecha de entrega al cliente según ciudad">
+                </div>
+                <div class="flex items-center gap-1">
+                  <input type="text" data-empresa-id="${p.id}" value="${escapeHtml(p.empresa_envio || 'Shalom')}" placeholder="Courier"
+                    class="input-pedido-empresa w-20 px-2 py-1 text-[10px] rounded-lg border border-[#D5C9BD] bg-white" title="Agencia (Shalom, Olva, etc.)">
+                  <input type="text" data-guia-id="${p.id}" value="${escapeHtml(p.guia_envio || '')}" placeholder="N° Guía / Ticket"
+                    class="input-pedido-guia flex-1 px-2 py-1 text-[11px] font-mono rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">
+                  <button type="button" data-save-guia="${p.id}"
+                    class="btn-guardar-guia text-[10px] font-bold bg-[#4A3C31] text-white px-2.5 py-1 rounded-lg hover:bg-[#B87352] transition-colors cursor-pointer"
+                    title="Guardar Artesano, Especificaciones, QA y Guía">
+                    Guardar
+                  </button>
+                </div>
               </div>
             </div>
-            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! ✨ Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.guia_envio ? '. Tu guía Shalom es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
+            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! ✨ Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.ciudad_destino ? ' con destino a ' + p.ciudad_destino : ''}${p.fecha_entrega ? ' (Entrega estimada: ' + String(p.fecha_entrega).slice(0, 10) + ')' : ''}${p.guia_envio ? '. Tu guía ' + (p.empresa_envio || 'Shalom') + ' es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
               target="_blank" rel="noreferrer"
               class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#B87352] hover:underline pt-0.5">
-              <span>📲 Enviar link de tracking</span>
+              <span>📲 Comunicar fecha / link de tracking al cliente</span>
             </a>
           </td>
           <td data-label="Acciones" class="px-4 py-3 text-right">
@@ -1285,23 +1385,55 @@
       });
     });
 
-    // Eventos guardar Guía Shalom
+    // Eventos guardar Guía Shalom, Artesano, Especificaciones, QA y Destino
     tbody.querySelectorAll('.btn-guardar-guia').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.saveGuia;
         const inputGuia = tbody.querySelector(`.input-pedido-guia[data-guia-id="${id}"]`);
+        const inputEmpresa = tbody.querySelector(`.input-pedido-empresa[data-empresa-id="${id}"]`);
+        const inputCiudad = tbody.querySelector(`.input-pedido-ciudad[data-ciudad-id="${id}"]`);
+        const inputFechaCli = tbody.querySelector(`.input-pedido-fecha-cli[data-fecha-cli-id="${id}"]`);
         const inputArt = tbody.querySelector(`.input-pedido-artesano[data-artesano-id="${id}"]`);
+        const inputCostoArt = tbody.querySelector(`.input-pedido-costo-art[data-costo-art-id="${id}"]`);
+        const inputEtapaArt = tbody.querySelector(`.input-pedido-etapa-art[data-etapa-art-id="${id}"]`);
         const inputFechaArt = tbody.querySelector(`.input-pedido-fecha-art[data-fecha-art-id="${id}"]`);
-        const guia_envio = inputGuia ? inputGuia.value.trim() : '';
-        const artesano_nombre = inputArt ? inputArt.value.trim() : '';
-        const fecha_compromiso_artesano = inputFechaArt ? inputFechaArt.value : '';
+        const inputEspecArt = tbody.querySelector(`.input-pedido-espec-art[data-espec-art-id="${id}"]`);
+        const inputQaEstado = tbody.querySelector(`.input-pedido-qa-estado[data-qa-estado-id="${id}"]`);
+        const inputQaObs = tbody.querySelector(`.input-pedido-qa-obs[data-qa-obs-id="${id}"]`);
+        const chkOnzas = tbody.querySelector(`input[data-qa-onzas="${id}"]`);
+        const chkLogos = tbody.querySelector(`input[data-qa-logos="${id}"]`);
+        const chkColores = tbody.querySelector(`input[data-qa-colores="${id}"]`);
+        const chkAcabados = tbody.querySelector(`input[data-qa-acabados="${id}"]`);
+
+        const payload = {
+          guia_envio: inputGuia ? inputGuia.value.trim() : '',
+          empresa_envio: inputEmpresa ? inputEmpresa.value.trim() : 'Shalom',
+          ciudad_destino: inputCiudad ? inputCiudad.value.trim() : '',
+          fecha_entrega: inputFechaCli ? inputFechaCli.value : undefined,
+          artesano_nombre: inputArt ? inputArt.value.trim() : '',
+          costo_artesano_total: inputCostoArt ? inputCostoArt.value.trim() : '',
+          etapa_artesano: inputEtapaArt ? inputEtapaArt.value : 'recibido',
+          fecha_compromiso_artesano: inputFechaArt ? inputFechaArt.value : '',
+          especificaciones_artesano: inputEspecArt ? inputEspecArt.value.trim() : '',
+          qa_estado: inputQaEstado ? inputQaEstado.value : 'pendiente',
+          qa_observaciones: inputQaObs ? inputQaObs.value.trim() : '',
+          qa_checklist: {
+            onzas: !!(chkOnzas && chkOnzas.checked),
+            logos: !!(chkLogos && chkLogos.checked),
+            colores: !!(chkColores && chkColores.checked),
+            acabados: !!(chkAcabados && chkAcabados.checked)
+          }
+        };
+
         btn.textContent = '...';
         await apiFetch(`/pedidos/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ guia_envio, artesano_nombre, fecha_compromiso_artesano })
+          body: JSON.stringify(payload)
         });
         loadPedidos();
+        loadArtesanos();
+        loadBiResumen();
       });
     });
 
@@ -1350,6 +1482,147 @@
       const qs = filtrosPedidosQuery();
       descargarExport('/pedidos/export.xlsx' + (qs ? `?${qs}` : ''), 'artesanitas-pedidos.xlsx');
     });
+  }
+
+  // ── Sprint 2: Dashboard BI & Rentabilidad por Línea y Artesano ──
+  const btnRefreshBi = document.getElementById('btn-refresh-bi');
+  if (btnRefreshBi) {
+    btnRefreshBi.addEventListener('click', () => loadBiResumen());
+  }
+
+  async function loadBiResumen() {
+    try {
+      const res = await apiFetch('/bi-resumen');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.success) return;
+
+      const f = data.finanzas || {};
+      const jerarquia = Array.isArray(data.jerarquia_retail) ? data.jerarquia_retail : [];
+      const artesanos = Array.isArray(data.artesanos) ? data.artesanos : [];
+
+      const ventasTotales = Number(f.ventas_totales || 0);
+      const totalAbonado = Number(f.total_abonado || 0);
+      const saldosCobrar = Number(f.saldos_por_cobrar || 0);
+      const costoArtesanos = Number(f.costo_total_artesanos || 0);
+      const margenSoles = Number(f.margen_bruto_soles || 0);
+      const margenPct = Number(f.margen_bruto_pct || 0);
+      const totalPedidos = Number(f.total_pedidos || 0);
+      const totalPiezas = Number(f.total_piezas || 0);
+
+      const elVentas = document.getElementById('bi-kpi-ventas');
+      if (elVentas) elVentas.textContent = `S/ ${ventasTotales.toFixed(2)}`;
+      const elPedSub = document.getElementById('bi-kpi-pedidos-sub');
+      if (elPedSub) elPedSub.textContent = `${totalPedidos} ${totalPedidos === 1 ? 'pedido activo' : 'pedidos activos'} · ${totalPiezas} ${totalPiezas === 1 ? 'pieza' : 'piezas'}`;
+
+      const elAbonado = document.getElementById('bi-kpi-abonado');
+      if (elAbonado) elAbonado.textContent = `S/ ${totalAbonado.toFixed(2)}`;
+      const pctCobrado = ventasTotales > 0 ? Math.round((totalAbonado / ventasTotales) * 100) : 0;
+      const elAbonadoSub = document.getElementById('bi-kpi-abonado-sub');
+      if (elAbonadoSub) elAbonadoSub.textContent = `${pctCobrado}% del valor total recaudado`;
+
+      const elSaldos = document.getElementById('bi-kpi-saldos');
+      if (elSaldos) elSaldos.textContent = `S/ ${saldosCobrar.toFixed(2)}`;
+
+      const elCostoArt = document.getElementById('bi-kpi-costo-art');
+      if (elCostoArt) elCostoArt.textContent = `S/ ${costoArtesanos.toFixed(2)}`;
+
+      const elMargenSoles = document.getElementById('bi-kpi-margen-soles');
+      if (elMargenSoles) elMargenSoles.textContent = `S/ ${margenSoles.toFixed(2)}`;
+
+      const elMargenPct = document.getElementById('bi-kpi-margen-pct');
+      if (elMargenPct) {
+        elMargenPct.textContent = `${margenPct.toFixed(1)}%`;
+        elMargenPct.className = margenPct >= 50
+          ? 'bg-[#008f6b] text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full'
+          : (margenPct >= 30 ? 'bg-[#B87352] text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full' : 'bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full');
+      }
+
+      // Renderizar barras de progreso por Jerarquía Retail (Línea -> Sub-línea -> Colección)
+      const barsContainer = document.getElementById('bi-colecciones-bars');
+      const barsEmpty = document.getElementById('bi-colecciones-empty');
+      if (barsEmpty) barsEmpty.classList.toggle('hidden', jerarquia.length > 0);
+      if (barsContainer) {
+        const totalVentasJerarquia = jerarquia.reduce((acc, r) => acc + Number(r.ventas_soles || 0), 0) || 1;
+        barsContainer.innerHTML = jerarquia.map(item => {
+          const vSoles = Number(item.ventas_soles || 0);
+          const cSoles = Number(item.costo_artesano_soles || 0);
+          const mSoles = Number(item.margen_soles || 0);
+          const sharePct = Math.min(100, Math.round((vSoles / totalVentasJerarquia) * 100));
+          const itemMargenPct = vSoles > 0 ? Math.round((mSoles / vSoles) * 100) : 0;
+
+          return `
+            <div class="p-3.5 rounded-2xl bg-[#F9F6F0] border border-[#EBE5DE] space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-[#8C7A6B] block">
+                    ${escapeHtml(item.linea)} → ${escapeHtml(item.sublinea)}
+                  </span>
+                  <h4 class="text-sm font-bold text-[#4A3C31]">${escapeHtml(item.coleccion)}</h4>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-sm font-extrabold text-[#4A3C31] block">S/ ${vSoles.toFixed(2)}</span>
+                  <span class="text-[11px] text-[#008f6b] font-semibold">Margen: S/ ${mSoles.toFixed(2)} (${itemMargenPct}%)</span>
+                </div>
+              </div>
+              <div class="w-full h-2.5 bg-[#EBE5DE] rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-[#B87352] to-[#4A3C31] rounded-full transition-all duration-500" style="width: ${Math.max(4, sharePct)}%"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-[#8C7A6B]">
+                <span><strong>${Number(item.piezas || 0)}</strong> piezas en <strong>${Number(item.pedidos || 0)}</strong> pedidos</span>
+                <span>Costo art.: S/ ${cSoles.toFixed(2)} · <strong>${sharePct}%</strong> de ventas</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Renderizar tabla de rendimiento y puntualidad de artesanos
+      const artTbody = document.getElementById('bi-artesanos-tbody');
+      const artEmpty = document.getElementById('bi-artesanos-empty');
+      if (artEmpty) artEmpty.classList.toggle('hidden', artesanos.length > 0);
+      if (artTbody) {
+        artTbody.innerHTML = artesanos.map(a => {
+          const aTiempo = Number(a.entregados_a_tiempo || 0);
+          const atrasados = Number(a.atrasados || 0);
+          const enProd = Number(a.en_produccion || 0);
+          const evaluados = aTiempo + atrasados;
+          const puntualidadPct = evaluados > 0 ? Math.round((aTiempo / evaluados) * 100) : 100;
+
+          return `
+            <tr class="hover:bg-[#F9F6F0]/60 transition-colors">
+              <td class="py-3 pr-3">
+                <div class="font-bold text-[#4A3C31]">${escapeHtml(a.artesano)}</div>
+                <span class="text-[11px] text-[#8C7A6B]">${enProd > 0 ? `${enProd} en taller/producción` : 'Al día'}</span>
+              </td>
+              <td class="py-3 px-2 text-center">
+                <span class="font-bold text-[#4A3C31]">${Number(a.pedidos_asignados || 0)}</span>
+                <span class="text-xs text-[#8C7A6B] block">${Number(a.piezas_asignadas || 0)} piezas</span>
+              </td>
+              <td class="py-3 px-2 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-700 border border-green-200" title="Entregados a tiempo">
+                    ✓ ${aTiempo}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${atrasados > 0 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#F1EDE7] text-[#8C7A6B]'}" title="Pedidos atrasados">
+                    ⚠️ ${atrasados}
+                  </span>
+                </div>
+                <span class="block text-[10px] font-semibold ${atrasados > 0 ? 'text-amber-700' : 'text-[#008f6b]'} mt-0.5">
+                  ${evaluados > 0 ? `${puntualidadPct}% puntualidad` : 'En plazo'}
+                </span>
+              </td>
+              <td class="py-3 pl-2 text-right">
+                <span class="font-bold text-[#742284] block">S/ ${Number(a.pago_acumulado || 0).toFixed(2)}</span>
+                <span class="text-[11px] text-[#8C7A6B]">Ventas: S/ ${Number(a.ventas_generadas || 0).toFixed(2)}</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    } catch (e) {
+      console.error('Error cargando resumen BI:', e);
+    }
   }
 
   // ── Cambiar contraseña ──
@@ -1405,6 +1678,602 @@
           cpError.classList.remove('hidden');
         }
       }
+    });
+  }
+
+  // ── Sprint 3: Directorio de Artesanos Aliados & Magic Links + Sprint 6: Push Admin ──
+  const formNuevoArtesano = document.getElementById('form-nuevo-artesano');
+  const artesanosListEl = document.getElementById('artesanos-magic-links-list');
+
+  async function loadArtesanos() {
+    if (!artesanosListEl) return;
+    try {
+      const res = await apiFetch('/artesanos');
+      if (!res.ok) return;
+      const data = await res.json();
+      const artesanos = (data && data.artesanos) || [];
+      if (artesanos.length === 0) {
+        artesanosListEl.innerHTML = `<p class="text-xs text-[#8C7A6B] italic col-span-full">Aún no hay artesanos registrados. Crea uno arriba o escribe su nombre en cualquier pedido para generar su Magic Link automático.</p>`;
+        return;
+      }
+      artesanosListEl.innerHTML = artesanos.map(a => {
+        const magicUrl = `${window.location.origin}/taller-artesano?token=${encodeURIComponent(a.access_token)}`;
+        const cleanWa = String(a.whatsapp || '').replace(/\D/g, '');
+        const waHref = cleanWa
+          ? `https://wa.me/51${cleanWa}?text=${encodeURIComponent(`Hola ${a.nombre}! 🏺 Aquí tienes tu enlace privado del Portal de Taller de Artesanitas Perú para revisar las especificaciones de tus solicitudes asignadas (cotización, onzas, colores, logos) y reportar avances de horno y pintado: ${magicUrl}`)}`
+          : '';
+        return `
+          <div class="p-3 rounded-2xl bg-[#F9F6F0] border border-[#EBE5DE] flex flex-col justify-between gap-2">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h4 class="text-xs font-bold text-[#4A3C31]">${escapeHtml(a.nombre)}</h4>
+                <span class="text-[11px] text-[#8C7A6B]">${Number(a.pedidos_activos || 0)} solicitudes activas · ${Number(a.total_pedidos || 0)} hist.</span>
+              </div>
+              ${Number(a.pendientes_qa || 0) > 0 ? `
+                <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                  🔍 ${a.pendientes_qa} p/ QA
+                </span>
+              ` : ''}
+            </div>
+            <div class="flex items-center gap-1.5 pt-1">
+              <button type="button" data-copy-magic="${escapeHtml(magicUrl)}"
+                class="btn-copy-magic flex-1 bg-white hover:bg-[#B87352] text-[#4A3C31] hover:text-white border border-[#D5C9BD] text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors cursor-pointer">
+                🔗 Copiar Magic Link
+              </button>
+              <a href="${escapeHtml(magicUrl)}" target="_blank" rel="noreferrer"
+                class="bg-white hover:bg-[#4A3C31] text-[#4A3C31] hover:text-white border border-[#D5C9BD] text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors"
+                title="Abrir vista del artesano">
+                ↗
+              </a>
+              ${waHref ? `
+                <a href="${waHref}" target="_blank" rel="noreferrer"
+                  class="bg-[#008f6b] hover:bg-[#007759] text-white text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors"
+                  title="Enviar Magic Link por WhatsApp al artesano">
+                  📲 WA
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      artesanosListEl.querySelectorAll('.btn-copy-magic').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(btn.dataset.copyMagic);
+            const orig = btn.textContent;
+            btn.textContent = '✓ ¡Link copiado!';
+            setTimeout(() => { btn.textContent = orig; }, 1800);
+          } catch {}
+        });
+      });
+    } catch (e) {
+      console.error('Error cargando artesanos:', e);
+    }
+  }
+
+  if (formNuevoArtesano) {
+    formNuevoArtesano.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nomEl = document.getElementById('na-nombre');
+      const waEl = document.getElementById('na-whatsapp');
+      const nombre = nomEl ? nomEl.value.trim() : '';
+      const whatsapp = waEl ? waEl.value.trim() : '';
+      if (!nombre) return;
+      try {
+        const res = await apiFetch('/artesanos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, whatsapp })
+        });
+        if (res.ok) {
+          formNuevoArtesano.reset();
+          loadArtesanos();
+        }
+      } catch {}
+    });
+  }
+
+  const btnPushAdmin = document.getElementById('btn-push-admin');
+  if (btnPushAdmin) {
+    btnPushAdmin.addEventListener('click', async () => {
+      if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+        alert('Tu navegador no soporta notificaciones Web Push.');
+        return;
+      }
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          alert('Permiso de notificaciones no concedido.');
+          return;
+        }
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          const keyRes = await fetch(`/api/negocios/${NEGOCIO}/push/vapid-public-key`);
+          const keyData = await keyRes.json();
+          if (keyData && keyData.publicKey) {
+            const padding = '='.repeat((4 - (keyData.publicKey.length % 4)) % 4);
+            const base64 = (keyData.publicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const appServerKey = Uint8Array.from([...rawData].map(ch => ch.charCodeAt(0)));
+            sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appServerKey });
+          }
+        }
+        if (sub) {
+          await fetch(`/api/negocios/${NEGOCIO}/push/subscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rol: 'admin', subscription: sub.toJSON() })
+          });
+        }
+        btnPushAdmin.textContent = '🔔 Push Admin Activo';
+        btnPushAdmin.classList.replace('bg-[#4A3C31]', 'bg-[#008f6b]');
+      } catch {
+        btnPushAdmin.textContent = '🔔 Alertas activadas';
+      }
+    });
+  }
+
+  // ── Sistema WMS Shopify: Inventario, Conteo Físico, Kardex y Matrícula SKU / EAN-13 ──
+  let inventarioCache = [];
+  let kardexCache = [];
+
+  const TIPO_MOV_LABELS = {
+    matricula_inicial: '🏷️ Matrícula SKU/EAN',
+    entrada_mercaderia: '📥 Entrada Mercadería',
+    recepcion_artesano: '🏺 Recepción Artesano',
+    conteo_fisico: '📋 Conteo Físico',
+    salida_venta: '🛒 Salida por Venta',
+    ajuste_merma: '⚠️ Ajuste / Merma'
+  };
+
+  async function solicitarCodigosSkuEan(linea, sublinea) {
+    try {
+      const res = await apiFetch('/inventario/generar-codigos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ linea, sublinea })
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  // Botón generar SKU + EAN-13 dentro de la Ficha Técnica de Catálogo
+  const btnNpAutoCodigos = document.getElementById('btn-np-autogenerar-codigos');
+  if (btnNpAutoCodigos) {
+    btnNpAutoCodigos.addEventListener('click', async () => {
+      const lin = document.getElementById('np-linea')?.value || 'Vajilla Artesanal';
+      const sub = document.getElementById('np-sublinea')?.value || 'Tazas & Mugs';
+      const codes = await solicitarCodigosSkuEan(lin, sub);
+      if (codes && codes.success) {
+        const skuEl = document.getElementById('np-sku'); if (skuEl) skuEl.value = codes.sku;
+        const eanEl = document.getElementById('np-ean'); if (eanEl) eanEl.value = codes.ean;
+      }
+    });
+  }
+
+  async function loadInventario() {
+    try {
+      const res = await apiFetch('/inventario/resumen');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.success) return;
+
+      const k = data.kpis || {};
+      inventarioCache = Array.isArray(data.productos) ? data.productos : [];
+      kardexCache = Array.isArray(data.kardex) ? data.kardex : [];
+
+      const elSkus = document.getElementById('inv-kpi-skus'); if (elSkus) elSkus.textContent = Number(k.total_skus || 0);
+      const elUnid = document.getElementById('inv-kpi-unidades'); if (elUnid) elUnid.textContent = Number(k.unidades_en_stock || 0);
+      const elValC = document.getElementById('inv-kpi-valor-costo'); if (elValC) elValC.textContent = `S/ ${Number(k.valor_costo_soles || 0).toFixed(2)}`;
+      const elValR = document.getElementById('inv-kpi-valor-retail'); if (elValR) elValR.textContent = `S/ ${Number(k.valor_retail_soles || 0).toFixed(2)}`;
+      const elAlert = document.getElementById('inv-kpi-alertas'); if (elAlert) elAlert.textContent = Number(k.alertas_bajo_stock || 0);
+
+      renderInventarioTable();
+      renderKardexTable();
+    } catch (e) {
+      console.error('Error cargando inventario WMS:', e);
+    }
+  }
+
+  function inventarioFiltrado() {
+    const q = (document.getElementById('filtro-inv-search')?.value || '').trim().toLowerCase();
+    const lin = document.getElementById('filtro-inv-linea')?.value || '';
+    const st = document.getElementById('filtro-inv-stock')?.value || '';
+
+    return inventarioCache.filter(p => {
+      if (lin && p.linea !== lin) return false;
+      const stockNum = Number(p.stock_actual || 0);
+      if (st === 'con_stock' && stockNum <= 0) return false;
+      if (st === 'sin_stock' && stockNum > 0) return false;
+      if (q) {
+        const matchSku = (p.sku || '').toLowerCase().includes(q);
+        const matchEan = (p.ean || '').toLowerCase().includes(q);
+        const matchNom = (p.nombre || '').toLowerCase().includes(q);
+        const matchCol = (p.coleccion || '').toLowerCase().includes(q);
+        if (!matchSku && !matchEan && !matchNom && !matchCol) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderInventarioTable() {
+    const tbody = document.getElementById('inventario-tbody');
+    const empty = document.getElementById('inventario-empty');
+    if (!tbody) return;
+
+    const lista = inventarioFiltrado();
+    if (empty) empty.classList.toggle('hidden', lista.length > 0);
+
+    tbody.innerHTML = lista.map(p => {
+      const foto = (Array.isArray(p.imagenes) && p.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
+      const stockNum = Number(p.stock_actual || 0);
+      const stockMin = Number(p.stock_minimo || 1);
+      const precioFinal = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio))
+        ? Number(p.precio_oferta)
+        : Number(p.precio || 0);
+      const costoNum = Number(p.costo_artesano || 0);
+      const ultConteo = p.ultimo_conteo_at
+        ? new Date(p.ultimo_conteo_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        : 'Sin conteo reciente';
+
+      return `
+        <tr class="hover:bg-[#F9F6F0]/60 transition-colors">
+          <td data-label="Producto" class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <img src="${escapeHtml(foto)}" alt="${escapeHtml(p.nombre)}" onerror="this.onerror=null;this.src='/imagenes/Artesanitas/logo_artesanitas.peru.jpg';"
+                class="w-11 h-11 rounded-xl object-cover border border-[#EBE5DE] shrink-0 bg-[#F9F6F0]">
+              <div>
+                <div class="font-bold text-[#4A3C31] text-xs sm:text-sm">${escapeHtml(p.nombre)}</div>
+                <span class="text-[11px] text-[#8C7A6B] block">${escapeHtml(p.linea || 'Vajilla')} → ${escapeHtml(p.sublinea || 'Tazas')}</span>
+                <span class="text-[10px] font-semibold text-[#B87352]">${escapeHtml(p.coleccion || 'Catálogo General')}</span>
+              </div>
+            </div>
+          </td>
+          <td data-label="SKU & EAN-13" class="px-4 py-3">
+            <div class="font-mono font-bold text-xs text-[#4A3C31] bg-[#F9F6F0] px-2 py-0.5 rounded-md border border-[#EBE5DE] inline-block">
+              ${escapeHtml(p.sku || 'SIN-SKU')}
+            </div>
+            <div class="font-mono text-xs text-[#007A78] font-bold mt-1 flex items-center gap-1">
+              <span>║▌║█│</span>
+              <span>${escapeHtml(p.ean || 'SIN-EAN')}</span>
+            </div>
+            <span class="text-[10px] text-[#8C7A6B] block">${escapeHtml(p.ubicacion_almacen || 'Almacén Principal Trujillo')}</span>
+          </td>
+          <td data-label="Costo / PVP" class="px-4 py-3 text-xs">
+            <div class="font-bold text-[#4A3C31]">PVP: S/ ${precioFinal.toFixed(2)}</div>
+            <div class="text-[#742284] font-semibold">Costo: S/ ${costoNum.toFixed(2)}</div>
+          </td>
+          <td data-label="Stock Sistema" class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center min-w-[44px] px-2.5 py-1 rounded-xl text-sm font-extrabold ${stockNum > stockMin ? 'bg-green-100 text-green-800 border border-green-200' : (stockNum > 0 ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-[#F1EDE7] text-[#8C7A6B]')}">
+              ${stockNum}
+            </span>
+            <span class="block text-[10px] text-[#8C7A6B] mt-1">Conteo: ${ultConteo}</span>
+          </td>
+          <td data-label="Conteo / Ingreso" class="px-4 py-3">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <div class="flex items-center bg-[#F9F6F0] rounded-xl border border-[#D5C9BD] p-0.5">
+                <span class="text-[10px] font-bold text-[#8C7A6B] px-2">Físico:</span>
+                <input type="number" min="0" step="1" value="${stockNum}" data-conteo-prod-id="${p.id}" data-stock-orig="${stockNum}"
+                  class="input-inv-conteo-fisico w-16 px-2 py-1 text-xs font-extrabold text-center bg-white rounded-lg border border-[#EBE5DE] focus:outline-none focus:border-[#B87352]">
+              </div>
+              <button type="button" data-apply-conteo="${p.id}"
+                class="btn-inv-apply-conteo bg-[#007A78] hover:bg-[#00635D] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
+                title="Guardar conteo físico exacto de este SKU">
+                ✓ Contar
+              </button>
+              <button type="button" data-quick-in="${p.id}"
+                class="btn-inv-quick-in bg-[#4A3C31] hover:bg-[#B87352] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
+                title="Sumar +1 unidad por ingreso de mercadería">
+                +1 Ingreso
+              </button>
+            </div>
+          </td>
+          <td data-label="Etiqueta" class="px-4 py-3 text-right whitespace-nowrap space-x-2">
+            <button type="button" data-etiqueta-id="${p.id}"
+              class="btn-inv-ver-etiqueta text-xs font-bold text-[#B87352] hover:underline cursor-pointer">
+              🏷️ Etiqueta EAN
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('.btn-inv-apply-conteo').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const prodId = btn.dataset.applyConteo;
+        const input = tbody.querySelector(`.input-inv-conteo-fisico[data-conteo-prod-id="${prodId}"]`);
+        const cant = input ? parseInt(input.value, 10) : 0;
+        btn.textContent = '...';
+        await apiFetch('/inventario/movimiento', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            producto_id: prodId,
+            tipo_movimiento: 'conteo_fisico',
+            cantidad: cant,
+            motivo_referencia: 'Conteo físico directo en panel'
+          })
+        });
+        loadInventario();
+        loadProductos();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-inv-quick-in').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const prodId = btn.dataset.quickIn;
+        btn.textContent = '...';
+        await apiFetch('/inventario/movimiento', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            producto_id: prodId,
+            tipo_movimiento: 'entrada_mercaderia',
+            cantidad: 1,
+            motivo_referencia: 'Ingreso rápido de mercadería (+1)'
+          })
+        });
+        loadInventario();
+        loadProductos();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-inv-ver-etiqueta').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const prod = inventarioCache.find(x => String(x.id) === String(btn.dataset.etiquetaId));
+        if (prod) abrirModalEtiquetaEan(prod);
+      });
+    });
+  }
+
+  function renderKardexTable() {
+    const tbody = document.getElementById('kardex-tbody');
+    const empty = document.getElementById('kardex-empty');
+    if (!tbody) return;
+    if (empty) empty.classList.toggle('hidden', kardexCache.length > 0);
+
+    tbody.innerHTML = kardexCache.map(m => {
+      const fecha = new Date(m.created_at).toLocaleString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      const deltaNum = Number(m.delta || 0);
+      const deltaStr = deltaNum > 0 ? `+${deltaNum}` : String(deltaNum);
+      const deltaCls = deltaNum > 0 ? 'text-green-700 bg-green-50' : (deltaNum < 0 ? 'text-red-600 bg-red-50' : 'text-[#8C7A6B] bg-[#F1EDE7]');
+      return `
+        <tr>
+          <td class="py-2.5 pr-3 text-[#8C7A6B] whitespace-nowrap">${fecha}</td>
+          <td class="py-2.5 px-2">
+            <span class="font-mono font-bold text-[#4A3C31] block">${escapeHtml(m.producto_sku || '—')}</span>
+            <span class="text-[#8C7A6B]">${escapeHtml(m.producto_nombre || '')}</span>
+          </td>
+          <td class="py-2.5 px-2 font-semibold text-[#4A3C31]">
+            ${escapeHtml(TIPO_MOV_LABELS[m.tipo_movimiento] || m.tipo_movimiento)}
+          </td>
+          <td class="py-2.5 px-2 text-center font-mono">
+            <span>${Number(m.cantidad_anterior)}</span>
+            <span class="mx-1 px-1.5 py-0.5 rounded font-bold ${deltaCls}">${deltaStr}</span>
+            <span>→ <strong>${Number(m.cantidad_nueva)}</strong></span>
+          </td>
+          <td class="py-2.5 pl-2 text-[#8C7A6B]">${escapeHtml(m.motivo_referencia || '—')}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Filtros en vivo de inventario
+  ['filtro-inv-search', 'filtro-inv-linea', 'filtro-inv-stock'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', renderInventarioTable);
+      el.addEventListener('change', renderInventarioTable);
+    }
+  });
+
+  // Botón Auto-Matricular Todo el Catálogo con SKU + EAN-13
+  const btnInvMatricularMasivo = document.getElementById('btn-inv-matricular-masivo');
+  if (btnInvMatricularMasivo) {
+    btnInvMatricularMasivo.addEventListener('click', async () => {
+      const orig = btnInvMatricularMasivo.textContent;
+      btnInvMatricularMasivo.disabled = true;
+      btnInvMatricularMasivo.textContent = 'Matriculando catálogo con SKU + EAN-13...';
+      try {
+        const res = await apiFetch('/inventario/matricular-masivo', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          await loadInventario();
+          await loadProductos();
+          alert(data.message);
+        }
+      } catch {
+        alert('Error de conexión al matricular catálogo.');
+      } finally {
+        btnInvMatricularMasivo.disabled = false;
+        btnInvMatricularMasivo.textContent = orig;
+      }
+    });
+  }
+
+  // Guardar Hoja de Conteo Físico Masivo
+  const btnInvConteoMasivo = document.getElementById('btn-inv-guardar-conteo-masivo');
+  if (btnInvConteoMasivo) {
+    btnInvConteoMasivo.addEventListener('click', async () => {
+      const inputs = [...document.querySelectorAll('.input-inv-conteo-fisico')];
+      const conteos = inputs
+        .map(inp => ({
+          producto_id: parseInt(inp.dataset.conteoProdId, 10),
+          stock_fisico: parseInt(inp.value, 10),
+          stock_orig: parseInt(inp.dataset.stockOrig, 10)
+        }))
+        .filter(c => !Number.isNaN(c.stock_fisico) && c.stock_fisico !== c.stock_orig);
+
+      if (conteos.length === 0) {
+        alert('Modifica primero las cantidades físicas contadas en una o más filas para guardar diferencias.');
+        return;
+      }
+
+      const motivo = document.getElementById('inv-motivo-masivo')?.value.trim() || 'Conteo físico general de almacén';
+      btnInvConteoMasivo.disabled = true;
+      const orig = btnInvConteoMasivo.textContent;
+      btnInvConteoMasivo.textContent = 'Guardando conteos...';
+      try {
+        const res = await apiFetch('/inventario/conteo-masivo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conteos, motivo })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          await loadInventario();
+          await loadProductos();
+        }
+      } finally {
+        btnInvConteoMasivo.disabled = false;
+        btnInvConteoMasivo.textContent = orig;
+      }
+    });
+  }
+
+  // Exportar Excel de Inventario y Kardex
+  const btnInvExportXlsx = document.getElementById('btn-inv-export-xlsx');
+  if (btnInvExportXlsx) {
+    btnInvExportXlsx.addEventListener('click', () => {
+      descargarExport('/inventario/export.xlsx', 'artesanitas-inventario-sku-ean-kardex.xlsx');
+    });
+  }
+
+  // Formulario de Matrícula Rápida de Mercadería Nueva
+  const btnAbrirMatricula = document.getElementById('btn-inv-abrir-matricula');
+  const formMatricula = document.getElementById('form-matricula-mercaderia');
+  const btnCancelarMatricula = document.getElementById('btn-inv-cancelar-matricula');
+  const btnRegenerarCodigos = document.getElementById('btn-inv-regenerar-codigos');
+  const matLinea = document.getElementById('mat-linea');
+  const matSublinea = document.getElementById('mat-sublinea');
+
+  async function autollenarCodigosMatricula() {
+    const codes = await solicitarCodigosSkuEan(
+      matLinea ? matLinea.value : 'Vajilla Artesanal',
+      matSublinea ? matSublinea.value : 'Tazas & Mugs'
+    );
+    if (codes && codes.success) {
+      const sEl = document.getElementById('mat-sku'); if (sEl) sEl.value = codes.sku;
+      const eEl = document.getElementById('mat-ean'); if (eEl) eEl.value = codes.ean;
+    }
+  }
+
+  if (btnAbrirMatricula && formMatricula) {
+    btnAbrirMatricula.addEventListener('click', async () => {
+      formMatricula.classList.remove('hidden');
+      await autollenarCodigosMatricula();
+      document.getElementById('mat-nombre')?.focus();
+    });
+  }
+  if (btnCancelarMatricula && formMatricula) {
+    btnCancelarMatricula.addEventListener('click', () => {
+      formMatricula.classList.add('hidden');
+      formMatricula.reset();
+    });
+  }
+  if (btnRegenerarCodigos) btnRegenerarCodigos.addEventListener('click', autollenarCodigosMatricula);
+  if (matLinea) matLinea.addEventListener('change', autollenarCodigosMatricula);
+  if (matSublinea) matSublinea.addEventListener('change', autollenarCodigosMatricula);
+
+  if (formMatricula) {
+    formMatricula.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btnSubmit = document.getElementById('btn-inv-guardar-matricula');
+      const origTxt = btnSubmit ? btnSubmit.textContent : '';
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Matriculando...';
+      }
+      try {
+        const fd = new FormData();
+        fd.append('nombre', document.getElementById('mat-nombre')?.value.trim() || '');
+        fd.append('linea', matLinea?.value || 'Vajilla Artesanal');
+        fd.append('sublinea', matSublinea?.value || 'Tazas & Mugs');
+        fd.append('sku', document.getElementById('mat-sku')?.value.trim() || '');
+        fd.append('ean', document.getElementById('mat-ean')?.value.trim() || '');
+        fd.append('stock_actual', document.getElementById('mat-stock')?.value || '0');
+        fd.append('costo_artesano', document.getElementById('mat-costo')?.value || '');
+        fd.append('precio', document.getElementById('mat-precio')?.value || '0');
+        fd.append('coleccion', document.getElementById('mat-coleccion')?.value.trim() || 'Catálogo General');
+        const imgFile = document.getElementById('mat-imagen')?.files?.[0];
+        if (imgFile) {
+          const optFile = await comprimirImagenWeb(imgFile);
+          fd.append('imagenes', optFile);
+        } else {
+          fd.append('imagen_url', '/imagenes/Artesanitas/logo_artesanitas.peru.jpg');
+        }
+
+        const res = await apiFetch('/productos', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          formMatricula.reset();
+          formMatricula.classList.add('hidden');
+          await loadInventario();
+          await loadProductos();
+        } else {
+          alert(data.message || 'No se pudo matricular la mercadería.');
+        }
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = origTxt;
+        }
+      }
+    });
+  }
+
+  // Generador visual de Código de Barras EAN-13 en SVG e impresión de etiqueta
+  const modalEtiquetaEan = document.getElementById('modal-etiqueta-ean');
+  const btnCerrarEtiqueta = document.getElementById('btn-cerrar-etiqueta-ean');
+  const btnImprimirEtiqueta = document.getElementById('btn-imprimir-etiqueta-ean');
+
+  function generarBarrasSvg(codeStr) {
+    const clean = String(codeStr || '7752601000018').replace(/[^0-9A-Z]/gi, '') || '7752601000018';
+    const patterns = ['1010011', '1100101', '1001101', '1101001', '1011001', '1100110', '1001110', '1010110', '1101010', '1011010'];
+    let bits = '101';
+    for (let i = 0; i < clean.length; i++) {
+      const idx = clean.charCodeAt(i) % 10;
+      bits += patterns[idx];
+    }
+    bits += '101';
+    const barW = 2;
+    const width = bits.length * barW;
+    let rects = '';
+    for (let i = 0; i < bits.length; i++) {
+      if (bits[i] === '1') {
+        rects += `<rect x="${i * barW}" y="0" width="${barW}" height="48" fill="#4A3C31"/>`;
+      }
+    }
+    return `<svg width="${width}" height="50" viewBox="0 0 ${width} 50" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+  }
+
+  function abrirModalEtiquetaEan(prod) {
+    if (!modalEtiquetaEan) return;
+    const nom = document.getElementById('etiqueta-prod-nombre'); if (nom) nom.textContent = prod.nombre;
+    const sku = document.getElementById('etiqueta-prod-sku'); if (sku) sku.textContent = `SKU: ${prod.sku || '—'}`;
+    const ean = document.getElementById('etiqueta-prod-ean'); if (ean) ean.textContent = prod.ean || '7752601000018';
+    const pr = document.getElementById('etiqueta-prod-precio'); if (pr) pr.textContent = `S/ ${Number(prod.precio_oferta || prod.precio || 0).toFixed(2)}`;
+    const svgBox = document.getElementById('etiqueta-barcode-svg');
+    if (svgBox) svgBox.innerHTML = generarBarrasSvg(prod.ean || prod.sku);
+    modalEtiquetaEan.classList.remove('hidden');
+  }
+
+  if (btnCerrarEtiqueta && modalEtiquetaEan) {
+    btnCerrarEtiqueta.addEventListener('click', () => modalEtiquetaEan.classList.add('hidden'));
+  }
+  if (btnImprimirEtiqueta) {
+    btnImprimirEtiqueta.addEventListener('click', () => {
+      const area = document.getElementById('etiqueta-printable-area');
+      if (!area) return;
+      const win = window.open('', '_blank', 'width=420,height=320');
+      if (!win) return;
+      win.document.write(`<html><head><title>Etiqueta SKU/EAN-13</title><style>body{font-family:sans-serif;text-align:center;padding:16px;}</style></head><body>${area.innerHTML}<script>window.onload=function(){window.print();}</script></body></html>`);
+      win.document.close();
     });
   }
 

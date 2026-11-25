@@ -8,6 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Artesanitas - Cerámica con alma de artista</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4A3C31">
 
   <!-- Google Tag Manager -->
   <script>(function (w, d, s, l, i) {
@@ -3050,20 +3052,108 @@
     </div>
   </footer>
 
+  <!-- Burbuja Flotante + Cajón de Reserva Persistente (Sprint 1 - LocalStorage) -->
+  <div id="cart-floating-bar"
+    class="fixed bottom-5 right-5 left-5 sm:left-auto z-50 hidden transition-all duration-300">
+    <button type="button" onclick="window.ArtesanitasCart && window.ArtesanitasCart.openDrawer()"
+      class="w-full sm:w-auto bg-[#4A3C31] hover:bg-[#322821] text-[#F9F6F0] px-5 py-3.5 rounded-2xl shadow-2xl border border-[#B87352]/40 flex items-center justify-between sm:justify-center gap-3.5 cursor-pointer group transition-all hover:scale-[1.02]">
+      <div class="flex items-center gap-2.5">
+        <span class="relative flex items-center justify-center w-8 h-8 rounded-xl bg-[#B87352] text-white text-base shadow-xs">
+          🛒
+          <span id="cart-bubble-badge"
+            class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-[#008f6b] text-white text-[11px] font-extrabold flex items-center justify-center border-2 border-[#4A3C31]">
+            0
+          </span>
+        </span>
+        <div class="text-left">
+          <span class="block text-[10px] uppercase tracking-wider text-[#D5C9BD] font-bold">Mi Reserva Activa</span>
+          <span id="cart-bubble-text" class="text-xs sm:text-sm font-bold text-white">🛒 Mi Reserva (0 piezas · S/ 0.00)</span>
+        </div>
+      </div>
+      <span class="bg-[#B87352] group-hover:bg-[#A36244] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1 shrink-0">
+        <span>Ver / Reservar</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </button>
+  </div>
+
+  <!-- Cajón Flotante (Drawer) de Mi Reserva -->
+  <div id="cart-drawer-overlay"
+    class="fixed inset-0 z-50 hidden bg-[#4A3C31]/60 backdrop-blur-xs transition-opacity duration-300"
+    onclick="if(event.target === this) window.ArtesanitasCart.closeDrawer()">
+    <div class="fixed inset-y-0 right-0 max-w-md w-full bg-[#F9F6F0] shadow-2xl border-l border-[#EBE5DE] flex flex-col justify-between z-50">
+      <!-- Cabecera del Cajón -->
+      <div class="p-5 bg-white border-b border-[#EBE5DE] flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-[#B87352]/15 text-[#B87352] flex items-center justify-center text-lg font-bold">🛒</span>
+          <div>
+            <h3 class="font-serif text-lg font-bold text-[#4A3C31] leading-tight">Mi Reserva Artesanitas</h3>
+            <p id="cart-drawer-subtitle" class="text-xs text-[#8C7A6B]">Tus piezas quedan guardadas automáticamente</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.ArtesanitasCart.closeDrawer()"
+          class="p-2 rounded-xl text-[#8C7A6B] hover:text-[#4A3C31] hover:bg-[#F9F6F0] transition-colors cursor-pointer"
+          aria-label="Cerrar cajón de reserva">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-5 h-5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Lista de Piezas en el Cajón -->
+      <div id="cart-drawer-items" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
+        <!-- Renderizado dinámico por catalogo.js -->
+      </div>
+
+      <!-- Pie del Cajón con Totales y CTA a /pedido -->
+      <div class="p-5 bg-white border-t border-[#EBE5DE] space-y-4 shadow-lg">
+        <div class="space-y-1.5 text-xs sm:text-sm">
+          <div class="flex items-center justify-between text-[#8C7A6B]">
+            <span>Valor total de las piezas:</span>
+            <span id="cart-drawer-subtotal" class="font-bold text-[#4A3C31]">S/ 0.00</span>
+          </div>
+          <div class="flex items-center justify-between text-[#007A78] bg-[#007A78]/10 px-3 py-2 rounded-xl border border-[#007A78]/20">
+            <span class="font-semibold">Adelanto para reservar hoy (Plin):</span>
+            <span id="cart-drawer-reserva" class="font-extrabold text-sm sm:text-base">S/ 0.00</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <a href="/pedido" id="cart-drawer-checkout-btn"
+            class="w-full bg-[#B87352] hover:bg-[#A36244] text-white font-bold py-3.5 px-5 rounded-2xl text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <span>Completar mi Reserva Ahora</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-4 h-4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <div class="flex items-center justify-between pt-1">
+            <button type="button" onclick="window.ArtesanitasCart.clearCart()"
+              class="text-xs text-[#8C7A6B] hover:text-red-600 hover:underline cursor-pointer">
+              Vaciar selección
+            </button>
+            <button type="button" onclick="window.ArtesanitasCart.closeDrawer()"
+              class="text-xs font-semibold text-[#B87352] hover:underline cursor-pointer">
+              + Seguir viendo piezas
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast de confirmación al copiar link -->
   <div id="share-toast"
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#4A3C31] text-white text-sm font-medium px-5 py-3 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+    class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-[#4A3C31] text-white text-sm font-medium px-5 py-3 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
       stroke-linejoin="round" class="w-4 h-4">
       <polyline points="20 6 9 17 4 12" />
     </svg>
-    Link copiado al portapapeles
+    <span id="share-toast-text">Link copiado al portapapeles</span>
   </div>
 
   <!-- Inicializar iconos -->
 
   <!-- Script modular externo con Cache-Buster -->
-  <script src="/artesanitas/js/catalogo.js?v=20261120_v2"></script>
+  <script src="/js/catalogo.js?v=20261125_s1"></script>
 </body>
 
 </html>
