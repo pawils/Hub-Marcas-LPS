@@ -66,14 +66,31 @@ async function slugUnico(negocioId, base, excluirId = null) {
     }
 }
 
+/**
+ * Genera un SKU Numérico Corto Estructurado (4 a 5 dígitos estilo Retail / PLU):
+ * - 1er dígito (Línea): 1=Vajilla, 2=Decoración/Maceteros, 3=Kits Creativos, 4=Sets de Regalo
+ * - 2do dígito (Sub-línea): 0=Tazas, 1=Set Taza+Plato, 2=Platos/Bowls, 3=Teteras/Azucareras, 4=Adornos, 5=Jarrones/Macetas
+ * - Últimos dígitos: Correlativo único (01..99+), ej: 1001, 1002, 1205, 2401
+ */
 function buildAutoSku(negocioSlug, linea, sublinea, correlativo = null) {
-    const p1 = String(negocioSlug || 'ART').slice(0, 3).toUpperCase();
-    const p2 = String(linea || 'VAJ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'GEN';
-    const p3 = String(sublinea || 'TAZ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'PRD';
-    const suffix = correlativo
-        ? String(correlativo).padStart(4, '0')
-        : crypto.randomBytes(2).toString('hex').toUpperCase();
-    return `${p1}-${p2}-${p3}-${suffix}`;
+    const l = String(linea || '').toLowerCase();
+    const s = String(sublinea || '').toLowerCase();
+    let d1 = '1';
+    if (l.includes('decora') || l.includes('macet')) d1 = '2';
+    else if (l.includes('kit')) d1 = '3';
+    else if (l.includes('set') || l.includes('regalo')) d1 = '4';
+
+    let d2 = '0';
+    if (s.includes('set') || (s.includes('taza') && s.includes('plato'))) d2 = '1';
+    else if (s.includes('plato') || s.includes('bowl')) d2 = '2';
+    else if (s.includes('tetera') || s.includes('azucar') || s.includes('vasito')) d2 = '3';
+    else if (s.includes('adorno') || s.includes('figura')) d2 = '4';
+    else if (s.includes('jarron') || s.includes('jarrón') || s.includes('macet')) d2 = '5';
+
+    const num = correlativo
+        ? String(correlativo).padStart(2, '0')
+        : String(Math.floor(10 + Math.random() * 89));
+    return `${d1}${d2}${num}`;
 }
 
 /**
@@ -341,7 +358,11 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
     if (b.ean !== undefined) set('ean', String(b.ean).trim().slice(0, 20) || null);
     if (b.stock_actual !== undefined && b.stock_actual !== '') set('stock_actual', Math.max(0, parseInt(b.stock_actual, 10) || 0));
     if (b.stock_minimo !== undefined && b.stock_minimo !== '') set('stock_minimo', Math.max(0, parseInt(b.stock_minimo, 10) || 0));
-    if (b.politica_sin_stock !== undefined) set('politica_sin_stock', b.politica_sin_stock === 'agotado' ? 'agotado' : 'preventa');
+    if (b.politica_sin_stock !== undefined) {
+        const pol = ['agotado', 'preventa', 'compra_directa'].includes(b.politica_sin_stock) ? b.politica_sin_stock : 'compra_directa';
+        set('politica_sin_stock', pol);
+    }
+    if (b.ubicacion_almacen !== undefined) set('ubicacion_almacen', String(b.ubicacion_almacen).trim().slice(0, 80) || 'Almacén Principal Trujillo');
     if (b.linea !== undefined) set('linea', String(b.linea).trim().slice(0, 80));
     if (b.sublinea !== undefined) set('sublinea', String(b.sublinea).trim().slice(0, 80));
     if (b.sub_sublinea !== undefined) set('sub_sublinea', String(b.sub_sublinea).trim().slice(0, 80));
@@ -591,17 +612,18 @@ router.post('/:negocioSlug/inventario/matricular-masivo', requireNegocioAuth, as
             }
         }
 
-        // B. Asignar SKU o EAN-13 a cualquier producto existente en negocio_productos que aún tenga sku o ean vacío
+        // B. Asignar SKU numérico estructurado o EAN-13 a cualquier producto existente con código vacío o formato alfanumérico antiguo
         const { rows: sinCodigo } = await pool.query(
             `SELECT id, linea, sublinea, sku, ean FROM negocio_productos
-             WHERE negocio_id = $1 AND (sku IS NULL OR TRIM(sku) = '' OR ean IS NULL OR TRIM(ean) = '')
+             WHERE negocio_id = $1 AND (sku IS NULL OR TRIM(sku) = '' OR sku ~ '[A-Za-z]' OR ean IS NULL OR TRIM(ean) = '')
              ORDER BY id ASC`,
             [req.negocio.id]
         );
 
         for (const p of sinCodigo) {
             const codes = await generarMatriculaUnica(req.negocio.id, req.negocio.slug, p.linea, p.sublinea);
-            const finalSku = (p.sku && p.sku.trim()) ? p.sku.trim() : codes.sku;
+            const skuIsNumeric = p.sku && /^\d{4,8}$/.test(p.sku.trim());
+            const finalSku = skuIsNumeric ? p.sku.trim() : codes.sku;
             const finalEan = (p.ean && p.ean.trim()) ? p.ean.trim() : codes.ean;
             await pool.query(
                 `UPDATE negocio_productos SET sku = $1, ean = $2 WHERE id = $3 AND negocio_id = $4`,
@@ -625,17 +647,19 @@ router.post('/:negocioSlug/inventario/matricular-masivo', requireNegocioAuth, as
 // 3. GET /api/negocios/:negocioSlug/inventario/resumen — Resumen WMS Shopify + Lista de Stock + Kardex reciente
 router.get('/:negocioSlug/inventario/resumen', requireNegocioAuth, async (req, res) => {
     try {
-        // Completar códigos EAN-13 / SKU faltantes en productos ya existentes de forma transparente
+        // Completar códigos EAN-13 / SKU numérico corto faltantes o alfanuméricos antiguos de forma transparente
         const { rows: faltantes } = await pool.query(
             `SELECT id, linea, sublinea, sku, ean FROM negocio_productos
-             WHERE negocio_id = $1 AND (sku IS NULL OR TRIM(sku) = '' OR ean IS NULL OR TRIM(ean) = '')`,
+             WHERE negocio_id = $1 AND (sku IS NULL OR TRIM(sku) = '' OR sku ~ '[A-Za-z]' OR ean IS NULL OR TRIM(ean) = '')
+             ORDER BY id ASC`,
             [req.negocio.id]
         );
         for (const f of faltantes) {
             const c = await generarMatriculaUnica(req.negocio.id, req.negocio.slug, f.linea, f.sublinea);
+            const skuNumeric = f.sku && /^\d{4,8}$/.test(f.sku.trim()) ? f.sku.trim() : c.sku;
             await pool.query(
-                `UPDATE negocio_productos SET sku = COALESCE(NULLIF(TRIM(sku), ''), $1), ean = COALESCE(NULLIF(TRIM(ean), ''), $2) WHERE id = $3`,
-                [c.sku, c.ean, f.id]
+                `UPDATE negocio_productos SET sku = $1, ean = COALESCE(NULLIF(TRIM(ean), ''), $2) WHERE id = $3`,
+                [skuNumeric, c.ean, f.id]
             );
         }
 
@@ -928,6 +952,54 @@ router.get('/:negocioSlug/inventario/export.xlsx', requireNegocioAuth, async (re
     } catch (error) {
         logger.error('Inventario: error exportando Excel de inventario', { error: error.message });
         res.status(500).json({ success: false, message: 'Error al exportar inventario.' });
+    }
+});
+
+// 7. GET /api/negocios/:negocioSlug/inventario/producto/:id/ficha — Ficha Técnica Maestra 360° + Kardex individual + Métricas de Venta
+router.get('/:negocioSlug/inventario/producto/:id/ficha', requireNegocioAuth, async (req, res) => {
+    try {
+        const prodId = parseInt(req.params.id, 10);
+        if (!Number.isInteger(prodId)) {
+            return res.status(400).json({ success: false, message: 'ID de producto inválido.' });
+        }
+        const { rows: prodRows } = await pool.query(
+            `SELECT ${PRODUCT_COLUMNS} FROM negocio_productos WHERE id = $1 AND negocio_id = $2`,
+            [prodId, req.negocio.id]
+        );
+        if (prodRows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
+        }
+        const producto = prodRows[0];
+
+        const { rows: kardex } = await pool.query(
+            `SELECT id, tipo_movimiento, cantidad_anterior, delta, cantidad_nueva, costo_unitario, ubicacion, motivo_referencia, usuario, created_at
+             FROM negocio_inventario_movimientos
+             WHERE negocio_id = $1 AND producto_id = $2
+             ORDER BY created_at DESC
+             LIMIT 100`,
+            [req.negocio.id, prodId]
+        );
+
+        const totalSalidas = kardex
+            .filter(m => m.tipo_movimiento === 'salida_venta')
+            .reduce((acc, m) => acc + Math.abs(Number(m.delta || 0)), 0);
+        const totalEntradas = kardex
+            .filter(m => m.tipo_movimiento === 'entrada_mercaderia' || m.tipo_movimiento === 'recepcion_artesano')
+            .reduce((acc, m) => acc + Math.max(0, Number(m.delta || 0)), 0);
+
+        res.json({
+            success: true,
+            producto,
+            kardex,
+            resumen: {
+                total_salidas_venta: totalSalidas,
+                total_entradas: totalEntradas,
+                total_movimientos: kardex.length
+            }
+        });
+    } catch (error) {
+        logger.error('Inventario: error obteniendo ficha 360 de producto', { error: error.message });
+        res.status(500).json({ success: false, message: 'No se pudo cargar la ficha del producto.' });
     }
 });
 

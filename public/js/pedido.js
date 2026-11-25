@@ -1370,6 +1370,14 @@
             btnSuccessWhatsapp.href = `https://wa.me/51929938466?text=${encodeURIComponent(`Hola! Acabo de reservar en preventa desde la web${codTxt}: ${itemsSummary}. Mi nombre es ${nombre}.`)}`;
           }
 
+          ultimoPedidoRegistrado = data.pedido;
+          const btnPdf = document.getElementById('btn-descargar-comprobante-pdf');
+          if (btnPdf) {
+            btnPdf.onclick = () => generarComprobanteCompraPDF(ultimoPedidoRegistrado, true);
+          }
+          // Descarga / apertura automática del comprobante oficial de compra
+          setTimeout(() => generarComprobanteCompraPDF(ultimoPedidoRegistrado, true), 400);
+
           // Limpiar carrito persistente tras registrar la reserva con éxito
           itemsReserva = [];
           try {

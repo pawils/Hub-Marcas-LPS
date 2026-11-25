@@ -1939,7 +1939,7 @@
               <img src="${escapeHtml(foto)}" alt="${escapeHtml(p.nombre)}" onerror="this.onerror=null;this.src='/imagenes/Artesanitas/logo_artesanitas.peru.jpg';"
                 class="w-11 h-11 rounded-xl object-cover border border-[#EBE5DE] shrink-0 bg-[#F9F6F0]">
               <div>
-                <div class="font-bold text-[#4A3C31] text-xs sm:text-sm">${escapeHtml(p.nombre)}</div>
+                <button type="button" data-ficha-id="${p.id}" class="btn-inv-ver-ficha font-bold text-[#4A3C31] hover:text-[#B87352] hover:underline text-xs sm:text-sm text-left cursor-pointer">${escapeHtml(p.nombre)}</button>
                 <span class="text-[11px] text-[#8C7A6B] block">${escapeHtml(p.linea || 'Vajilla')} → ${escapeHtml(p.sublinea || 'Tazas')}</span>
                 <span class="text-[10px] font-semibold text-[#B87352]">${escapeHtml(p.coleccion || 'Catálogo General')}</span>
               </div>
@@ -1989,7 +1989,12 @@
               </button>
             </div>
           </td>
-          <td data-label="Etiqueta" class="px-4 py-3 text-right whitespace-nowrap space-x-2">
+          <td data-label="Ficha / Etiqueta" class="px-4 py-3 text-right whitespace-nowrap space-x-1.5">
+            <button type="button" data-ficha-id="${p.id}"
+              class="btn-inv-ver-ficha bg-[#4A3C31] hover:bg-[#B87352] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+              Ficha 360°
+            </button>
             <button type="button" data-etiqueta-id="${p.id}"
               class="btn-inv-ver-etiqueta text-xs font-bold text-[#B87352] hover:underline cursor-pointer">
               Etiqueta EAN
@@ -2055,6 +2060,12 @@
         });
         loadInventario();
         loadProductos();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-inv-ver-ficha').forEach(btn => {
+      btn.addEventListener('click', () => {
+        abrirModalFichaProducto360(btn.dataset.fichaId);
       });
     });
 

@@ -16,6 +16,7 @@ const { sendMetaCapiOrderEvent } = require('../utils/meta-capi.service');
 const { analizarVoucherConIA } = require('../utils/voucher-ai.service');
 const { getVapidPublicKey, savePushSubscription, notifyPushSubscribers } = require('../utils/web-push.service');
 const { resolveNegocioSlug, requireNegocioAuth, getNegocioMpCredentials } = require('../middleware/negocio-auth.middleware');
+const { getProductoPorSlug } = require('../data/artesanitas-productos');
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -695,37 +696,68 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
             } catch (e) {}
         }
 
+        const modalidadPago = sanitizeText(req.body.modalidad_pago || '').toLowerCase(); // 'completo' | 'reserva'
+
+        async function resolverProductoCheckout(slugInput) {
+            const s = slugInput ? sanitizeText(slugInput).toLowerCase() : '';
+            if (!s) return null;
+
+            let dbProd = null;
+            const { rows: pRows } = await pool.query(
+                `SELECT id, slug, sku, ean, nombre, precio, precio_oferta, descripcion, imagenes, stock_actual, politica_sin_stock
+                 FROM negocio_productos WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) AND activo = TRUE LIMIT 1`,
+                [req.negocio.id, s]
+            );
+            if (pRows.length > 0) dbProd = pRows[0];
+
+            const prevProd = PRODUCTOS_PREVENTA[s];
+            const catProd = getProductoPorSlug ? getProductoPorSlug(s) : null;
+
+            if (!dbProd && !prevProd && !catProd) return null;
+
+            const esPreventaOriginal = Boolean(prevProd) || s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad');
+            const precioBase = dbProd
+                ? ((dbProd.precio_oferta && Number(dbProd.precio_oferta) > 0 && Number(dbProd.precio_oferta) < Number(dbProd.precio))
+                    ? Number(dbProd.precio_oferta)
+                    : Number(dbProd.precio))
+                : Number((prevProd && prevProd.precio) || (catProd && catProd.precio) || 59.90);
+
+            const esSoloReserva = esPreventaOriginal && modalidadPago !== 'completo';
+            const montoAdelantoUnitario = esSoloReserva ? 20.00 : precioBase;
+
+            return {
+                slug: (dbProd && dbProd.slug) || (prevProd && prevProd.slug) || (catProd && catProd.slug) || s,
+                sku: (dbProd && dbProd.sku) || '',
+                ean: (dbProd && dbProd.ean) || '',
+                nombre: (dbProd && dbProd.nombre) || (prevProd && prevProd.nombre) || (catProd && catProd.nombre) || s,
+                precio: precioBase,
+                reserva: montoAdelantoUnitario,
+                modalidad: esSoloReserva ? 'reserva' : 'compra_directa',
+                fecha_entrega: esPreventaOriginal ? FECHA_ENTREGA_OFICIAL : 'Despacho inmediato (24-48h)',
+                imagen: (dbProd && Array.isArray(dbProd.imagenes) && dbProd.imagenes[0])
+                    || (prevProd && prevProd.imagen)
+                    || (catProd && Array.isArray(catProd.imagenes) && catProd.imagenes[0])
+                    || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
+                descripcion: (dbProd && dbProd.descripcion) || (prevProd && prevProd.descripcion) || (catProd && catProd.descripcion) || ''
+            };
+        }
+
         let itemsValidados = [];
         if (parsedItems.length > 0) {
             for (const item of parsedItems) {
-                const s = item.slug ? sanitizeText(item.slug).toLowerCase() : '';
-                let pInfo = PRODUCTOS_PREVENTA[s];
-                if (!pInfo && s) {
-                    const { rows: pRows } = await pool.query(
-                        `SELECT slug, nombre, precio, descripcion, imagenes FROM negocio_productos WHERE negocio_id = $1 AND slug = $2 AND activo = TRUE`,
-                        [req.negocio.id, s]
-                    );
-                    if (pRows.length > 0) {
-                        const pr = pRows[0];
-                        pInfo = {
-                            slug: pr.slug,
-                            nombre: pr.nombre,
-                            precio: Number(pr.precio),
-                            reserva: 20.00,
-                            fecha_entrega: FECHA_ENTREGA_OFICIAL,
-                            imagen: (pr.imagenes && pr.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
-                            descripcion: pr.descripcion || ''
-                        };
-                    }
-                }
+                const pInfo = await resolverProductoCheckout(item.slug);
                 if (pInfo) {
                     const rawItemCant = parseInt(item.cantidad, 10);
                     const cant = (!Number.isNaN(rawItemCant) && rawItemCant >= 1) ? Math.min(rawItemCant, 50) : 1;
+                    const esCompraDirectaItem = item.modalidad === 'compra_directa' || pInfo.modalidad === 'compra_directa' || modalidadPago === 'completo';
                     itemsValidados.push({
                         slug: pInfo.slug,
+                        sku: pInfo.sku || '',
+                        ean: pInfo.ean || '',
                         nombre: pInfo.nombre,
                         precio: Number(pInfo.precio),
-                        reserva: Number(pInfo.reserva || 20.00),
+                        reserva: esCompraDirectaItem ? Number(pInfo.precio) : Number(pInfo.reserva || 20.00),
+                        modalidad: esCompraDirectaItem ? 'compra_directa' : 'reserva',
                         cantidad: cant,
                         imagen: pInfo.imagen || ''
                     });
@@ -734,30 +766,9 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
         }
 
         if (itemsValidados.length === 0) {
-            const pSlug = producto_slug ? sanitizeText(producto_slug).toLowerCase() : '';
-            let prodInfo = PRODUCTOS_PREVENTA[pSlug];
-
-            if (!prodInfo && pSlug) {
-                const { rows: prodRows } = await pool.query(
-                    `SELECT slug, nombre, precio, descripcion, imagenes FROM negocio_productos WHERE negocio_id = $1 AND slug = $2 AND activo = TRUE`,
-                    [req.negocio.id, pSlug]
-                );
-                if (prodRows.length > 0) {
-                    const pr = prodRows[0];
-                    prodInfo = {
-                        slug: pr.slug,
-                        nombre: pr.nombre,
-                        precio: Number(pr.precio),
-                        reserva: 20.00,
-                        fecha_entrega: FECHA_ENTREGA_OFICIAL,
-                        imagen: (pr.imagenes && pr.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
-                        descripcion: pr.descripcion || ''
-                    };
-                }
-            }
-
+            const prodInfo = await resolverProductoCheckout(producto_slug);
             if (!prodInfo) {
-                return res.status(400).json({ success: false, message: 'Por favor selecciona el producto que deseas reservar.' });
+                return res.status(400).json({ success: false, message: 'Por favor selecciona el producto que deseas comprar o reservar.' });
             }
 
             const rawCantidad = parseInt(req.body.cantidad, 10);
@@ -765,9 +776,12 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
 
             itemsValidados.push({
                 slug: prodInfo.slug,
+                sku: prodInfo.sku || '',
+                ean: prodInfo.ean || '',
                 nombre: prodInfo.nombre,
                 precio: Number(prodInfo.precio),
-                reserva: Number(prodInfo.reserva || 20.00),
+                reserva: Number(prodInfo.reserva),
+                modalidad: prodInfo.modalidad,
                 cantidad: cleanCantidad,
                 imagen: prodInfo.imagen || ''
             });
@@ -775,10 +789,11 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
 
         const totalCantidad = itemsValidados.reduce((sum, i) => sum + i.cantidad, 0);
         const pPrecioTotal = itemsValidados.reduce((sum, i) => sum + (i.precio * i.cantidad), 0);
-        const pReservaTotal = itemsValidados.reduce((sum, i) => sum + (i.reserva * i.cantidad), 0);
+        const pReservaSubTotal = itemsValidados.reduce((sum, i) => sum + (i.reserva * i.cantidad), 0);
         const pNombreResumen = itemsValidados.map(i => `${i.cantidad > 1 ? `${i.cantidad}x ` : ''}${i.nombre}`).join(' + ');
         const pSlugPrincipal = itemsValidados[0].slug;
-        const pFechaEntrega = FECHA_ENTREGA_OFICIAL;
+        const tienePreventa = itemsValidados.some(i => i.modalidad === 'reserva');
+        const pFechaEntrega = tienePreventa ? FECHA_ENTREGA_OFICIAL : 'Despacho Inmediato (24-48h)';
         let pEnvio = 0.00;
 
         if (cleanTipoEntrega === 'provincia') {
@@ -790,6 +805,11 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
             cleanSedeShalom = 'Recojo en Local (Taller Trujillo)';
             pEnvio = 0.00;
         }
+
+        // Si es Compra Directa (100%), el pago de hoy incluye también el envío si corresponde
+        const esPagoTotal = pReservaSubTotal >= pPrecioTotal;
+        const pReservaTotal = esPagoTotal ? (pPrecioTotal + pEnvio) : pReservaSubTotal;
+        const estadoPagoInicial = esPagoTotal ? 'completo' : 'parcial';
 
         const codigoPedido = await generarCodigoPedidoUnico(req.negocio.slug);
         const file = req.file;
@@ -838,7 +858,7 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
             req.negocio.id, codigoPedido, pSlugPrincipal, pNombreResumen, totalCantidad, JSON.stringify(itemsValidados), pPrecioTotal,
             pReservaTotal, pEnvio, cleanTipoEntrega, pFechaEntrega,
             cleanNombre, cleanDni, cleanWhatsapp, cleanSedeShalom, cleanDireccion || null,
-            'parcial', pReservaTotal, 'reservado',
+            estadoPagoInicial, pReservaTotal, 'reservado',
             'formulario', cleanNotas || null,
             file ? file.mimetype : null, file ? file.buffer : null,
             voucherAi.nro_operacion, voucherAi.monto_detectado, voucherAi.entidad_detectada, voucherAi.verificacion_ia,
@@ -911,19 +931,27 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
         res.status(201).json({
             success: true,
             meta_event_id: pedido.codigo_pedido,
-            message: `¡Tu reserva (${pedido.codigo_pedido}) para ${pNombreResumen} ha sido registrada con éxito! Puedes rastrear el estado de tu pedido en cualquier momento con tu código o DNI.`,
+            message: `¡Tu pedido (${pedido.codigo_pedido}) para ${pNombreResumen} ha sido registrado con éxito! Puedes rastrear el estado de tu pedido en cualquier momento con tu código o DNI.`,
             pedido: {
                 id: pedido.id,
                 codigo_pedido: pedido.codigo_pedido,
                 meta_event_id: pedido.codigo_pedido,
                 seguimiento_url: `/seguimiento?codigo=${encodeURIComponent(pedido.codigo_pedido)}`,
                 nombre: pedido.nombre,
+                dni: pedido.dni,
+                whatsapp: pedido.whatsapp,
                 producto: pedido.producto_nombre,
                 cantidad: pedido.cantidad,
                 items: pedido.items,
+                precio_total: pPrecioTotal,
+                monto_pagado: pReservaTotal,
+                costo_envio: pEnvio,
+                estado_pago: estadoPagoInicial,
                 tipo_entrega: pedido.tipo_entrega,
+                sede_shalom: pedido.sede_shalom,
                 fecha_entrega: pedido.fecha_entrega,
-                voucher_verificacion_ia: pedido.voucher_verificacion_ia
+                voucher_verificacion_ia: pedido.voucher_verificacion_ia,
+                created_at: pedido.created_at
             }
         });
     } catch (error) {
