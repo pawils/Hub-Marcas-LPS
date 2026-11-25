@@ -70,6 +70,7 @@
       }
     }
   </style>
+  <script src="/js/icons.js"></script>
 </head>
 
 <body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen">
@@ -106,19 +107,20 @@
           <button id="tab-btn-talleres" class="px-3.5 py-2 rounded-lg text-sm font-medium bg-[#B87352] text-white transition-all cursor-pointer">Talleres</button>
           <button id="tab-btn-registros" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Registros Talleres</button>
           <button id="tab-btn-pedidos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
-            <span>📦 Pedidos & Preventas</span>
+            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Pedidos & Preventas</span>
             <span id="badge-pedidos-count" class="hidden bg-[#B87352] text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
           </button>
           <button id="tab-btn-bi" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
-            <span>📊 BI & Rentabilidad</span>
+            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#007A78]"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> BI & Rentabilidad</span>
           </button>
           <button id="tab-btn-inventario" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
-            <span>📋 Inventario & SKU/EAN</span>
+            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Inventario & SKU/EAN</span>
+            <span id="badge-stock-alerta" class="hidden bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold" title="Productos sin stock o stock crítico">0</span>
           </button>
           <button id="tab-btn-productos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Catálogo</button>
         </div>
         <button id="btn-push-admin" type="button" class="text-xs font-semibold bg-[#4A3C31] text-white px-3 py-2 rounded-xl hover:bg-[#322821] transition-colors cursor-pointer">
-          🔔 Activar Push Admin
+          <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Activar Push Admin</span>
         </button>
         <button id="btn-cerrar-sesion" class="text-sm text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">Salir</button>
       </div>
@@ -430,7 +432,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-[#B87352] block">Sprint 3 · Portal de Proveedores (Magic Link)</span>
-            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31]">🏺 Artesanos Tercerizados & Enlaces de Seguimiento de Taller</h3>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31] flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Artesanos Tercerizados & Enlaces de Seguimiento de Taller</h3>
             <p class="text-xs text-[#8C7A6B]">Cada artesano recibe su Magic Link privado donde ve sus solicitudes asignadas (con cotización, onzas, tamaños, colores y logos) sin ver precios de venta al cliente ni DNI.</p>
           </div>
           <form id="form-nuevo-artesano" class="flex flex-wrap items-center gap-2 shrink-0">
@@ -539,7 +541,7 @@
           <span class="inline-flex items-center gap-1.5 bg-[#B87352]/10 text-[#B87352] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1">
             Inteligencia de Negocios en Tiempo Real
           </span>
-          <h2 class="text-lg sm:text-xl font-serif font-bold text-[#4A3C31]">📊 Dashboard BI & Rentabilidad por Línea y Artesano</h2>
+          <h2 class="text-lg sm:text-xl font-serif font-bold text-[#4A3C31] flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#007A78]"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Dashboard BI & Rentabilidad por Línea y Artesano</h2>
           <p class="text-xs text-[#8C7A6B]">Visibilidad financiera consolidada: Ventas, Abonos Plin, Saldos por Cobrar, Costo de Artesanos y Margen Bruto Real.</p>
         </div>
         <button type="button" id="btn-refresh-bi"
@@ -634,13 +636,13 @@
           <span class="inline-flex items-center gap-1.5 bg-[#007A78]/10 text-[#007A78] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1">
             Shopify-Grade WMS · Control de Mercadería & Códigos GS1
           </span>
-          <h2 class="text-lg sm:text-xl font-serif font-bold text-[#4A3C31]">📋 Sistema de Inventarios, Conteo Físico y Matrícula SKU / EAN-13</h2>
+          <h2 class="text-lg sm:text-xl font-serif font-bold text-[#4A3C31] flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Sistema de Inventarios, Conteo Físico y Matrícula SKU / EAN-13</h2>
           <p class="text-xs text-[#8C7A6B]">Registra entradas de mercadería, realiza conteos físicos cíclicos, matricula códigos nuevos con SKU estructurado y código de barras EAN-13 oficial e imprime etiquetas.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 shrink-0">
           <button type="button" id="btn-inv-matricular-masivo"
             class="bg-[#B87352] hover:bg-[#A36244] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
-            ⚡ Auto-Matricular Todo el Catálogo (SKU + EAN-13)
+            <span class="flex items-center gap-1.5 justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Auto-Matricular Todo el Catálogo (SKU + EAN-13)</span>
           </button>
           <button type="button" id="btn-inv-abrir-matricula"
             class="bg-[#4A3C31] hover:bg-[#322821] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
@@ -648,7 +650,7 @@
           </button>
           <button type="button" id="btn-inv-export-xlsx"
             class="bg-[#1D6F42] hover:bg-[#155331] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
-            📥 Excel Inventario & Kardex (.xlsx)
+            <span class="flex items-center gap-1.5 justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel Inventario & Kardex (.xlsx)</span>
           </button>
         </div>
       </div>
@@ -691,7 +693,7 @@
           </div>
           <button type="button" id="btn-inv-regenerar-codigos"
             class="bg-[#F9F6F0] hover:bg-[#EBE5DE] text-[#4A3C31] border border-[#D5C9BD] px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
-            🎲 Generar nuevo SKU + EAN-13
+            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M16 8h.01"/><path d="M8 8h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/></svg> Generar nuevo SKU + EAN-13</span>
           </button>
         </div>
 
@@ -768,7 +770,7 @@
             </button>
             <button type="submit" id="btn-inv-guardar-matricula"
               class="bg-[#B87352] hover:bg-[#A36244] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
-              ✓ Matricular y Registrar Stock
+              <span class="flex items-center gap-1.5 justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg> Matricular y Registrar Stock</span>
             </button>
           </div>
         </div>
@@ -778,7 +780,12 @@
       <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] flex flex-wrap items-end justify-between gap-3 shadow-2xs">
         <div class="flex flex-wrap items-end gap-3">
           <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">🔍 Escanear Código EAN-13 / Buscar SKU o Producto</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium text-[#8C7A6B] flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg> Escanear EAN-13 / Buscar SKU o Producto</label>
+              <button type="button" id="btn-camara-scanner-wms" class="text-[11px] font-bold text-[#007A78] hover:text-[#005e5c] flex items-center gap-1 cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg> Escanear con Cámara
+              </button>
+            </div>
             <input type="text" id="filtro-inv-search" placeholder="Escanea EAN-13 (775...) o escribe SKU / Nombre"
               class="px-3.5 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#B87352] w-72">
           </div>
@@ -806,7 +813,7 @@
             class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs w-48 focus:outline-none focus:border-[#B87352]">
           <button type="button" id="btn-inv-guardar-conteo-masivo"
             class="bg-[#007A78] hover:bg-[#00635D] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
-            💾 Guardar Hoja de Conteo Físico
+            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg> Guardar Conteo Físico</span>
           </button>
         </div>
       </div>
@@ -827,7 +834,7 @@
           <tbody id="inventario-tbody" class="divide-y divide-[#F1EDE7]"></tbody>
         </table>
         <p id="inventario-empty" class="hidden text-center text-[#8C7A6B] py-10">
-          No hay productos matriculados con este filtro. Haz clic en "⚡ Auto-Matricular Todo el Catálogo" para incorporar todas las piezas.
+          No hay productos matriculados con este filtro. Haz clic en "Auto-Matricular Todo el Catálogo" para incorporar todas las piezas.
         </p>
       </div>
 
@@ -835,7 +842,7 @@
       <div class="bg-white rounded-3xl border border-[#EBE5DE] p-5 shadow-2xs space-y-3">
         <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-2.5">
           <div>
-            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31]">📜 Kardex Auditable de Movimientos de Mercadería</h3>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31] flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Kardex Auditable de Movimientos de Mercadería</h3>
             <p class="text-xs text-[#8C7A6B]">Registro histórico de cada conteo físico, entrada de taller, ajuste y salida automática por venta web.</p>
           </div>
         </div>
@@ -862,7 +869,9 @@
       <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-[#EBE5DE] text-center space-y-4">
         <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-2.5">
           <span class="text-xs font-bold uppercase tracking-wider text-[#B87352]">Etiqueta Retail GS1 / Shopify</span>
-          <button type="button" id="btn-cerrar-etiqueta-ean" class="text-[#8C7A6B] hover:text-[#4A3C31] font-bold text-sm cursor-pointer">✕</button>
+          <button type="button" id="btn-cerrar-etiqueta-ean" class="text-[#8C7A6B] hover:text-[#4A3C31] p-1 rounded-lg transition-colors cursor-pointer" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
         </div>
         <div id="etiqueta-printable-area" class="bg-white border-2 border-dashed border-[#4A3C31] rounded-2xl p-4 space-y-1.5">
           <p class="text-[10px] font-bold uppercase tracking-widest text-[#8C7A6B]">Artesanitas Perú</p>
@@ -875,7 +884,105 @@
         <div class="flex items-center gap-2.5">
           <button type="button" id="btn-imprimir-etiqueta-ean"
             class="flex-1 bg-[#4A3C31] hover:bg-[#322821] text-white py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
-            🖨️ Imprimir Etiqueta
+            <span class="flex items-center gap-1.5 justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg> Imprimir Etiqueta EAN-13</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- Modal de Packing Slip / Guía de Despacho & Embalaje Artesanal (Shopify-Grade) -->
+    <div id="modal-guia-despacho" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-xs">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 border border-[#EBE5DE] space-y-5 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-xl bg-[#007A78]/15 text-[#007A78] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z"/><circle cx="17" cy="18.5" r="2.5"/><circle cx="7" cy="18.5" r="2.5"/></svg>
+            </span>
+            <h3 class="font-serif font-bold text-base sm:text-lg text-[#4A3C31]">Guía de Despacho &amp; Packing Slip</h3>
+          </div>
+          <button type="button" id="btn-cerrar-guia-despacho" class="text-[#8C7A6B] hover:text-[#4A3C31] p-1 rounded-lg transition-colors cursor-pointer" aria-label="Cerrar modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <!-- Área Imprimible -->
+        <div id="guia-despacho-printable" class="bg-white p-5 rounded-2xl border border-[#D5C9BD] space-y-4 text-[#4A3C31] text-xs">
+          <!-- Cabecera documento -->
+          <div class="flex justify-between items-start border-b border-[#EBE5DE] pb-4">
+            <div>
+              <h2 class="font-serif text-xl font-bold text-[#4A3C31]">Artesanitas Perú</h2>
+              <p class="text-[11px] text-[#8C7A6B]">Cerámica Artesanal &amp; Piezas Únicas Hechas a Mano</p>
+              <p class="text-[10px] text-[#8C7A6B]">RUC: 20608976541 · Trujillo, La Libertad · artesanitas.lospilares.pe</p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block bg-[#4A3C31] text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider mb-1">Packing Slip Oficial</span>
+              <p id="guia-codigo-pedido" class="font-mono font-extrabold text-sm text-[#B87352]">ART-0000</p>
+              <p id="guia-fecha-emision" class="text-[10px] text-[#8C7A6B]">Emisión: --</p>
+            </div>
+          </div>
+
+          <!-- Datos de Envío y Cliente -->
+          <div class="grid grid-cols-2 gap-4 bg-[#F9F6F0] p-3.5 rounded-xl border border-[#EBE5DE]">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-[#8C7A6B] mb-0.5">Destinatario:</p>
+              <p id="guia-destinatario-nombre" class="font-bold text-sm text-[#4A3C31]">--</p>
+              <p id="guia-destinatario-dni" class="text-[11px] text-[#8C7A6B]">DNI: --</p>
+              <p id="guia-destinatario-tel" class="text-[11px] text-[#8C7A6B]">WhatsApp: --</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase font-bold text-[#8C7A6B] mb-0.5">Datos de Despacho Courier:</p>
+              <p id="guia-courier-empresa" class="font-bold text-[#742284]">Courier: Shalom (Agencia)</p>
+              <p id="guia-courier-ciudad" class="text-[11px] text-[#4A3C31]">Ciudad Destino: --</p>
+              <p id="guia-courier-nro-guia" class="text-[11px] font-mono font-bold text-[#4A3C31]">N° Guía: --</p>
+            </div>
+          </div>
+
+          <!-- Tabla de Artículos -->
+          <div class="space-y-1.5">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B]">Contenido del Paquete</p>
+            <table class="w-full text-left border border-[#EBE5DE] rounded-xl overflow-hidden">
+              <thead class="bg-[#F1EDE7] text-[10px] uppercase text-[#8C7A6B]">
+                <tr>
+                  <th class="p-2 font-bold">Pieza Artesanal</th>
+                  <th class="p-2 font-bold">SKU / EAN-13</th>
+                  <th class="p-2 font-bold text-center">Cant.</th>
+                  <th class="p-2 font-bold text-right">Verificado</th>
+                </tr>
+              </thead>
+              <tbody id="guia-items-tbody" class="divide-y divide-[#EBE5DE]"></tbody>
+            </table>
+          </div>
+
+          <!-- Checklist de Embalaje Frágil y Control de Calidad -->
+          <div class="bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl space-y-2">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-amber-900">Protocolo de Embalaje Frágil Artesanitas</p>
+            <div class="grid grid-cols-2 gap-2 text-[11px] text-[#4A3C31]">
+              <label class="flex items-center gap-1.5"><input type="checkbox" checked class="accent-[#007A78]"> Plástico burbuja triple capa</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" checked class="accent-[#007A78]"> Cinta o sello "Muy Frágil - Cerámica"</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" checked class="accent-[#007A78]"> Tarjeta de agradecimiento &amp; cuidados</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" checked class="accent-[#007A78]"> Inspección visual de esmalte sin fisuras</label>
+            </div>
+          </div>
+
+          <!-- Pie de Firma -->
+          <div class="flex justify-between items-end pt-4 border-t border-[#EBE5DE] text-[10px] text-[#8C7A6B]">
+            <div>
+              <p>Despachado desde Taller Artesanitas Trujillo</p>
+              <p>Soporte post-venta WhatsApp: +51 929 938 466</p>
+            </div>
+            <div class="text-center border-t border-[#8C7A6B] pt-1 w-44">
+              <p class="font-semibold text-[#4A3C31]">Responsable de Embalaje &amp; QA</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones Modal -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" id="btn-imprimir-guia-doc"
+            class="bg-[#007A78] hover:bg-[#00635D] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer shadow-2xs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            Imprimir Packing Slip
           </button>
         </div>
       </div>
@@ -921,7 +1028,7 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block text-xs font-semibold text-[#4A3C31]">SKU (Autogenerable)</label>
-              <button type="button" id="btn-np-autogenerar-codigos" class="text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">⚡ Generar SKU+EAN</button>
+              <button type="button" id="btn-np-autogenerar-codigos" class="text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generar SKU+EAN</button>
             </div>
             <input type="text" id="np-sku" maxlength="60" placeholder="Ej: ART-VAJ-TAZ-0001"
               class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-sm font-mono focus:outline-none focus:border-[#B87352]">
@@ -984,7 +1091,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Etiqueta Promo</label>
-            <input type="text" id="np-etiqueta-promo" maxlength="40" placeholder="Ej: 🎄 Promo Navidad"
+            <input type="text" id="np-etiqueta-promo" maxlength="40" placeholder="Ej: Promo Navidad"
               class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
           </div>
           <div>
@@ -1157,6 +1264,46 @@
 
   <!-- Script modular externo con Cache-Buster -->
   <script src="/js/registros.js?v=20261125_s6"></script>
+
+  <!-- Modal Cámara Scanner de Código de Barras EAN-13 (Shopify Mobile WMS) -->
+  <div id="modal-camara-scanner" class="fixed inset-0 z-50 hidden bg-[#4A3C31]/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#EBE5DE] space-y-4">
+      <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-xl bg-[#007A78]/15 text-[#007A78] flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </span>
+          <div>
+            <h3 class="font-serif font-bold text-[#4A3C31]">Lector de Código EAN-13</h3>
+            <p class="text-xs text-[#8C7A6B]">Apunta la cámara al código de barras del producto</p>
+          </div>
+        </div>
+        <button type="button" id="btn-cerrar-camara-scanner" class="text-[#8C7A6B] hover:text-[#4A3C31] p-1 rounded-lg transition-colors cursor-pointer" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="relative aspect-video sm:aspect-square bg-black rounded-2xl overflow-hidden flex items-center justify-center">
+        <video id="video-camara-scanner" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <div class="absolute inset-0 border-2 border-dashed border-[#007A78]/60 m-8 rounded-xl pointer-events-none flex items-center justify-center">
+          <span class="bg-[#007A78] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md animate-pulse">Enfoca el código EAN-13</span>
+        </div>
+      </div>
+
+      <div class="text-center space-y-2">
+        <p id="camara-scanner-status" class="text-xs text-[#8C7A6B]">Iniciando cámara...</p>
+        <div class="flex gap-2">
+          <input type="text" id="camara-manual-barcode" placeholder="O ingresa 13 dígitos manualmente" maxlength="13"
+            class="flex-1 px-3 py-2 text-xs rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
+          <button type="button" id="btn-camara-manual-submit"
+            class="bg-[#4A3C31] text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#322821] cursor-pointer">
+            Buscar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>

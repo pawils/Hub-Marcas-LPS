@@ -146,7 +146,7 @@
     const guiaBlock = p.guia_envio
       ? `<div class="bg-[#742284]/10 border border-[#742284]/25 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
            <div>
-             <span class="text-[10px] font-bold uppercase tracking-wider text-[#742284] block">🚚 Guía / Ticket de Envío (${escapeHtml(empresaCourier)})</span>
+             <span class="text-[10px] font-bold uppercase tracking-wider text-[#742284] flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z"/><circle cx="17" cy="18.5" r="2.5"/><circle cx="7" cy="18.5" r="2.5"/></svg> Guía / Ticket de Envío (${escapeHtml(empresaCourier)})</span>
              <p class="text-base sm:text-lg font-mono font-extrabold text-[#4A3C31] mt-0.5">${escapeHtml(p.guia_envio)}</p>
              <span class="text-xs text-[#8C7A6B]">Ciudad / Agencia destino: ${escapeHtml(destinoTxt)}</span>
            </div>
@@ -157,7 +157,7 @@
          </div>`
       : '';
 
-    const waMsg = `Hola Artesanitas! ✨ Consulto por mi pedido con código ${p.codigo_pedido} (${p.producto_nombre}).`;
+    const waMsg = `Hola Artesanitas! Consulto por mi pedido con código ${p.codigo_pedido} (${p.producto_nombre}).`;
 
     return `
       <article class="bg-white rounded-3xl shadow-sm border border-[#EBE5DE] overflow-hidden">
@@ -175,7 +175,7 @@
           </div>
           <div class="text-left sm:text-right">
             <span class="text-[11px] uppercase tracking-widest text-[#D5C9BD] block">Entrega Estimada</span>
-            <span class="text-sm sm:text-base font-bold text-[#F9F6F0]">📅 ${escapeHtml(fmtFecha(p.fecha_entrega))}</span>
+            <span class="text-sm sm:text-base font-bold text-[#F9F6F0] flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${escapeHtml(fmtFecha(p.fecha_entrega))}</span>
           </div>
         </div>
 
@@ -236,12 +236,12 @@
                 ${p.mp_habilitado && saldo > 0 ? `
                   <button type="button" data-codigo="${escapeHtml(p.codigo_pedido)}"
                     class="btn-pagar-mp w-full bg-[#009EE3] hover:bg-[#0089C7] text-white font-semibold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
-                    <span>💳 Pagar Saldo con Mercado Pago (S/ ${saldo.toFixed(2)})</span>
+                    <span class="flex items-center justify-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> Pagar Saldo con Mercado Pago (S/ ${saldo.toFixed(2)})</span>
                   </button>
                 ` : ''}
                 <button type="button" data-push-codigo="${escapeHtml(p.codigo_pedido)}"
                   class="btn-activar-push w-full bg-[#4A3C31] hover:bg-[#322821] text-white font-semibold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
-                  <span>🔔 Recibir alerta Push cuando salga mi envío</span>
+                  <span class="flex items-center justify-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Recibir alerta Push cuando salga mi envío</span>
                 </button>
                 <a href="https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(waMsg)}"
                   target="_blank" rel="noreferrer"
@@ -332,10 +332,10 @@
                 body: JSON.stringify({ rol: 'comprador', codigo_pedido: cod, subscription: sub.toJSON() })
               });
             }
-            btn.textContent = '✓ Alertas Push activadas en este dispositivo';
+            btn.textContent = 'Alertas Push activadas en este dispositivo';
             btn.classList.replace('bg-[#4A3C31]', 'bg-[#007A78]');
           } catch {
-            btn.textContent = '✓ Notificaciones del navegador activadas';
+            btn.textContent = 'Notificaciones del navegador activadas';
           }
         });
       });
@@ -357,12 +357,12 @@
             } else {
               alert(mpData.message || 'No se pudo iniciar Mercado Pago.');
               btn.disabled = false;
-              btn.textContent = '💳 Pagar Saldo con Mercado Pago';
+              btn.textContent = 'Pagar Saldo con Mercado Pago';
             }
           } catch {
             alert('Error de conexión con la pasarela.');
             btn.disabled = false;
-            btn.textContent = '💳 Pagar Saldo con Mercado Pago';
+            btn.textContent = 'Pagar Saldo con Mercado Pago';
           }
         });
       });

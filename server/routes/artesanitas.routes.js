@@ -50,9 +50,9 @@ async function buscarProductoPorSlug(slug) {
                 politica_sin_stock: p.politica_sin_stock || 'preventa',
                 coleccion: p.coleccion || 'Catálogo Artesanitas',
                 detalles: [
-                    p.tamano_dimensiones ? `📏 Medidas / Capacidad: ${p.tamano_dimensiones}` : null,
-                    p.color ? `🎨 Color: ${p.color}` : null,
-                    p.caracteristicas ? `✨ ${p.caracteristicas}` : null
+                    p.tamano_dimensiones ? `Medidas / Capacidad: ${p.tamano_dimensiones}` : null,
+                    p.color ? `Color: ${p.color}` : null,
+                    p.caracteristicas ? `${p.caracteristicas}` : null
                 ].filter(Boolean),
                 descripcion: p.descripcion || '',
                 imagenes: p.imagenes || []
@@ -142,7 +142,7 @@ router.get('/producto/:slug', async (req, res, next) => {
         Ver catálogo completo
       </a>
       <a href="/pedido" class="text-xs font-bold text-[#B87352] bg-[#B87352]/10 px-3 py-1.5 rounded-full">
-        🛒 Ir a Mi Reserva
+        Ir a Mi Reserva
       </a>
     </div>
 
@@ -177,7 +177,7 @@ router.get('/producto/:slug', async (req, res, next) => {
       ${agotado ? '' : `
       <button type="button" id="btn-pdp-add-cart"
         class="w-full bg-[#4A3C31] hover:bg-[#322821] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all shadow-md cursor-pointer">
-        <span>🛒 + Agregar a mi reserva</span>
+        <span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> + Agregar a mi reserva</span>
       </button>
       <a href="/pedido?producto=${encodeURIComponent(producto.slug)}"
         class="w-full bg-[#B87352] text-white py-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:bg-[#A36244] transition-all shadow-md">
@@ -215,7 +215,7 @@ router.get('/producto/:slug', async (req, res, next) => {
               cart.push({ slug: prod.slug, nombre: prod.nombre, precio: prod.precio, reserva: 20, cantidad: 1, imagen: prod.imagen });
             }
             localStorage.setItem(key, JSON.stringify(cart));
-            btnAdd.innerHTML = '<span>✓ ¡Agregado! Redirigiendo a tu reserva...</span>';
+            btnAdd.innerHTML = '<span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><polyline points="20 6 9 17 4 12"/></svg> ¡Agregado! Redirigiendo a tu reserva...</span>';
             btnAdd.classList.replace('bg-[#4A3C31]', 'bg-[#007A78]');
             setTimeout(function () { window.location.href = '/pedido'; }, 700);
           } catch (e) {

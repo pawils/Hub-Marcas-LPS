@@ -883,7 +883,7 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
         notifyPushSubscribers({
             negocioId: req.negocio.id,
             rol: 'admin',
-            title: `🔔 Nueva Reserva ${pedido.codigo_pedido}`,
+            title: `Nueva Reserva ${pedido.codigo_pedido}`,
             body: `${cleanNombre} reservó ${pNombreResumen} (Abono: S/ ${pReservaTotal.toFixed(2)})`,
             url: '/registros'
         }).catch(() => {});
@@ -1505,8 +1505,8 @@ router.patch('/:negocioSlug/pedidos/:id', requireNegocioAuth, async (req, res) =
         // Sprint 6: Notificación Web Push automática al comprador cuando su pedido está listo o tiene guía de envío
         if (updated.codigo_pedido && (guia_envio || estado_pedido === 'enviado' || estado_pedido === 'recibido_taller')) {
             const pushTitle = updated.guia_envio
-                ? `🚚 ¡Tu pedido ${updated.codigo_pedido} está en envío!`
-                : `✨ Avance de tu pedido ${updated.codigo_pedido}`;
+                ? `Tu pedido ${updated.codigo_pedido} está en envío`
+                : `Avance de tu pedido ${updated.codigo_pedido}`;
             const pushBody = updated.guia_envio
                 ? `Enviado por ${updated.empresa_envio || 'Shalom'}. Guía: ${updated.guia_envio}.`
                 : `Tu pieza artesanal pasó control de calidad y está lista en el taller de Artesanitas.`;
@@ -1773,8 +1773,8 @@ router.patch('/:negocioSlug/artesano-portal/:token/pedido/:id', trackingLimiter,
         // Si el artesano marca "listo_revision_qa" o "enviado_taller", enviar alerta Push al Administrador de Artesanitas
         if (etapa_artesano === 'listo_revision_qa' || etapa_artesano === 'enviado_taller') {
             const msgTitle = etapa_artesano === 'listo_revision_qa'
-                ? `🔍 Revisión QA requerida (${ped.codigo_pedido})`
-                : `🏺 Pedido enviado al taller (${ped.codigo_pedido})`;
+                ? `Revisión QA requerida (${ped.codigo_pedido})`
+                : `Pedido enviado al taller (${ped.codigo_pedido})`;
             const msgBody = etapa_artesano === 'listo_revision_qa'
                 ? `${artesano.nombre} terminó ${ped.producto_nombre}. Valida onzas, logos y colores antes del envío.`
                 : `${artesano.nombre} despachó ${ped.producto_nombre} hacia el taller de Artesanitas.`;

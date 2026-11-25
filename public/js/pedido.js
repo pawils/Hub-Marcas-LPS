@@ -709,7 +709,7 @@
       const originalHtml = btnAgregarText.innerHTML;
       btnAgregarItem.classList.add('bg-[#007A78]', 'hover:bg-[#00635D]');
       btnAgregarItem.classList.remove('bg-[#B87352]', 'hover:bg-[#a36344]');
-      btnAgregarText.textContent = '✓ ¡Agregado a tu Reserva!';
+      btnAgregarText.textContent = '¡Agregado a tu Reserva!';
       setTimeout(() => {
         btnAgregarItem.classList.remove('bg-[#007A78]', 'hover:bg-[#00635D]');
         btnAgregarItem.classList.add('bg-[#B87352]', 'hover:bg-[#a36344]');
@@ -946,58 +946,58 @@
     let tagBadgeText = 'Foto Real en Primer Plano';
 
     if (prod.slug.includes('sin-plato')) {
-      tagBadgeText = '🎨 Color Entero · Sin Plato';
+      tagBadgeText = 'Color Entero · Sin Plato';
       categoryText = 'Colección Rapunzel · Sin Plato';
     } else if (prod.slug.includes('lineas-plato')) {
-      tagBadgeText = '✨🍽️ Set Exclusivo · Líneas + Plato';
+      tagBadgeText = 'Set Exclusivo · Líneas + Plato';
       categoryText = 'Colección Rapunzel · Set Completo';
     } else if (prod.slug.includes('lineas')) {
-      tagBadgeText = '✨ Relieve · Con Líneas';
+      tagBadgeText = 'Relieve · Con Líneas';
       categoryText = 'Colección Rapunzel · Acabado Texturizado';
     } else if (prod.slug.includes('plato')) {
-      tagBadgeText = '🍽️ Set Artesanal · Taza + Plato';
+      tagBadgeText = 'Set Artesanal · Taza + Plato';
       categoryText = 'Colección Rapunzel · Set con Platito';
     } else if (prod.slug === 'taza-stich') {
-      tagBadgeText = '💙 Edición Ohana · Taza Artesanal';
+      tagBadgeText = 'Edición Ohana · Taza Artesanal';
       categoryText = 'Edición Especial Stich';
     } else if (prod.slug === 'taza-van-gogh') {
-      tagBadgeText = '☕ Noche Estrellada · Arte Cerámico';
+      tagBadgeText = 'Noche Estrellada · Arte Cerámico';
       categoryText = 'Colección Grandes Maestros';
     } else if (prod.slug === 'azucarera-van-gogh') {
-      tagBadgeText = '☕ Azucarera Artesanal · Colección Van Gogh';
+      tagBadgeText = 'Azucarera Artesanal · Colección Van Gogh';
       categoryText = 'Colección Grandes Maestros';
     } else if (prod.slug === 'vasito-van-gogh') {
-      tagBadgeText = '🎨 Vasito de Cerámica · Colección Van Gogh';
+      tagBadgeText = 'Vasito de Cerámica · Colección Van Gogh';
       categoryText = 'Colección Grandes Maestros';
             } else if (prod.slug === 'taza-muneco-de-nieve') {
-      tagBadgeText = '⛄ Edición Navidad · Muñeco de Nieve';
+      tagBadgeText = 'Edición Navidad · Muñeco de Nieve';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-navidad') {
-      tagBadgeText = '🎁 Edición Especial Navidad';
+      tagBadgeText = 'Edición Especial Navidad';
       categoryText = 'Colección Navidad 2026';
         } else if (prod.slug === 'taza-muneco-de-nieve') {
-      tagBadgeText = '⛄ Edición Navidad · Muñeco de Nieve';
+      tagBadgeText = 'Edición Navidad · Muñeco de Nieve';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-navidad-1') {
-      tagBadgeText = '🎁 Edición Especial Navidad · Modelo 1';
+      tagBadgeText = 'Edición Especial Navidad · Modelo 1';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-navidad-2') {
-      tagBadgeText = '🎁 Edición Especial Navidad · Modelo 2';
+      tagBadgeText = 'Edición Especial Navidad · Modelo 2';
       categoryText = 'Colección Navidad 2026';
         } else if (prod.slug === 'taza-navidad-papa-noel') {
-      tagBadgeText = '🎄 Edición Navidad · Papá Noel';
+      tagBadgeText = 'Edición Navidad · Papá Noel';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-muneco-de-nieve') {
-      tagBadgeText = '⛄ Edición Navidad · Muñeco de Nieve';
+      tagBadgeText = 'Edición Navidad · Muñeco de Nieve';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-arbolito-chocolatosa') {
-      tagBadgeText = '🍫 Edición Navidad · Arbolito Chocolatosa';
+      tagBadgeText = 'Edición Navidad · Arbolito Chocolatosa';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-arbolito-rosa') {
-      tagBadgeText = '🌸 Edición Navidad · Arbolito Rosa';
+      tagBadgeText = 'Edición Navidad · Arbolito Rosa';
       categoryText = 'Colección Navidad 2026';
     } else if (prod.slug === 'taza-piston-cup') {
-      tagBadgeText = '🏆 Copa Pistón · Edición Cars';
+      tagBadgeText = 'Copa Pistón · Edición Cars';
       categoryText = 'Colección Dinámica';
     }
 
@@ -1058,20 +1058,20 @@
     if (lightboxPrice) lightboxPrice.textContent = `S/ ${productoActual.precio.toFixed(2)}`;
 
     let tagBadgeText = 'Foto Real en Primer Plano';
-    if (productoActual.slug.includes('sin-plato')) tagBadgeText = '🎨 Color Entero · Sin Plato';
-    else if (productoActual.slug.includes('lineas-plato')) tagBadgeText = '✨🍽️ Set Exclusivo · Líneas + Plato';
-    else if (productoActual.slug.includes('lineas')) tagBadgeText = '✨ Relieve · Con Líneas';
-    else if (productoActual.slug.includes('plato')) tagBadgeText = '🍽️ Set Artesanal · Taza + Plato';
-    else if (productoActual.slug === 'taza-stich') tagBadgeText = '💙 Edición Ohana';
-    else if (productoActual.slug === 'taza-van-gogh') tagBadgeText = '☕ Noche Estrellada';
-    else if (productoActual.slug === 'azucarera-van-gogh') tagBadgeText = '☕ Azucarera Van Gogh';
-    else if (productoActual.slug === 'vasito-van-gogh') tagBadgeText = '🎨 Vasito Van Gogh';
+    if (productoActual.slug.includes('sin-plato')) tagBadgeText = 'Color Entero · Sin Plato';
+    else if (productoActual.slug.includes('lineas-plato')) tagBadgeText = 'Set Exclusivo · Líneas + Plato';
+    else if (productoActual.slug.includes('lineas')) tagBadgeText = 'Relieve · Con Líneas';
+    else if (productoActual.slug.includes('plato')) tagBadgeText = 'Set Artesanal · Taza + Plato';
+    else if (productoActual.slug === 'taza-stich') tagBadgeText = 'Edición Ohana';
+    else if (productoActual.slug === 'taza-van-gogh') tagBadgeText = 'Noche Estrellada';
+    else if (productoActual.slug === 'azucarera-van-gogh') tagBadgeText = 'Azucarera Van Gogh';
+    else if (productoActual.slug === 'vasito-van-gogh') tagBadgeText = 'Vasito Van Gogh';
         
-                else if (productoActual.slug === 'taza-navidad-papa-noel') tagBadgeText = '🎄 Edición Papá Noel';
-    else if (productoActual.slug === 'taza-muneco-de-nieve') tagBadgeText = '⛄ Edición Muñeco de Nieve';
-    else if (productoActual.slug === 'taza-arbolito-chocolatosa') tagBadgeText = '🍫 Edición Arbolito Chocolatosa';
-    else if (productoActual.slug === 'taza-arbolito-rosa') tagBadgeText = '🌸 Edición Arbolito Rosa';
-    else if (productoActual.slug === 'taza-piston-cup') tagBadgeText = '🏆 Copa Pistón';
+                else if (productoActual.slug === 'taza-navidad-papa-noel') tagBadgeText = 'Edición Papá Noel';
+    else if (productoActual.slug === 'taza-muneco-de-nieve') tagBadgeText = 'Edición Muñeco de Nieve';
+    else if (productoActual.slug === 'taza-arbolito-chocolatosa') tagBadgeText = 'Edición Arbolito Chocolatosa';
+    else if (productoActual.slug === 'taza-arbolito-rosa') tagBadgeText = 'Edición Arbolito Rosa';
+    else if (productoActual.slug === 'taza-piston-cup') tagBadgeText = 'Copa Pistón';
 
     if (lightboxBadge) lightboxBadge.textContent = tagBadgeText;
 
@@ -1367,7 +1367,7 @@
           const itemsSummary = itemsReserva.map(i => `${i.cantidad > 1 ? `${i.cantidad}x ` : ''}${i.nombre}`).join(', ');
           if (btnSuccessWhatsapp) {
             const codTxt = codPedido ? ` (Código: ${codPedido})` : '';
-            btnSuccessWhatsapp.href = `https://wa.me/51929938466?text=${encodeURIComponent(`Hola! ✨ Acabo de reservar en preventa desde la web${codTxt}: ${itemsSummary}. Mi nombre es ${nombre}.`)}`;
+            btnSuccessWhatsapp.href = `https://wa.me/51929938466?text=${encodeURIComponent(`Hola! Acabo de reservar en preventa desde la web${codTxt}: ${itemsSummary}. Mi nombre es ${nombre}.`)}`;
           }
 
           // Limpiar carrito persistente tras registrar la reserva con éxito

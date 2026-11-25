@@ -39,7 +39,7 @@
     if (etapa === 'enviado_taller') {
       return {
         color: 'bg-green-100 text-green-800 border-green-300',
-        dot: '🟢',
+        dot: '●',
         texto: 'Entregado a Taller Artesanitas',
         urgente: false
       };
@@ -47,7 +47,7 @@
     if (!fechaCompromiso) {
       return {
         color: 'bg-stone-100 text-stone-700 border-stone-300',
-        dot: '⚪',
+        dot: '○',
         texto: 'Fecha por confirmar con Admin',
         urgente: false
       };
@@ -63,7 +63,7 @@
     if (diffDays < 0) {
       return {
         color: 'bg-red-100 text-red-800 border-red-300',
-        dot: '🔴',
+        dot: '●',
         texto: `Atrasado (${Math.abs(diffDays)}d) · Venció ${fechaFmt}`,
         urgente: true
       };
@@ -71,14 +71,14 @@
     if (diffDays <= 2) {
       return {
         color: 'bg-amber-100 text-amber-900 border-amber-300',
-        dot: '🟡',
+        dot: '●',
         texto: diffDays === 0 ? `Vence HOY (${fechaFmt})` : `Vence en ${diffDays}d (${fechaFmt})`,
         urgente: true
       };
     }
     return {
       color: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-      dot: '🟢',
+      dot: '●',
       texto: `A tiempo · Entrega: ${fechaFmt} (${diffDays}d)`,
       urgente: false
     };
@@ -97,7 +97,7 @@
       return `
         <div class="bg-green-50 border border-green-200 rounded-2xl p-3.5 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-green-800">✅ Control de Calidad (QA) Aprobado por Artesanitas</span>
+            <span class="text-xs font-extrabold text-green-800 flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 text-green-600"><polyline points="20 6 9 17 4 12"/></svg> Control de Calidad (QA) Aprobado por Artesanitas</span>
             <span class="text-[10px] font-bold bg-green-700 text-white px-2 py-0.5 rounded-full">Autorizado para envío</span>
           </div>
           <p class="text-[11px] text-green-700">El administrador verificó que las onzas, logos, colores y medidas cumplen exactamente con lo solicitado. Ya puedes enviarlo al taller de Artesanitas.</p>
@@ -110,7 +110,7 @@
       return `
         <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-3.5 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-red-800">⚠️ Observación de Control de Calidad (QA Artesanitas)</span>
+            <span class="text-xs font-extrabold text-red-800 flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-red-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Observación de Control de Calidad (QA Artesanitas)</span>
             <span class="text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">Corregir detalle</span>
           </div>
           <p class="text-xs font-semibold text-red-700">${escapeHtml(sol.qa_observaciones || 'El administrador indicó revisar variación en onzas, logo o color antes de enviar al taller.')}</p>
@@ -124,7 +124,7 @@
     if (sol.etapa_artesano === 'listo_revision_qa') {
       return `
         <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 space-y-1.5">
-          <span class="text-xs font-bold text-amber-900 block">⏳ Pendiente de Validación QA por Administrador de Artesanitas</span>
+          <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Pendiente de Validación QA por Administrador de Artesanitas</span>
           <p class="text-[11px] text-amber-800">Informaste que el pedido está listo. El administrador revisará que no existan variaciones en onzas, logos o colores para autorizar el envío al taller.</p>
         </div>
       `;
@@ -207,7 +207,7 @@
             <div class="bg-[#FAF4EE] border border-[#B87352]/30 rounded-2xl p-3.5 sm:p-4 space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <span class="text-xs font-extrabold text-[#4A3C31] uppercase tracking-wider flex items-center gap-1.5">
-                  <span>📋 Detalles y Especificaciones del Administrador</span>
+                  <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Detalles y Especificaciones del Administrador</span>
                 </span>
                 ${sol.cotizacion_artesano !== null ? `
                   <span class="bg-white border border-[#B87352]/40 text-[#008f6b] font-extrabold text-xs px-2.5 py-1 rounded-xl">
@@ -259,12 +259,12 @@
               <a href="https://wa.me/${whatsappTaller}?text=${encodeURIComponent(waMsg)}"
                 target="_blank" rel="noreferrer"
                 class="text-xs font-semibold text-[#008f6b] hover:underline flex items-center gap-1">
-                <span>📲 Enviar foto de avance / consultar a Admin por WhatsApp</span>
+                <span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Enviar foto de avance / consultar a Admin</span>
               </a>
               ${sol.etapa_artesano !== 'listo_revision_qa' && sol.etapa_artesano !== 'enviado_taller' ? `
                 <button type="button" data-pedido-id="${sol.id}" data-etapa="listo_revision_qa"
                   class="btn-set-etapa bg-[#4A3C31] hover:bg-[#B87352] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors cursor-pointer">
-                  🔍 Informar: Listo para Revisión QA
+                  Informar: Listo para Revisión QA
                 </button>
               ` : ''}
             </div>

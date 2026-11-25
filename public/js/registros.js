@@ -441,6 +441,9 @@
             </td>
             <td data-label="Inscrito el" class="px-4 py-3 text-[#8C7A6B]">${inscritoEl}</td>
             <td data-label="Acciones" class="px-4 py-3 text-right">
+            <button type="button" data-imprimir-guia="${p.id}" class="btn-imprimir-guia-despacho text-xs font-bold text-[#007A78] hover:underline flex items-center gap-1 cursor-pointer justify-end mb-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg> Packing Slip
+            </button>
               <button data-id="${r.id}" data-nombre="${escapeHtml(r.nombre)}" class="btn-eliminar-inscripcion text-xs font-medium text-red-600 hover:underline cursor-pointer">
                 Eliminar
               </button>
@@ -604,7 +607,9 @@
       <input type="text" maxlength="100" placeholder="Nombre completo"
         class="im-acompanante-input flex-1 px-3 py-2.5 rounded-lg border border-[#D5C9BD] bg-[#F9F6F0] focus:outline-none focus:border-[#B87352]">
       ${esPrimera ? '' : `
-      <button type="button" class="btn-quitar-acompanante shrink-0 w-10 h-10 rounded-lg border border-[#D5C9BD] text-[#8C7A6B] hover:text-[#B87352] hover:border-[#B87352] transition-colors flex items-center justify-center">✕</button>`}
+      <button type="button" class="btn-quitar-acompanante shrink-0 w-10 h-10 rounded-lg border border-[#D5C9BD] text-[#8C7A6B] hover:text-[#B87352] hover:border-[#B87352] transition-colors flex items-center justify-center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>`}
     `;
     const btnQuitar = fila.querySelector('.btn-quitar-acompanante');
     if (btnQuitar) btnQuitar.addEventListener('click', () => fila.remove());
@@ -814,10 +819,10 @@
             </div>
             <div class="text-[11px] text-[#8C7A6B] space-y-0.5 pt-1">
               <div class="font-mono text-[10px] text-[#4A3C31]">SKU: ${escapeHtml(p.sku || '—')}${p.ean ? ' · EAN: ' + escapeHtml(p.ean) : ''}</div>
-              <div>📂 ${escapeHtml(p.linea || 'Vajilla')} → ${escapeHtml(p.sublinea || 'Tazas')}${p.coleccion ? ' (' + escapeHtml(p.coleccion) + ')' : ''}</div>
+              <div>${escapeHtml(p.linea || 'Vajilla')} → ${escapeHtml(p.sublinea || 'Tazas')}${p.coleccion ? ' (' + escapeHtml(p.coleccion) + ')' : ''}</div>
               <div class="flex items-center justify-between pt-1">
                 <span class="font-semibold ${Number(p.stock_actual) > 0 ? 'text-green-700' : 'text-amber-700'}">
-                  📦 Stock: ${Number(p.stock_actual || 0)} und. (${Number(p.stock_actual) > 0 ? 'Entrega inmediata' : (p.politica_sin_stock === 'agotado' ? 'Agotado' : 'En Preventa')})
+                  Stock: ${Number(p.stock_actual || 0)} und. (${Number(p.stock_actual) > 0 ? 'Entrega inmediata' : (p.politica_sin_stock === 'agotado' ? 'Agotado' : 'En Preventa')})
                 </span>
               </div>
             </div>
@@ -1188,12 +1193,12 @@
           <td data-label="Entrega / Sede" class="px-4 py-3 text-xs">
             ${esLocal ? `
               <span class="inline-flex items-center gap-1 bg-[#00D09C]/10 text-[#008f6b] text-[11px] font-bold px-2 py-0.5 rounded-md mb-0.5">
-                📍 Recojo en Local
+                Recojo en Local
               </span>
               <span class="font-semibold text-[#4A3C31] block">Taller Trujillo (Gratis)</span>
             ` : `
               <span class="inline-flex items-center gap-1 bg-[#742284]/10 text-[#742284] text-[11px] font-bold px-2 py-0.5 rounded-md mb-0.5">
-                🚚 Envío Shalom
+                Envío Shalom
               </span>
               <span class="font-semibold text-[#4A3C31] block">${escapeHtml(p.sede_shalom)}</span>
             `}
@@ -1238,21 +1243,21 @@
                 : '';
               const ent = p.voucher_entidad_detectada ? ` (${escapeHtml(p.voucher_entidad_detectada)})` : '';
               if (verif === 'verificado') {
-                return `<div class="inline-block text-[10px] font-bold bg-green-50 text-green-800 border border-green-200 px-2 py-0.5 rounded-md">🤖 IA: ${op}${mDet}${ent} (OK)</div>`;
+                return `<div class="inline-block text-[10px] font-bold bg-green-50 text-green-800 border border-green-200 px-2 py-0.5 rounded-md">IA Verificado: ${op}${mDet}${ent} (OK)</div>`;
               }
               if (verif === 'duplicado') {
-                return `<div class="inline-block text-[10px] font-extrabold bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded-md">🚨 IA: Voucher Duplicado (${op})</div>`;
+                return `<div class="inline-block text-[10px] font-extrabold bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded-md">ALERTA IA: Voucher Duplicado (${op})</div>`;
               }
               if (verif === 'monto_difiere') {
-                return `<div class="inline-block text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-md">⚠️ IA: Monto difiere (${op}${mDet})</div>`;
+                return `<div class="inline-block text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-md">OBSERVACIÓN IA: Monto difiere (${op}${mDet})</div>`;
               }
-              return `<div class="inline-block text-[10px] font-medium bg-[#F1EDE7] text-[#8C7A6B] px-2 py-0.5 rounded-md">🤖 IA: ${p.voucher_nro_operacion ? op + mDet : 'Pendiente validación'}</div>`;
+              return `<div class="inline-block text-[10px] font-medium bg-[#F1EDE7] text-[#8C7A6B] px-2 py-0.5 rounded-md">IA: ${p.voucher_nro_operacion ? op + mDet : 'Pendiente validación'}</div>`;
             })()}
             ${p.tiene_comprobante ? `
               <div>
                 <a href="/api/negocios/${NEGOCIO}/pedidos/${p.id}/comprobante" target="_blank" rel="noreferrer"
                   class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] hover:underline">
-                  <span>🖼️ Ver voucher subido</span>
+                  <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg> Ver voucher subido</span>
                 </a>
               </div>
             ` : ''}
@@ -1287,7 +1292,7 @@
                 const hoy = new Date().toISOString().slice(0, 10);
                 const comp = String(p.fecha_compromiso_artesano).slice(0, 10);
                 return hoy > comp
-                  ? `<div class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">⚠️ Artesano demorado (venció ${comp})</div>`
+                  ? `<div class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">Artesano demorado (venció ${comp})</div>`
                   : '';
               })()}
 
@@ -1297,8 +1302,8 @@
                   <span class="text-[10px] font-bold text-[#8C7A6B] uppercase">2. Validación QA Artesanitas</span>
                   <select data-qa-estado-id="${p.id}" class="input-pedido-qa-estado text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-[#D5C9BD] ${p.qa_estado === 'aprobado' ? 'bg-green-100 text-green-800' : (p.qa_estado === 'observado' ? 'bg-red-100 text-red-800' : 'bg-white text-[#4A3C31]')}">
                     <option value="pendiente" ${(p.qa_estado || 'pendiente') === 'pendiente' ? 'selected' : ''}>⏳ QA Pendiente</option>
-                    <option value="aprobado" ${p.qa_estado === 'aprobado' ? 'selected' : ''}>✅ QA Aprobado (OK)</option>
-                    <option value="observado" ${p.qa_estado === 'observado' ? 'selected' : ''}>⚠️ QA Observado</option>
+                    <option value="aprobado" ${p.qa_estado === 'aprobado' ? 'selected' : ''}>QA Aprobado (OK)</option>
+                    <option value="observado" ${p.qa_estado === 'observado' ? 'selected' : ''}>QA Observado</option>
                   </select>
                 </div>
                 ${(() => {
@@ -1338,10 +1343,10 @@
                 </div>
               </div>
             </div>
-            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! ✨ Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.ciudad_destino ? ' con destino a ' + p.ciudad_destino : ''}${p.fecha_entrega ? ' (Entrega estimada: ' + String(p.fecha_entrega).slice(0, 10) + ')' : ''}${p.guia_envio ? '. Tu guía ' + (p.empresa_envio || 'Shalom') + ' es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
+            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.ciudad_destino ? ' con destino a ' + p.ciudad_destino : ''}${p.fecha_entrega ? ' (Entrega estimada: ' + String(p.fecha_entrega).slice(0, 10) + ')' : ''}${p.guia_envio ? '. Tu guía ' + (p.empresa_envio || 'Shalom') + ' es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
               target="_blank" rel="noreferrer"
               class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#B87352] hover:underline pt-0.5">
-              <span>📲 Comunicar fecha / link de tracking al cliente</span>
+              <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Comunicar tracking al cliente</span>
             </a>
           </td>
           <td data-label="Acciones" class="px-4 py-3 text-right">
@@ -1438,6 +1443,12 @@
     });
 
     // Eventos eliminar pedido
+    tbody.querySelectorAll('.btn-imprimir-guia-despacho').forEach(btn => {
+      btn.addEventListener('click', () => {
+        abrirPackingSlipPedido(btn.dataset.imprimirGuia);
+      });
+    });
+
     tbody.querySelectorAll('.btn-eliminar-pedido').forEach(btn => {
       btn.addEventListener('click', () => {
         openConfirmModal({
@@ -1602,10 +1613,10 @@
               <td class="py-3 px-2 text-center">
                 <div class="inline-flex items-center gap-1.5">
                   <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-700 border border-green-200" title="Entregados a tiempo">
-                    ✓ ${aTiempo}
+                    ${aTiempo} a tiempo
                   </span>
                   <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${atrasados > 0 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#F1EDE7] text-[#8C7A6B]'}" title="Pedidos atrasados">
-                    ⚠️ ${atrasados}
+                    ${atrasados} atrasados
                   </span>
                 </div>
                 <span class="block text-[10px] font-semibold ${atrasados > 0 ? 'text-amber-700' : 'text-[#008f6b]'} mt-0.5">
@@ -1700,7 +1711,7 @@
         const magicUrl = `${window.location.origin}/taller-artesano?token=${encodeURIComponent(a.access_token)}`;
         const cleanWa = String(a.whatsapp || '').replace(/\D/g, '');
         const waHref = cleanWa
-          ? `https://wa.me/51${cleanWa}?text=${encodeURIComponent(`Hola ${a.nombre}! 🏺 Aquí tienes tu enlace privado del Portal de Taller de Artesanitas Perú para revisar las especificaciones de tus solicitudes asignadas (cotización, onzas, colores, logos) y reportar avances de horno y pintado: ${magicUrl}`)}`
+          ? `https://wa.me/51${cleanWa}?text=${encodeURIComponent(`Hola ${a.nombre}! Aquí tienes tu enlace privado del Portal de Taller de Artesanitas Perú para revisar las especificaciones de tus solicitudes asignadas (cotización, onzas, colores, logos) y reportar avances de horno y pintado: ${magicUrl}`)}`
           : '';
         return `
           <div class="p-3 rounded-2xl bg-[#F9F6F0] border border-[#EBE5DE] flex flex-col justify-between gap-2">
@@ -1711,14 +1722,14 @@
               </div>
               ${Number(a.pendientes_qa || 0) > 0 ? `
                 <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                  🔍 ${a.pendientes_qa} p/ QA
+                  ${a.pendientes_qa} p/ QA
                 </span>
               ` : ''}
             </div>
             <div class="flex items-center gap-1.5 pt-1">
               <button type="button" data-copy-magic="${escapeHtml(magicUrl)}"
                 class="btn-copy-magic flex-1 bg-white hover:bg-[#B87352] text-[#4A3C31] hover:text-white border border-[#D5C9BD] text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors cursor-pointer">
-                🔗 Copiar Magic Link
+                Copiar Magic Link
               </button>
               <a href="${escapeHtml(magicUrl)}" target="_blank" rel="noreferrer"
                 class="bg-white hover:bg-[#4A3C31] text-[#4A3C31] hover:text-white border border-[#D5C9BD] text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors"
@@ -1729,7 +1740,7 @@
                 <a href="${waHref}" target="_blank" rel="noreferrer"
                   class="bg-[#008f6b] hover:bg-[#007759] text-white text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors"
                   title="Enviar Magic Link por WhatsApp al artesano">
-                  📲 WA
+                  WA
                 </a>
               ` : ''}
             </div>
@@ -1742,7 +1753,7 @@
           try {
             await navigator.clipboard.writeText(btn.dataset.copyMagic);
             const orig = btn.textContent;
-            btn.textContent = '✓ ¡Link copiado!';
+            btn.textContent = '¡Link copiado!';
             setTimeout(() => { btn.textContent = orig; }, 1800);
           } catch {}
         });
@@ -1807,10 +1818,10 @@
             body: JSON.stringify({ rol: 'admin', subscription: sub.toJSON() })
           });
         }
-        btnPushAdmin.textContent = '🔔 Push Admin Activo';
+        btnPushAdmin.textContent = 'Push Admin Activo';
         btnPushAdmin.classList.replace('bg-[#4A3C31]', 'bg-[#008f6b]');
       } catch {
-        btnPushAdmin.textContent = '🔔 Alertas activadas';
+        btnPushAdmin.textContent = 'Alertas activadas';
       }
     });
   }
@@ -1820,12 +1831,12 @@
   let kardexCache = [];
 
   const TIPO_MOV_LABELS = {
-    matricula_inicial: '🏷️ Matrícula SKU/EAN',
-    entrada_mercaderia: '📥 Entrada Mercadería',
-    recepcion_artesano: '🏺 Recepción Artesano',
-    conteo_fisico: '📋 Conteo Físico',
-    salida_venta: '🛒 Salida por Venta',
-    ajuste_merma: '⚠️ Ajuste / Merma'
+    matricula_inicial: 'Matrícula SKU/EAN',
+    entrada_mercaderia: 'Entrada Mercadería',
+    recepcion_artesano: 'Recepción Artesano',
+    conteo_fisico: 'Conteo Físico',
+    salida_venta: 'Salida por Venta',
+    ajuste_merma: 'Ajuste / Merma'
   };
 
   async function solicitarCodigosSkuEan(linea, sublinea) {
@@ -1964,7 +1975,12 @@
               <button type="button" data-apply-conteo="${p.id}"
                 class="btn-inv-apply-conteo bg-[#007A78] hover:bg-[#00635D] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
                 title="Guardar conteo físico exacto de este SKU">
-                ✓ Contar
+                Contar
+              </button>
+              <button type="button" data-quick-out="${p.id}"
+                class="btn-inv-quick-out bg-white hover:bg-red-50 text-red-700 border border-red-200 text-[11px] font-bold px-2 py-1.5 rounded-xl transition-colors cursor-pointer"
+                title="Restar -1 unidad por merma o ajuste">
+                -1 Ajuste
               </button>
               <button type="button" data-quick-in="${p.id}"
                 class="btn-inv-quick-in bg-[#4A3C31] hover:bg-[#B87352] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
@@ -1976,7 +1992,7 @@
           <td data-label="Etiqueta" class="px-4 py-3 text-right whitespace-nowrap space-x-2">
             <button type="button" data-etiqueta-id="${p.id}"
               class="btn-inv-ver-etiqueta text-xs font-bold text-[#B87352] hover:underline cursor-pointer">
-              🏷️ Etiqueta EAN
+              Etiqueta EAN
             </button>
           </td>
         </tr>
@@ -1997,6 +2013,25 @@
             tipo_movimiento: 'conteo_fisico',
             cantidad: cant,
             motivo_referencia: 'Conteo físico directo en panel'
+          })
+        });
+        loadInventario();
+        loadProductos();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-inv-quick-out').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const prodId = btn.dataset.quickOut;
+        btn.textContent = '...';
+        await apiFetch('/inventario/movimiento', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            producto_id: prodId,
+            tipo_movimiento: 'ajuste_merma',
+            cantidad: 1,
+            motivo_referencia: 'Ajuste rápido / merma (-1)'
           })
         });
         loadInventario();
@@ -2282,3 +2317,190 @@
     mostrarPanel();
   }
 })();
+
+
+// ============================================================================
+// Lector de Código de Barras EAN-13 con Cámara (Shopify Mobile WMS)
+// ============================================================================
+var mediaStreamGlobal = null;
+
+function initCamaraScannerWMS() {
+  var btnAbrir = document.getElementById('btn-camara-scanner-wms');
+  var modal = document.getElementById('modal-camara-scanner');
+  var btnCerrar = document.getElementById('btn-cerrar-camara-scanner');
+  var video = document.getElementById('video-camara-scanner');
+  var statusEl = document.getElementById('camara-scanner-status');
+  var manualInput = document.getElementById('camara-manual-barcode');
+  var manualBtn = document.getElementById('btn-camara-manual-submit');
+
+  if (!btnAbrir || !modal) return;
+
+  function cerrarScanner() {
+    if (mediaStreamGlobal) {
+      mediaStreamGlobal.getTracks().forEach(function(t) { t.stop(); });
+      mediaStreamGlobal = null;
+    }
+    modal.classList.add('hidden');
+  }
+
+  btnCerrar && btnCerrar.addEventListener('click', cerrarScanner);
+
+  btnAbrir.addEventListener('click', function() {
+    modal.classList.remove('hidden');
+    statusEl.textContent = 'Activando cámara trasera...';
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      statusEl.textContent = 'Cámara no soportada en este navegador. Usa el campo manual.';
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    }).then(function(stream) {
+      mediaStreamGlobal = stream;
+      video.srcObject = stream;
+      statusEl.textContent = 'Cámara activa. Escaneando código...';
+
+      if ('BarcodeDetector' in window) {
+        var detector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'qr_code'] });
+        var intervalId = setInterval(function() {
+          if (!mediaStreamGlobal || modal.classList.contains('hidden')) {
+            clearInterval(intervalId);
+            return;
+          }
+          detector.detect(video).then(function(barcodes) {
+            if (barcodes.length > 0) {
+              var code = barcodes[0].rawValue;
+              clearInterval(intervalId);
+              cerrarScanner();
+              aplicarFiltroBarcode(code);
+            }
+          }).catch(function() {});
+        }, 500);
+      }
+    }).catch(function(err) {
+      console.warn('Error accediendo a cámara:', err);
+      statusEl.textContent = 'No se pudo acceder a la cámara. Usa el ingreso manual abajo.';
+    });
+  });
+
+  function aplicarFiltroBarcode(code) {
+    var searchInput = document.getElementById('filtro-inv-search');
+    if (searchInput) {
+      searchInput.value = code;
+      searchInput.dispatchEvent(new Event('input'));
+    }
+  }
+
+  manualBtn && manualBtn.addEventListener('click', function() {
+    var val = (manualInput.value || '').trim();
+    if (val) {
+      cerrarScanner();
+      aplicarFiltroBarcode(val);
+    }
+  });
+
+  manualInput && manualInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      manualBtn.click();
+    }
+  });
+}
+
+// Iniciar al cargar registros
+document.addEventListener('DOMContentLoaded', function() {
+  initCamaraScannerWMS();
+});
+
+
+// ============================================================================
+// Modal Packing Slip / Guía de Despacho & Embalaje Artesanitas (Shopify WMS)
+// ============================================================================
+function initGuiaDespachoLogic() {
+  var modal = document.getElementById('modal-guia-despacho');
+  var btnCerrar = document.getElementById('btn-cerrar-guia-despacho');
+  var btnPrint = document.getElementById('btn-imprimir-guia-doc');
+
+  if (!modal) return;
+
+  btnCerrar && btnCerrar.addEventListener('click', function() {
+    modal.classList.add('hidden');
+  });
+
+  btnPrint && btnPrint.addEventListener('click', function() {
+    var printable = document.getElementById('guia-despacho-printable');
+    if (!printable) return;
+    var printWin = window.open('', '_blank', 'width=800,height=900');
+    printWin.document.write('<html><head><title>Packing Slip Artesanitas</title>');
+    printWin.document.write('<style>');
+    printWin.document.write('body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #4A3C31; }');
+    printWin.document.write('table { width: 100%; border-collapse: collapse; margin-top: 12px; }');
+    printWin.document.write('th, td { border: 1px solid #D5C9BD; padding: 8px; text-align: left; font-size: 12px; }');
+    printWin.document.write('th { background-color: #F1EDE7; font-weight: bold; }');
+    printWin.document.write('.text-right { text-align: right; }');
+    printWin.document.write('.font-mono { font-family: monospace; }');
+    printWin.document.write('@media print { body { padding: 0; } }');
+    printWin.document.write('</style></head><body>');
+    printWin.document.write(printable.innerHTML);
+    printWin.document.write('</body></html>');
+    printWin.document.close();
+    printWin.focus();
+    setTimeout(function() {
+      printWin.print();
+      printWin.close();
+    }, 350);
+  });
+}
+
+function abrirPackingSlipPedido(pedidoId) {
+  var p = (pedidosCache || []).find(function(item) { return String(item.id) === String(pedidoId); });
+  if (!p) return;
+
+  var modal = document.getElementById('modal-guia-despacho');
+  if (!modal) return;
+
+  document.getElementById('guia-codigo-pedido').textContent = p.codigo_pedido || ('ART-' + p.id);
+  document.getElementById('guia-fecha-emision').textContent = 'Emisión: ' + new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+  document.getElementById('guia-destinatario-nombre').textContent = p.nombre || '--';
+  document.getElementById('guia-destinatario-dni').textContent = 'DNI: ' + (p.dni || 'No registrado');
+  document.getElementById('guia-destinatario-tel').textContent = 'WhatsApp: ' + (p.telefono || '--');
+  document.getElementById('guia-courier-empresa').textContent = 'Courier: ' + (p.empresa_envio || 'Shalom (Agencia)');
+  document.getElementById('guia-courier-ciudad').textContent = 'Ciudad Destino: ' + (p.ciudad_destino || (p.tipo_entrega === 'envio_shalom' ? 'Por definir' : 'Recojo en Taller Trujillo'));
+  document.getElementById('guia-courier-nro-guia').textContent = 'N° Guía: ' + (p.guia_envio || 'Pendiente de emisión');
+
+  var tbody = document.getElementById('guia-items-tbody');
+  tbody.innerHTML = '';
+
+  var items = [];
+  try {
+    if (p.items_json) {
+      items = typeof p.items_json === 'string' ? JSON.parse(p.items_json) : p.items_json;
+    }
+  } catch (e) {}
+
+  if (!items || items.length === 0) {
+    items = [{
+      nombre: p.producto_nombre || 'Pieza Artesanal',
+      cantidad: Number(p.cantidad || 1),
+      sku: 'ART-VAJ-CER',
+      ean: '7759999000010'
+    }];
+  }
+
+  items.forEach(function(item) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="p-2 font-medium">' + escapeHtml(item.nombre || item.producto_nombre || 'Pieza Artesanal') + '</td>' +
+      '<td class="p-2 font-mono text-[11px] text-[#8C7A6B]">' + escapeHtml(item.sku || 'ART-SKU') + ' / ' + escapeHtml(item.ean || '775...') + '</td>' +
+      '<td class="p-2 font-bold text-center">' + (item.cantidad || 1) + ' und.</td>' +
+      '<td class="p-2 text-right font-mono font-bold text-[#007A78]">[ ✓ OK ]</td>';
+    tbody.appendChild(tr);
+  });
+
+  modal.classList.remove('hidden');
+}
+
+// Iniciar al cargar registros
+document.addEventListener('DOMContentLoaded', function() {
+  initGuiaDespachoLogic();
+});

@@ -42,6 +42,7 @@
     fbq('init', '851775257895823');
     fbq('track', 'PageView');
   </script>
+  <script src="/js/icons.js"></script>
 </head>
 
 <body class="bg-[#F9F6F0] text-[#4A3C31] font-sans antialiased min-h-screen">
@@ -60,7 +61,7 @@
       <p class="text-[#8C7A6B] mt-1 text-xs sm:text-base">Elige tu pieza favorita y completa tus datos para asegurar tu pedido artesanal.</p>
       <div class="mt-3">
         <a href="/seguimiento" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B87352] hover:underline bg-white px-3.5 py-1.5 rounded-full border border-[#EBE5DE] shadow-2xs">
-          <span>📦 ¿Ya tienes una reserva? Rastrea tu pedido aquí</span>
+          <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> ¿Ya tienes una reserva? Rastrea tu pedido aquí</span>
           <span>→</span>
         </a>
       </div>
@@ -105,13 +106,13 @@
             <select id="producto-select"
               class="w-full pl-11 pr-10 py-3.5 rounded-2xl border-2 border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] font-semibold text-xs sm:text-sm focus:outline-none focus:border-[#B87352] focus:bg-white transition-all cursor-pointer appearance-none shadow-2xs">
               <option value="" disabled selected>— Selecciona o agrega otra pieza a tu reserva —</option>
-              <optgroup label="🎄 Colección Navidad 2026">
-                <option value="taza-navidad-papa-noel">🎄 Taza Navideña Papá Noel (S/ 59.90)</option>
-                <option value="taza-muneco-de-nieve">⛄ Taza Muñeco de Nieve (S/ 59.90)</option>
-                <option value="taza-arbolito-chocolatosa">🍫 Taza Arbolito Chocolatosa (S/ 59.90)</option>
-                <option value="taza-arbolito-rosa">🌸 Taza Arbolito Rosa (S/ 59.90)</option>
+              <optgroup label="Colección Navidad 2026">
+                <option value="taza-navidad-papa-noel">Taza Navideña Papá Noel (S/ 59.90)</option>
+                <option value="taza-muneco-de-nieve">Taza Muñeco de Nieve (S/ 59.90)</option>
+                <option value="taza-arbolito-chocolatosa">Taza Arbolito Chocolatosa (S/ 59.90)</option>
+                <option value="taza-arbolito-rosa">Taza Arbolito Rosa (S/ 59.90)</option>
               </optgroup>
-              <optgroup label="✨ Colecciones Destacadas & Preventa">
+              <optgroup label="Colecciones Destacadas & Preventa">
                 <option value="taza-rapunzel">01 · Colección Rapunzel (9 variantes)</option>
                 <option value="taza-stich">02 · Taza Stich (S/ 65.00)</option>
                 <option value="taza-van-gogh">03 · Taza Van Gogh (S/ 69.00)</option>
@@ -119,7 +120,7 @@
                 <option value="azucarera-van-gogh">05 · Azucarera Van Gogh (S/ 65.00)</option>
                 <option value="vasito-van-gogh">06 · Vasito Van Gogh (S/ 59.00)</option>
               </optgroup>
-              <optgroup label="🏺 Catálogo General Artesanitas" id="optgroup-catalogo-general">
+              <optgroup label="Catálogo General Artesanitas" id="optgroup-catalogo-general">
                 <option value="taza-corazon-y-plato">Taza corazón y plato (S/ 75.00)</option>
                 <option value="taza-castellana">Taza Castellana (S/ 55.00)</option>
                 <option value="taza-lavanda-abejita">Taza lavanda abejita (S/ 55.00)</option>
@@ -532,7 +533,7 @@
               class="relative flex flex-col p-4 rounded-2xl border-2 border-[#B87352] bg-[#F9F6F0] cursor-pointer transition-all shadow-2xs hover:border-[#B87352]">
               <div class="flex items-center justify-between mb-1.5">
                 <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#742284] bg-[#742284]/10 px-2 py-0.5 rounded-full">
-                  🚚 Shalom
+                  Shalom (Agencia)
                 </span>
                 <input type="radio" name="tipo_entrega" value="provincia" checked class="text-[#B87352] focus:ring-[#B87352]">
               </div>
@@ -546,7 +547,7 @@
               class="relative flex flex-col p-4 rounded-2xl border-2 border-[#EBE5DE] bg-white cursor-pointer transition-all shadow-2xs hover:border-[#D5C9BD]">
               <div class="flex items-center justify-between mb-1.5">
                 <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#007A78] bg-[#007A78]/10 px-2 py-0.5 rounded-full">
-                  📍 Trujillo
+                  Trujillo (Recojo en Taller)
                 </span>
                 <input type="radio" name="tipo_entrega" value="local" class="text-[#B87352] focus:ring-[#B87352]">
               </div>
@@ -780,7 +781,7 @@
       <div class="pt-3 flex flex-col items-center justify-center gap-3 w-full">
         <a id="btn-success-tracking" href="/seguimiento"
           class="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] bg-[#B87352] hover:bg-[#A36244] text-white px-5 sm:px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-center">
-          <span>📦 Rastrear mi Pedido en Vivo</span>
+          <span class="flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Rastrear mi Pedido en Vivo</span>
         </a>
         <a id="btn-success-whatsapp" href="https://wa.me/51929938466"
           target="_blank" rel="noreferrer"

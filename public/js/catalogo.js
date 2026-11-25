@@ -380,7 +380,7 @@ initSlider('slider-taza-navidad');
 
     if (bubbleBadge) bubbleBadge.textContent = String(totalPiezas);
     if (bubbleText) {
-      bubbleText.textContent = '🛒 Mi Reserva (' + totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza' : 'piezas') + ' · S/ ' + totalPrecio.toFixed(2) + ')';
+      bubbleText.textContent = 'Mi Reserva (' + totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza' : 'piezas') + ' · S/ ' + totalPrecio.toFixed(2) + ')';
     }
     if (drawerSubtotalEl) drawerSubtotalEl.textContent = 'S/ ' + totalPrecio.toFixed(2);
     if (drawerReservaEl) drawerReservaEl.textContent = 'S/ ' + totalReserva.toFixed(2);
@@ -394,7 +394,7 @@ initSlider('slider-taza-navidad');
       if (cartItems.length === 0) {
         drawerItemsEl.innerHTML =
           '<div class="text-center py-12 px-4 space-y-3">' +
-          '<div class="w-14 h-14 rounded-full bg-[#EBE5DE] text-[#8C7A6B] flex items-center justify-center mx-auto text-2xl">🛒</div>' +
+          '<div class="w-14 h-14 rounded-full bg-[#EBE5DE] text-[#8C7A6B] flex items-center justify-center mx-auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-7 h-7"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div>' +
           '<p class="text-sm font-bold text-[#4A3C31]">Tu reserva está vacía</p>' +
           '<p class="text-xs text-[#8C7A6B]">Toca el botón "+ Agregar a mi reserva" en cualquier pieza del catálogo para armar tu pedido.</p>' +
           '</div>';
@@ -463,14 +463,14 @@ initSlider('slider-taza-navidad');
 
       if (btnEl) {
         var prevHtml = btnEl.innerHTML;
-        btnEl.innerHTML = '<span>✓ Agregado a tu reserva</span>';
+        btnEl.innerHTML = '<span class="flex items-center justify-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg> Agregado a tu reserva</span>';
         btnEl.classList.add('bg-[#007A78]', 'text-white', 'border-[#007A78]');
         setTimeout(function () {
           btnEl.innerHTML = prevHtml;
           btnEl.classList.remove('bg-[#007A78]', 'border-[#007A78]');
         }, 1200);
       }
-      showShareToast('🛒 Pieza agregada a Mi Reserva');
+      showShareToast('Pieza agregada a Mi Reserva');
     },
     changeQty: function (slug, delta) {
       for (var i = 0; i < cartItems.length; i++) {

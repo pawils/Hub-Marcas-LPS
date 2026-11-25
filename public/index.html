@@ -58,6 +58,7 @@
        congela en la versión que ya estaba sirviendo (3.4.17) y se sirve desde
        el propio dominio, mismo patrón que chart.js/heic2any. -->
   <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script src="/js/icons.js"></script>
 
   <!-- Configuración de fuentes para Tailwind -->
   <script>
@@ -96,12 +97,12 @@
           class="h-14 w-14 object-cover rounded-full shadow-md">
       </div>
       <div class="hidden md:flex gap-10 text-sm font-medium tracking-wide uppercase text-[#8C7A6B]">
-        <a href="#coleccion-navidad" class="text-[#B87352] font-bold hover:text-[#A36244] transition-colors flex items-center gap-1.5"><span>🎄</span> Colección Navidad</a>
+        <a href="#coleccion-navidad" class="text-[#B87352] font-bold hover:text-[#A36244] transition-colors flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#008C8E] inline-block"><path d="m12 2 3.5 5.5h-2.5l3.5 5.5h-2.8l4.3 6H4.5l4.3-6H6l3.5-5.5H7L10.5 2Z"/><path d="M12 19v3"/></svg> Colección Navidad</a>
         <a href="#catalogo" class="hover:text-[#B87352] transition-colors">Catálogo General</a>
         <a href="#coleccion-van-gogh" class="hover:text-[#B87352] transition-colors">Colección Van Gogh</a>
         <a href="#talleres" class="hover:text-[#B87352] transition-colors">Talleres</a>
         <a href="#cumpleanos" class="hover:text-[#B87352] transition-colors">Cumpleaños</a>
-        <a href="/seguimiento" class="text-[#4A3C31] font-semibold hover:text-[#B87352] transition-colors flex items-center gap-1"><span>📦</span> Rastrear Pedido</a>
+        <a href="/seguimiento" class="text-[#4A3C31] font-semibold hover:text-[#B87352] transition-colors flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Rastrear Pedido</a>
       </div>
       <a href="https://wa.me/51929938466?text=Hola!%20Me%20interesa%20consultar%20por%20sus%20productos%20de%20cerámica."
         target="_blank" rel="noreferrer"
@@ -125,7 +126,7 @@
     <div id="mobile-menu" class="md:hidden hidden border-t border-[#EBE5DE] bg-[#F9F6F0]/95 backdrop-blur-md">
       <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-1">
         <a href="#coleccion-navidad" onclick="toggleMenu()"
-          class="py-3 px-4 text-sm font-bold uppercase tracking-wide text-[#B87352] bg-[#B87352]/10 rounded-xl transition-colors">🎄 Colección Navidad</a>
+          class="py-3 px-4 text-sm font-bold uppercase tracking-wide text-[#B87352] bg-[#B87352]/10 rounded-xl transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#008C8E] inline-block"><path d="m12 2 3.5 5.5h-2.5l3.5 5.5h-2.8l4.3 6H4.5l4.3-6H6l3.5-5.5H7L10.5 2Z"/><path d="M12 19v3"/></svg> Colección Navidad</a>
         <a href="#catalogo" onclick="toggleMenu()"
           class="py-3 px-4 text-sm font-medium uppercase tracking-wide text-[#8C7A6B] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors">Catálogo General</a>
         <a href="#coleccion-van-gogh" onclick="toggleMenu()"
@@ -136,7 +137,7 @@
         <a href="#cumpleanos" onclick="toggleMenu()"
           class="py-3 px-4 text-sm font-medium uppercase tracking-wide text-[#8C7A6B] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors">Cumpleaños</a>
         <a href="/seguimiento" onclick="toggleMenu()"
-          class="py-3 px-4 text-sm font-semibold uppercase tracking-wide text-[#4A3C31] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors">📦 Rastrear Pedido</a>
+          class="py-3 px-4 text-sm font-semibold uppercase tracking-wide text-[#4A3C31] hover:text-[#B87352] hover:bg-[#EBE5DE] rounded-xl transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Rastrear Pedido</a>
         <a href="https://wa.me/51929938466?text=Hola!%20Me%20interesa%20consultar%20por%20sus%20productos%20de%20cerámica."
           target="_blank" rel="noreferrer" onclick="toggleMenu()"
           class="mt-2 py-3 px-4 flex items-center gap-2 bg-[#4A3C31] text-white rounded-xl text-sm font-medium hover:bg-[#B87352] transition-colors">
@@ -470,7 +471,7 @@
         <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
           <div class="space-y-3 text-center lg:text-left max-w-2xl">
             <span class="inline-flex items-center gap-1.5 bg-[#B87352] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-              ✨ Preventa Exclusiva
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Preventa Exclusiva
             </span>
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-serif text-[#F9F6F0] leading-tight">
               Reserva tus Piezas Artesanales
@@ -487,7 +488,7 @@
             </a>
             <a href="/seguimiento"
               class="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-[#F9F6F0] border border-white/25 font-semibold px-5 py-3.5 rounded-2xl text-sm transition-all flex items-center justify-center gap-2">
-              <span>📦 Rastrear mi Pedido</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> <span>Rastrear mi Pedido</span>
             </a>
           </div>
         </div>
@@ -509,7 +510,7 @@
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           </div>
           <div class="absolute -bottom-4 -right-4 bg-white/95 backdrop-blur-md py-3 px-5 rounded-2xl border border-[#EBE5DE] shadow-lg hidden sm:flex items-center gap-3">
-            <span class="text-2xl">🎄</span>
+            <div class="w-8 h-8 rounded-xl bg-[#008C8E]/15 text-[#008C8E] flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#008C8E] inline-block"><path d="m12 2 3.5 5.5h-2.5l3.5 5.5h-2.8l4.3 6H4.5l4.3-6H6l3.5-5.5H7L10.5 2Z"/><path d="M12 19v3"/></svg></div>
             <div>
               <p class="text-[11px] font-bold uppercase tracking-wider text-[#B87352]">Edición Limitada 2026</p>
               <p class="text-xs font-serif font-bold text-[#4A3C31]">Piezas únicas pintadas a mano</p>
@@ -519,7 +520,7 @@
 
         <div class="space-y-6 text-center lg:text-left">
           <div class="inline-flex items-center gap-2 bg-[#B87352]/10 border border-[#B87352]/20 text-[#B87352] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-2xs">
-            <span>✨</span> Edición Limitada · Solo por Preventa
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Edición Limitada · Solo por Preventa
           </div>
           <h2 class="text-4xl sm:text-5xl lg:text-6xl font-serif text-[#4A3C31] leading-[1.15]">
             La Magia de la Navidad <br class="hidden sm:inline" />
@@ -532,21 +533,21 @@
           <!-- Badges de beneficios y fecha -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs font-semibold text-[#4A3C31]">
             <div class="bg-white p-3 rounded-2xl border border-[#D5C9BD]/80 shadow-2xs flex items-center gap-2.5">
-              <span class="text-lg">🎨</span>
+              <div class="w-7 h-7 rounded-lg bg-[#B87352]/10 text-[#B87352] flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z"/></svg></div>
               <div class="text-left">
                 <span class="block text-[10px] text-[#8C7A6B] uppercase">Hecho a mano</span>
                 <span class="font-bold">100% Cerámica</span>
               </div>
             </div>
             <div class="bg-white p-3 rounded-2xl border border-[#D5C9BD]/80 shadow-2xs flex items-center gap-2.5">
-              <span class="text-lg">📅</span>
+              <div class="w-7 h-7 rounded-lg bg-[#B87352]/10 text-[#B87352] flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div>
               <div class="text-left">
                 <span class="block text-[10px] text-[#8C7A6B] uppercase">Entrega garantizada</span>
                 <span class="font-bold text-[#B87352]">10 de Diciembre</span>
               </div>
             </div>
             <div class="bg-white p-3 rounded-2xl border border-[#D5C9BD]/80 shadow-2xs flex items-center gap-2.5">
-              <span class="text-lg">📦</span>
+              <div class="w-7 h-7 rounded-lg bg-[#B87352]/10 text-[#B87352] flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>
               <div class="text-left">
                 <span class="block text-[10px] text-[#8C7A6B] uppercase">Envíos seguros</span>
                 <span class="font-bold">Todo el Perú</span>
@@ -606,7 +607,7 @@
               </button>
             </div>
             <span class="absolute top-3 left-3 bg-[#B87352] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-              🎅 Más Popular
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 inline-block mr-1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Más Popular
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
               <a href="/pedido?producto=taza-navidad-papa-noel"
@@ -640,7 +641,7 @@
               Modelada con el icónico gorrito y rostro de Papá Noel. La favorita para regalar alegría navideña.
             </p>
             <div class="bg-[#F9F6F0] rounded-xl px-3 py-1.5 mt-3 text-[11px] font-medium text-[#4A3C31] flex items-center justify-between">
-              <span>✨ Pintada a mano</span>
+              <span class="flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Pintada a mano</span>
               <span class="text-[#B87352] font-semibold">Entrega 10 Dic</span>
             </div>
           </div>
@@ -674,7 +675,7 @@
               </button>
             </div>
             <span class="absolute top-3 left-3 bg-[#008C8E] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-              ⛄ Edición Invernal
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Edición Invernal
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
               <a href="/pedido?producto=taza-muneco-de-nieve"
@@ -708,7 +709,7 @@
               Taza esculpida con detalles del simpático muñeco de nieve. Ideal para chocolate caliente en familia.
             </p>
             <div class="bg-[#F9F6F0] rounded-xl px-3 py-1.5 mt-3 text-[11px] font-medium text-[#4A3C31] flex items-center justify-between">
-              <span>✨ Acabado brillante</span>
+              <span class="flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Acabado brillante</span>
               <span class="text-[#B87352] font-semibold">Entrega 10 Dic</span>
             </div>
           </div>
@@ -742,7 +743,7 @@
               </button>
             </div>
             <span class="absolute top-3 left-3 bg-[#5C3D2E] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-              🍫 Tono Chocolate
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Tono Chocolate
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
               <a href="/pedido?producto=taza-arbolito-chocolatosa"
@@ -776,7 +777,7 @@
               Elegante relieve de pino navideño en cálido tono chocolate artesanal. Sofisticada y acogedora.
             </p>
             <div class="bg-[#F9F6F0] rounded-xl px-3 py-1.5 mt-3 text-[11px] font-medium text-[#4A3C31] flex items-center justify-between">
-              <span>✨ Textura en relieve</span>
+              <span class="flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Textura en relieve</span>
               <span class="text-[#B87352] font-semibold">Entrega 10 Dic</span>
             </div>
           </div>
@@ -810,7 +811,7 @@
               </button>
             </div>
             <span class="absolute top-3 left-3 bg-[#E8A598] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-              🌸 Rosa Pastel
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Rosa Pastel
             </span>
             <div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">
               <a href="/pedido?producto=taza-arbolito-rosa"
@@ -844,7 +845,7 @@
               Dulce relieve de pino navideño en tono rosa pastel. Un detalle delicado y único para esta temporada.
             </p>
             <div class="bg-[#F9F6F0] rounded-xl px-3 py-1.5 mt-3 text-[11px] font-medium text-[#4A3C31] flex items-center justify-between">
-              <span>✨ Esmaltado artesanal</span>
+              <span class="flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Esmaltado artesanal</span>
               <span class="text-[#B87352] font-semibold">Entrega 10 Dic</span>
             </div>
           </div>
@@ -1502,7 +1503,7 @@
             <p class="text-sm text-[#8C7A6B] leading-relaxed">Incluye platito. Taza temática con esmalte morado
               vibrante.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -1718,7 +1719,7 @@
             </div>
             <p class="text-sm text-[#8C7A6B] leading-relaxed">Taza artesanal en color palo rosa entero, acabado suave y diseño elegante para tus mañanas.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -1763,7 +1764,7 @@
             </div>
             <p class="text-sm text-[#8C7A6B] leading-relaxed">Taza artesanal en color morado entero, modelada con esmalte satinado y figura interior.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -1808,7 +1809,7 @@
             </div>
             <p class="text-sm text-[#8C7A6B] leading-relaxed">Taza artesanal morada con líneas texturizadas en relieve, modelada y pintada a mano.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -2311,9 +2312,9 @@
               momento especial con esta taza de cerámica inspirada en Van Gogh. Su diseño artístico y acabado pintado a
               mano hacen de cada pieza una pequeña obra de arte, perfecta para regalar o disfrutar en casa.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3 space-y-1.5">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>✨</span> Cerámica artesanal pintada a mano</p>
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📦</span> Envío por Shalom (Delivery S/ 10)</p>
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Cerámica artesanal pintada a mano</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Envío por Shalom (Delivery S/ 10)</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -2419,9 +2420,9 @@
               Van Gogh, esta azucarera de cerámica pintada a mano aporta un toque artístico y elegante a tu mesa. Ideal
               para acompañar tus momentos de café o té, combinando funcionalidad y diseño en una pieza única.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3 space-y-1.5">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>✨</span> Cerámica artesanal pintada a mano</p>
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📦</span> Envío por Shalom (Delivery S/ 10)</p>
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Cerámica artesanal pintada a mano</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Envío por Shalom (Delivery S/ 10)</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -2532,9 +2533,9 @@
               es igual a otra. Perfecto para café, té, chocolate caliente o cualquier bebida que quieras disfrutar con
               un toque de arte.</p>
             <div class="bg-[#EBE5DE] rounded-xl px-3 py-2.5 mt-3 space-y-1.5">
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>✨</span> Cerámica artesanal pintada a mano</p>
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📦</span> Envío por Shalom (Delivery S/ 10)</p>
-              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><span>📅</span> Fecha de entrega: 10 de Diciembre</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 inline-block text-[#B87352]"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Cerámica artesanal pintada a mano</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Envío por Shalom (Delivery S/ 10)</p>
+              <p class="flex items-center gap-2 text-sm text-[#4A3C31]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Fecha de entrega: 10 de Diciembre</p>
             </div>
           </div>
         </div>
@@ -2589,7 +2590,7 @@
         </div>
         <h2 class="text-4xl md:text-5xl font-serif text-[#4A3C31]">Paquetes de Cumpleaños<br /><span
             class="italic text-[#B87352]">Creativos</span></h2>
-        <p class="text-[#8C7A6B] text-lg">Celebra de una forma diferente con Artesanitas 💕</p>
+        <p class="text-[#8C7A6B] text-lg">Celebra de una forma diferente con Artesanitas</p>
         <p class="text-[#8C7A6B]">Convierte tu cumpleaños en una experiencia inolvidable creando con tus invitados
           recuerdos hechos a mano.</p>
       </div>
@@ -3059,7 +3060,7 @@
       class="w-full sm:w-auto bg-[#4A3C31] hover:bg-[#322821] text-[#F9F6F0] px-5 py-3.5 rounded-2xl shadow-2xl border border-[#B87352]/40 flex items-center justify-between sm:justify-center gap-3.5 cursor-pointer group transition-all hover:scale-[1.02]">
       <div class="flex items-center gap-2.5">
         <span class="relative flex items-center justify-center w-8 h-8 rounded-xl bg-[#B87352] text-white text-base shadow-xs">
-          🛒
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-white"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
           <span id="cart-bubble-badge"
             class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-[#008f6b] text-white text-[11px] font-extrabold flex items-center justify-center border-2 border-[#4A3C31]">
             0
@@ -3067,7 +3068,7 @@
         </span>
         <div class="text-left">
           <span class="block text-[10px] uppercase tracking-wider text-[#D5C9BD] font-bold">Mi Reserva Activa</span>
-          <span id="cart-bubble-text" class="text-xs sm:text-sm font-bold text-white">🛒 Mi Reserva (0 piezas · S/ 0.00)</span>
+          <span id="cart-bubble-text" class="text-xs sm:text-sm font-bold text-white">Mi Reserva (0 piezas · S/ 0.00)</span>
         </div>
       </div>
       <span class="bg-[#B87352] group-hover:bg-[#A36244] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1 shrink-0">
@@ -3085,7 +3086,7 @@
       <!-- Cabecera del Cajón -->
       <div class="p-5 bg-white border-b border-[#EBE5DE] flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
-          <span class="w-9 h-9 rounded-xl bg-[#B87352]/15 text-[#B87352] flex items-center justify-center text-lg font-bold">🛒</span>
+          <span class="w-9 h-9 rounded-xl bg-[#B87352]/15 text-[#B87352] flex items-center justify-center text-lg font-bold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span>
           <div>
             <h3 class="font-serif text-lg font-bold text-[#4A3C31] leading-tight">Mi Reserva Artesanitas</h3>
             <p id="cart-drawer-subtitle" class="text-xs text-[#8C7A6B]">Tus piezas quedan guardadas automáticamente</p>
