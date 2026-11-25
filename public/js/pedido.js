@@ -1431,6 +1431,8 @@
       const optgroup = document.getElementById('optgroup-catalogo-general');
       lista.forEach(p => {
         if (!p || !p.slug) return;
+        const esReserva = p.politica_sin_stock === 'preventa' || p.slug.startsWith('taza-rapunzel') || p.slug.startsWith('taza-navidad') || Boolean(CATALOGO_PREVENTA[p.slug]);
+        if (!esReserva) return;
         const precioFinal = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio))
           ? Number(p.precio_oferta)
           : Number(p.precio);

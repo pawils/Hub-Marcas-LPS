@@ -141,9 +141,7 @@ router.get('/producto/:slug', async (req, res, next) => {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><polyline points="15 18 9 12 15 6"/></svg>
         Ver catálogo completo
       </a>
-      <a href="/pedido" class="text-xs font-bold text-[#B87352] bg-[#B87352]/10 px-3 py-1.5 rounded-full">
-        Ir a Mi Reserva
-      </a>
+      ${esReserva ? `<a href="/pedido" class="text-xs font-bold text-[#B87352] bg-[#B87352]/10 px-3 py-1.5 rounded-full">Ir a Mi Reserva</a>` : ''}
     </div>
 
     <div class="relative aspect-[4/5] rounded-3xl overflow-hidden bg-[#EBE5DE] shadow-sm">
@@ -154,7 +152,7 @@ router.get('/producto/:slug', async (req, res, next) => {
             ? `<span class="bg-white/90 text-[#008f6b] text-[10px] font-bold px-2.5 py-1 rounded-full shadow">En Stock (${producto.stock_actual} disponibles)</span>`
             : (agotado
                 ? `<span class="bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">Agotado</span>`
-                : `<span class="bg-white/90 text-[#4A3C31] text-[10px] font-semibold px-2.5 py-1 rounded-full shadow">A pedido · Preventa S/ 20</span>`)}
+                : (esReserva ? `<span class="bg-white/90 text-[#4A3C31] text-[10px] font-semibold px-2.5 py-1 rounded-full shadow">A pedido · Preventa S/ 20</span>` : ''))}
       </div>
     </div>
     ${dots}
@@ -165,7 +163,7 @@ router.get('/producto/:slug', async (req, res, next) => {
       <div class="flex items-baseline gap-2">
         <p class="text-2xl font-bold text-[#B87352]">${precioTexto}</p>
         ${producto.has_promo ? `<span class="text-sm line-through text-[#8C7A6B]">S/ ${Number(producto.precio_regular).toFixed(2)}</span>` : ''}
-        <span class="text-xs font-semibold text-[#007A78] bg-[#007A78]/10 px-2.5 py-0.5 rounded-full">Reserva con S/ 20.00</span>
+        ${esReserva ? `<span class="text-xs font-semibold text-[#007A78] bg-[#007A78]/10 px-2.5 py-0.5 rounded-full">Reserva con S/ 20.00</span>` : ''}
       </div>
       <p class="text-[#8C7A6B] text-sm leading-relaxed whitespace-pre-line">${escapeHtml(producto.descripcion)}</p>
       ${Array.isArray(producto.detalles) && producto.detalles.length
@@ -174,7 +172,7 @@ router.get('/producto/:slug', async (req, res, next) => {
     </div>
 
     <div class="mt-8 space-y-3">
-      ${agotado ? '' : `
+      ${(agotado || !esReserva) ? '' : `
       <button type="button" id="btn-pdp-add-cart"
         class="w-full bg-[#4A3C31] hover:bg-[#322821] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all shadow-md cursor-pointer">
         <span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> + Agregar a mi reserva</span>
