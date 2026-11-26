@@ -848,6 +848,7 @@ initSlider('slider-taza-navidad');
     var seqCounter = 1;
 
     cards.forEach(function (card) {
+      try {
       if (card.dataset.cartBound === 'true') return;
       card.dataset.cartBound = 'true';
 
@@ -920,7 +921,7 @@ initSlider('slider-taza-navidad');
       card.classList.add('bg-white', 'rounded-3xl', 'p-3.5', 'border', 'border-[#EBE5DE]', 'shadow-2xs', 'hover:shadow-md', 'transition-all');
 
       // 1. Limpiar por completo el contenedor de la imagen y habilitar click directo a la Ficha Quick-View
-      var imgBox = card.querySelector('.relative.aspect-\[4\/5\]');
+      var imgBox = card.querySelector('.relative.overflow-hidden');
       if (imgBox) {
         imgBox.classList.add('cursor-pointer');
         // Eliminar botones flotantes de WhatsApp, reserva o íconos superpuestos sobre la foto
@@ -939,6 +940,7 @@ initSlider('slider-taza-navidad');
           downY = e.clientY;
         });
         imgBox.addEventListener('click', function (e) {
+          if (e.target && e.target.closest && e.target.closest('button, a')) return;
           if (Math.abs((e.clientX || 0) - downX) > 12 || Math.abs((e.clientY || 0) - downY) > 12) return;
           window.ArtesanitasQuickView.open(slug);
         });
@@ -948,6 +950,9 @@ initSlider('slider-taza-navidad');
       var infoContainer = card.querySelector('.flex.flex-col.flex-grow');
       if (infoContainer) {
         infoContainer.outerHTML = buildFalabellaCardBodyHtml(prodObj);
+      }
+      } catch (cardErr) {
+        if (window.console) console.warn('[Catalogo] tarjeta omitida:', cardErr && cardErr.message);
       }
     });
   }
@@ -1049,19 +1054,62 @@ initSlider('slider-taza-navidad');
     });
   }
 
+  function goToCatalogResults() {
+    var sec = document.getElementById('catalog-toolbar') || document.getElementById('catalogo');
+    if (sec) {
+      var y = sec.getBoundingClientRect().top + window.pageYOffset - 150;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+  }
+
+  function initHeaderSearch() {
+    var main = document.getElementById('catalog-search-input');
+    var ids = ['nav-search-input', 'nav-search-input-m'];
+    function sync(value, origin) {
+      ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && el !== origin) el.value = value;
+      });
+      if (main && main !== origin) main.value = value;
+      applyCatalogFilters();
+    }
+    ids.forEach(function (id) {
+      var input = document.getElementById(id);
+      if (!input) return;
+      input.addEventListener('input', function () { sync(input.value, input); });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); sync(input.value, input); goToCatalogResults(); input.blur(); }
+      });
+    });
+    ['nav-search-btn', 'nav-search-btn-m'].forEach(function (id) {
+      var b = document.getElementById(id);
+      if (!b) return;
+      b.addEventListener('click', function () {
+        var src = document.getElementById(id === 'nav-search-btn' ? 'nav-search-input' : 'nav-search-input-m');
+        if (src) sync(src.value, src);
+        goToCatalogResults();
+      });
+    });
+    if (main) {
+      main.addEventListener('input', function () {
+        ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.value = main.value; });
+      });
+    }
+  }
+
   window.ArtesanitasStore = {
     focusSearch: function () {
-      var toolbar = document.getElementById('catalog-toolbar');
-      var searchInput = document.getElementById('catalog-search-input');
-      if (toolbar) toolbar.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (searchInput) setTimeout(function () { searchInput.focus(); }, 350);
+      var isMobile = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+      var el = document.getElementById(isMobile ? 'nav-search-input-m' : 'nav-search-input') || document.getElementById('catalog-search-input');
+      if (el) { el.focus(); }
     }
   };
 
-  injectCartButtonsOnStaticCards();
-  initStoreToolbar();
-  updateCartUI();
-  applyCatalogFilters();
+  try { injectCartButtonsOnStaticCards(); } catch (e1) { if (window.console) console.warn('[Catalogo] inject', e1); }
+  try { initStoreToolbar(); } catch (e2) { if (window.console) console.warn('[Catalogo] toolbar', e2); }
+  try { initHeaderSearch(); } catch (e3) { if (window.console) console.warn('[Catalogo] header search', e3); }
+  try { updateCartUI(); } catch (e4) { if (window.console) console.warn('[Catalogo] cart', e4); }
+  try { applyCatalogFilters(); } catch (e5) { if (window.console) console.warn('[Catalogo] filters', e5); }
 
   function cargarProductosDinamicos() {
     var contenedor = document.getElementById('productos-dinamicos');

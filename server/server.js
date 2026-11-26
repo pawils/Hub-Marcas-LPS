@@ -79,7 +79,10 @@ app.use('/artesanitas', express.static(PUBLIC_DIR, { extensions: ['html'], maxAg
 app.use(
   express.static(PUBLIC_DIR, {
     extensions: ['html'],
-    maxAge: '7d'
+    maxAge: '7d',
+    setHeaders: (res, filePath) => {
+      if (/\.(html|js)$/i.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
+    }
   })
 );
 

@@ -96,7 +96,7 @@
         <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Logo Artesanitas"
           class="h-14 w-14 object-cover rounded-full shadow-md">
       </div>
-      <div class="hidden md:flex gap-10 text-sm font-medium tracking-wide uppercase text-[#8C7A6B]">
+      <div class="hidden lg:flex gap-5 xl:gap-8 text-xs xl:text-sm font-medium tracking-wide uppercase text-[#8C7A6B]">
         <a href="#coleccion-navidad" class="text-[#B87352] font-bold hover:text-[#A36244] transition-colors flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#008C8E] inline-block"><path d="m12 2 3.5 5.5h-2.5l3.5 5.5h-2.8l4.3 6H4.5l4.3-6H6l3.5-5.5H7L10.5 2Z"/><path d="M12 19v3"/></svg> Colección Navidad</a>
         <a href="#catalogo" class="hover:text-[#B87352] transition-colors">Catálogo General</a>
         <a href="#coleccion-van-gogh" class="hover:text-[#B87352] transition-colors">Colección Van Gogh</a>
@@ -104,31 +104,27 @@
         <a href="#cumpleanos" class="hover:text-[#B87352] transition-colors">Cumpleaños</a>
         <a href="/seguimiento" class="text-[#4A3C31] font-semibold hover:text-[#B87352] transition-colors flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Rastrear Pedido</a>
       </div>
-            <!-- Barra de Acciones E-Commerce 2026: Buscador + Carro de Compras Siempre Visible -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button type="button" onclick="window.ArtesanitasStore && window.ArtesanitasStore.focusSearch()"
-          class="flex items-center gap-2 bg-white hover:bg-[#EBE5DE]/70 text-[#4A3C31] border border-[#D5C9BD] px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer"
-          title="Buscar productos en el catálogo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-4 h-4 text-[#B87352]">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <span class="hidden sm:inline text-[#8C7A6B]">Buscar...</span>
-        </button>
-
+            <!-- Buscador grande estilo Falabella (escritorio) + Carro siempre visible -->
+      <div class="hidden md:flex flex-1 max-w-md xl:max-w-lg mx-4">
+        <div class="relative w-full">
+          <input type="search" id="nav-search-input" autocomplete="off" placeholder="Buscar productos, personajes, colecciones o SKU..."
+            class="w-full h-12 pl-5 pr-14 rounded-full border-2 border-[#333c48] bg-white text-sm font-medium text-[#333c48] placeholder:text-[#8C7A6B] focus:outline-none focus:ring-2 focus:ring-[#B87352]/40">
+          <button type="button" id="nav-search-btn" aria-label="Buscar"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#333c48] hover:bg-[#1e242b] text-white flex items-center justify-center cursor-pointer transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="w-4.5 h-4.5" style="width:18px;height:18px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-3 ml-auto md:ml-0">
         <button type="button" id="nav-cart-btn" onclick="window.ArtesanitasCart && window.ArtesanitasCart.openDrawer()"
-          class="relative flex items-center gap-2 bg-[#333c48] hover:bg-[#1e242b] text-white px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shadow-md cursor-pointer"
+          class="relative flex items-center gap-2 bg-[#333c48] hover:bg-[#1e242b] text-white px-4 h-11 rounded-full text-sm font-bold transition-all shadow-md cursor-pointer"
           title="Ver Carro de Compras">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
-            <circle cx="8" cy="21" r="1"></circle>
-            <circle cx="19" cy="21" r="1"></circle>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+            <circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle>
             <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
           </svg>
           <span class="hidden sm:inline">Carro</span>
-          <span id="nav-cart-badge"
-            class="min-w-[20px] h-5 px-1.5 rounded-full bg-[#008f6b] text-white text-[11px] font-extrabold flex items-center justify-center">
-            0
-          </span>
+          <span id="nav-cart-badge" class="min-w-[20px] h-5 px-1.5 rounded-full bg-[#008f6b] text-white text-[11px] font-extrabold flex items-center justify-center">0</span>
         </button>
       </div>
       <!-- Hamburguesa (solo mobile) -->
@@ -138,6 +134,17 @@
         <span class="block w-5 h-0.5 bg-[#4A3C31] transition-all duration-300" id="bar2"></span>
         <span class="block w-5 h-0.5 bg-[#4A3C31] transition-all duration-300" id="bar3"></span>
       </button>
+    </div>
+    <!-- Buscador grande móvil (ancho completo) -->
+    <div class="md:hidden px-4 pb-3">
+      <div class="relative">
+        <input type="search" id="nav-search-input-m" autocomplete="off" placeholder="Buscar en Artesanitas..."
+          class="w-full h-12 pl-5 pr-14 rounded-full border-2 border-[#333c48] bg-white text-base font-medium text-[#333c48] placeholder:text-[#8C7A6B] focus:outline-none focus:ring-2 focus:ring-[#B87352]/40">
+        <button type="button" id="nav-search-btn-m" aria-label="Buscar"
+          class="absolute right-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#333c48] text-white flex items-center justify-center cursor-pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:20px;height:20px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+      </div>
     </div>
     <!-- Menú mobile -->
     <div id="mobile-menu" class="md:hidden hidden border-t border-[#EBE5DE] bg-[#F9F6F0]/95 backdrop-blur-md">
@@ -3350,7 +3357,7 @@
   <!-- Inicializar iconos -->
 
   <!-- Script modular externo con Cache-Buster -->
-  <script src="/js/catalogo.js?v=20261125_s3"></script>
+  <script src="/js/catalogo.js?v=20261125_s4"></script>
 </body>
 
 </html>
