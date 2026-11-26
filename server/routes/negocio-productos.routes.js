@@ -591,7 +591,7 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
 
 // POST /api/negocios/:negocioSlug/productos/ia-descripcion — redacta descripción comercial desde la imagen con Gemini 2.5 Flash
 router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, uploadImagenes, async (req, res) => {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    const apiKey = String(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '').trim();
     if (!apiKey) {
         return res.status(503).json({
             success: false,
@@ -659,31 +659,53 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
             '}'
         ].join('\n');
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const aiRes = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: imgMime, data: imgBuffer.toString('base64') } }
-                    ]
-                }],
-                generationConfig: {
-                    temperature: 0.5,
-                    responseMimeType: 'application/json'
-                }
-            })
+        const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+        const payload = JSON.stringify({
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    { inline_data: { mime_type: imgMime, data: imgBuffer.toString('base64') } }
+                ]
+            }],
+            generationConfig: {
+                temperature: 0.5,
+                responseMimeType: 'application/json'
+            }
         });
 
-        if (!aiRes.ok) {
+        let aiData = null;
+        let lastStatus = 502;
+        let lastErrorMsg = '';
+
+        for (const model of models) {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+            const aiRes = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload
+            });
+            if (aiRes.ok) {
+                aiData = await aiRes.json();
+                break;
+            }
+            lastStatus = aiRes.status;
             const errTxt = await aiRes.text().catch(() => '');
-            logger.warn('IA Descripción: Gemini API respondió error', { status: aiRes.status, body: errTxt.slice(0, 200) });
-            return res.status(502).json({ success: false, message: 'No se pudo obtener respuesta de Gemini IA en este momento.' });
+            try {
+                const errJson = JSON.parse(errTxt);
+                lastErrorMsg = errJson?.error?.message || errTxt.slice(0, 180);
+            } catch {
+                lastErrorMsg = errTxt.slice(0, 180);
+            }
+            logger.warn('IA Descripción: Gemini API respondió error', { model, status: lastStatus, error: lastErrorMsg });
+            if (lastStatus === 401 || lastStatus === 403) break;
         }
 
-        const aiData = await aiRes.json();
+        if (!aiData) {
+            return res.status(502).json({
+                success: false,
+                message: `Gemini IA (${lastStatus}): ${lastErrorMsg || 'No se pudo obtener respuesta en este momento.'}`
+            });
+        }
         const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
         let parsed = {};
         try {
