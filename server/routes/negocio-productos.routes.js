@@ -995,7 +995,7 @@ router.get('/:negocioSlug/inventario/export.xlsx', requireNegocioAuth, async (re
             { header: 'Colección', key: 'coleccion', width: 22 },
             { header: 'Stock Físico', key: 'stock', width: 14 },
             { header: 'Stock Mín.', key: 'stockMin', width: 12 },
-            { header: 'Costo Artesano (S/)', key: 'costo', width: 18 },
+            { header: 'Costo (S/)', key: 'costo', width: 16 },
             { header: 'Precio Venta (S/)', key: 'precio', width: 18 },
             { header: 'Valor Costo Total (S/)', key: 'valCosto', width: 20 },
             { header: 'Valor Venta Total (S/)', key: 'valVenta', width: 20 },
