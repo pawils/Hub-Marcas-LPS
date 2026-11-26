@@ -975,16 +975,15 @@
               <div>
                 <div class="flex items-center justify-between gap-1 mb-1">
                   <label class="block text-[11px] font-semibold text-[#8C7A6B]">Colección</label>
-                  <div class="flex items-center gap-2">
-                    <label class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] cursor-pointer select-none">
-                      <input type="checkbox" id="ficha-chk-navidad" class="w-3.5 h-3.5 accent-[#007A78] rounded cursor-pointer">
-                      Navidad
-                    </label>
-                    <button type="button" data-target-coleccion="ficha-coleccion" class="btn-crear-coleccion text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">+ Crear</button>
-                  </div>
+                  <button type="button" data-target-coleccion="ficha-coleccion" class="btn-crear-coleccion text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">+ Crear</button>
                 </div>
-                <input type="text" id="ficha-coleccion" maxlength="60" placeholder="Catálogo General" list="lps-colecciones-list"
-                  class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-medium">
+                <select id="ficha-coleccion" class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-medium">
+                  <option value="Catálogo General">Catálogo General</option>
+                  <option value="Colección Navidad">Colección Navidad</option>
+                  <option value="Colección Van Gogh">Colección Van Gogh</option>
+                  <option value="Colección Rapunzel">Colección Rapunzel</option>
+                  <option value="Regalos & Temporada">Regalos &amp; Temporada</option>
+                </select>
                 <datalist id="lps-colecciones-list">
                   <option value="Catálogo General"></option>
                   <option value="Colección Navidad"></option>
@@ -1385,13 +1384,7 @@
             <div>
               <div class="flex items-center justify-between gap-1 mb-1">
                 <label class="block text-xs font-medium text-[#4A3C31]">4. Colección / Temporada</label>
-                <div class="flex items-center gap-2">
-                  <label class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] cursor-pointer select-none">
-                    <input type="checkbox" id="np-chk-navidad" class="w-3.5 h-3.5 accent-[#007A78] rounded cursor-pointer">
-                    Navidad
-                  </label>
-                  <button type="button" data-target-coleccion="np-coleccion" class="btn-crear-coleccion text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">+ Crear</button>
-                </div>
+                <button type="button" data-target-coleccion="np-coleccion" class="btn-crear-coleccion text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">+ Crear</button>
               </div>
               <input type="text" id="np-coleccion" maxlength="80" placeholder="Ej: Colección Navidad / Van Gogh" list="lps-colecciones-list"
                 class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
@@ -1678,7 +1671,7 @@
 
   <!-- Script modular externo al final del DOM para inicializar todos los modales -->
   <script src="/js/lps-modal.js?v=20261126_s2"></script>
-  <script src="/js/registros.js?v=20261126_s12"></script>
+  <script src="/js/registros.js?v=20261126_s13"></script>
 </body>
 
 </html>

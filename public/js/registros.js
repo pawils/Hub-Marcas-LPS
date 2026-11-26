@@ -2537,12 +2537,13 @@
 
   function syncColeccionesDisponibles() {
     const lista = getColeccionesDisponibles();
-    const matSel = document.getElementById('mat-coleccion');
-    if (matSel) {
-      const prev = matSel.value;
-      matSel.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-      if (prev && lista.includes(prev)) matSel.value = prev;
-    }
+    ['mat-coleccion', 'ficha-coleccion'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (!sel) return;
+      const prev = sel.value;
+      sel.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if (prev && lista.includes(prev)) sel.value = prev;
+    });
     const dl = document.getElementById('lps-colecciones-list');
     if (dl) {
       dl.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
@@ -2657,17 +2658,6 @@
         colorEl: document.getElementById('np-color'),
         carEl: document.getElementById('np-caracteristicas')
       });
-    });
-  }
-
-  const npChkNav = document.getElementById('np-chk-navidad');
-  const npColInp = document.getElementById('np-coleccion');
-  if (npChkNav && npColInp) {
-    npChkNav.addEventListener('change', () => {
-      npColInp.value = npChkNav.checked ? 'Colección Navidad' : 'Catálogo General';
-    });
-    npColInp.addEventListener('input', () => {
-      npChkNav.checked = /navid/i.test(npColInp.value || '');
     });
   }
 
@@ -2873,9 +2863,18 @@
     document.getElementById('ficha-ean').value = p.ean || '';
     document.getElementById('ficha-linea').value = p.linea || 'Vajilla Artesanal';
     document.getElementById('ficha-sublinea').value = p.sublinea || 'Tazas & Mugs';
-    document.getElementById('ficha-coleccion').value = p.coleccion || 'Catálogo General';
-    var fichaNavChk = document.getElementById('ficha-chk-navidad');
-    if (fichaNavChk) fichaNavChk.checked = /navid/i.test(p.coleccion || '');
+    syncColeccionesDisponibles();
+    var fichaColVal = (p.coleccion || 'Catálogo General').trim() || 'Catálogo General';
+    var fichaColEl = document.getElementById('ficha-coleccion');
+    if (fichaColEl) {
+      if (!Array.from(fichaColEl.options).some(function (o) { return o.value === fichaColVal; })) {
+        var optExtra = document.createElement('option');
+        optExtra.value = fichaColVal;
+        optExtra.textContent = fichaColVal;
+        fichaColEl.appendChild(optExtra);
+      }
+      fichaColEl.value = fichaColVal;
+    }
     document.getElementById('ficha-ubicacion').value = p.ubicacion_almacen || 'Almacén Principal Trujillo';
 
     document.getElementById('ficha-dimensiones').value = p.tamano_dimensiones || '';
@@ -2989,17 +2988,6 @@
         fichaNuevosArchivos = fichaNuevosArchivos.concat(picked.slice(0, espacio));
         fotoInpInit.value = '';
         renderFichaGaleria();
-      });
-    }
-
-    var fichaNavInit = document.getElementById('ficha-chk-navidad');
-    var fichaColInit = document.getElementById('ficha-coleccion');
-    if (fichaNavInit && fichaColInit) {
-      fichaNavInit.addEventListener('change', function () {
-        fichaColInit.value = fichaNavInit.checked ? 'Colección Navidad' : 'Catálogo General';
-      });
-      fichaColInit.addEventListener('input', function () {
-        fichaNavInit.checked = /navid/i.test(fichaColInit.value || '');
       });
     }
 
