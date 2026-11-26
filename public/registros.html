@@ -878,7 +878,8 @@
 
     
     <!-- Modal Ficha Técnica Maestra 360° de Producto + Kardex Individual (Shopify Admin Product Sheet) -->
-    <div id="modal-ficha-producto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#4A3C31]/65 backdrop-blur-xs">
+    <div id="modal-ficha-producto" class="hidden fixed inset-0 z-50 bg-[#4A3C31]/65 backdrop-blur-xs overflow-y-auto">
+      <div class="min-h-full flex items-center justify-center p-3 sm:p-4">
       <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-5 sm:p-7 border border-[#EBE5DE] space-y-5 max-h-[92vh] overflow-y-auto">
         <!-- Cabecera Ficha -->
         <div class="flex items-start justify-between gap-4 border-b border-[#EBE5DE] pb-4">
@@ -1100,10 +1101,12 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- Modal de Etiqueta Imprimible de Código de Barras EAN-13 y SKU -->
-    <div id="modal-etiqueta-ean" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-xs">
+    <div id="modal-etiqueta-ean" class="hidden fixed inset-0 z-50 bg-[#4A3C31]/60 backdrop-blur-xs overflow-y-auto">
+      <div class="min-h-full flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-[#EBE5DE] text-center space-y-4">
         <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-2.5">
           <span class="text-xs font-bold uppercase tracking-wider text-[#B87352]">Etiqueta Retail GS1 / Shopify</span>
@@ -1126,11 +1129,13 @@
           </button>
         </div>
       </div>
+      </div>
     </div>
 
     
     <!-- Modal de Packing Slip / Guía de Despacho & Embalaje Artesanal (Shopify-Grade) -->
-    <div id="modal-guia-despacho" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-xs">
+    <div id="modal-guia-despacho" class="hidden fixed inset-0 z-50 bg-[#4A3C31]/60 backdrop-blur-xs overflow-y-auto">
+      <div class="min-h-full flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 border border-[#EBE5DE] space-y-5 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
           <div class="flex items-center gap-2">
@@ -1223,6 +1228,7 @@
             Imprimir Packing Slip
           </button>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1418,7 +1424,8 @@
   </div>
 
   <!-- Modal: Actualizar monto pagado (Ultra Premium) -->
-  <div id="modal-monto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-md transition-all duration-300">
+  <div id="modal-monto" class="hidden fixed inset-0 z-50 bg-[#4A3C31]/60 backdrop-blur-md overflow-y-auto transition-all duration-300">
+    <div class="min-h-full flex items-center justify-center p-4" data-modal-backdrop>
     <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 border border-[#EBE5DE] relative transform transition-all duration-300 space-y-5">
       <!-- Header con botón cerrar -->
       <div class="flex items-start justify-between gap-3">
@@ -1471,10 +1478,12 @@
         </button>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- Modal: Confirmación Premium (Reemplaza confirm nativo) -->
-  <div id="modal-confirmacion" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/60 backdrop-blur-md transition-all duration-300">
+  <div id="modal-confirmacion" class="hidden fixed inset-0 z-50 bg-[#4A3C31]/60 backdrop-blur-md overflow-y-auto transition-all duration-300">
+    <div class="min-h-full flex items-center justify-center p-4" data-modal-backdrop>
     <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 border border-[#EBE5DE] relative transform transition-all duration-300 space-y-5 text-center">
       <div class="w-14 h-14 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto border border-red-200 shadow-xs">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-7 h-7">
@@ -1498,10 +1507,12 @@
         </button>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- Modal Cámara Scanner de Código de Barras EAN-13 (Shopify Mobile WMS) -->
-  <div id="modal-camara-scanner" class="fixed inset-0 z-50 hidden bg-[#4A3C31]/70 backdrop-blur-xs flex items-center justify-center p-4">
+  <div id="modal-camara-scanner" class="fixed inset-0 z-50 hidden bg-[#4A3C31]/70 backdrop-blur-xs overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center p-4" data-modal-backdrop>
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#EBE5DE] space-y-4">
       <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
         <div class="flex items-center gap-2">
@@ -1537,10 +1548,12 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- Modal Visor Seguro de Comprobante Yape/Plin (Autenticado vía JWT) -->
-  <div id="modal-visor-voucher" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/70 backdrop-blur-xs">
+  <div id="modal-visor-voucher" class="hidden fixed inset-0 z-50 bg-[#4A3C31]/70 backdrop-blur-xs overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center p-4" data-modal-backdrop>
     <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-[#EBE5DE] space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex items-start justify-between gap-3 border-b border-[#EBE5DE] pb-3">
         <div>
@@ -1575,6 +1588,7 @@
           Re-analizar IA
         </button>
       </div>
+    </div>
     </div>
   </div>
 

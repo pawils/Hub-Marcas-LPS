@@ -554,7 +554,9 @@
   const btnCancMonto = document.getElementById('btn-cancelar-monto');
   if (btnCancMonto) btnCancMonto.addEventListener('click', cerrarModalMonto);
   if (modalMonto) {
-    modalMonto.addEventListener('click', (e) => { if (e.target === modalMonto) cerrarModalMonto(); });
+    modalMonto.addEventListener('click', (e) => {
+      if (e.target === modalMonto || e.target.hasAttribute('data-modal-backdrop')) cerrarModalMonto();
+    });
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modalMonto && !modalMonto.classList.contains('hidden')) cerrarModalMonto();
@@ -1537,7 +1539,7 @@
     if (btnCerrar) btnCerrar.addEventListener('click', cerrarModalVisorVoucher);
     if (modal) {
       modal.addEventListener('click', (e) => {
-        if (e.target === modal) cerrarModalVisorVoucher();
+        if (e.target === modal || e.target.hasAttribute('data-modal-backdrop')) cerrarModalVisorVoucher();
       });
     }
 
