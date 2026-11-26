@@ -659,7 +659,7 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
             '}'
         ].join('\n');
 
-        const models = ['gemini-3.8-flash', 'gemini-2.5-flash'];
+        const models = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'gemini-3.8-flash'];
         const payload = JSON.stringify({
             contents: [{
                 parts: [
@@ -676,9 +676,13 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
         let aiData = null;
         let lastStatus = 502;
         let lastErrorMsg = '';
+        const triedModels = new Set();
 
         async function callGeminiModel(modelName) {
             const cleanModel = String(modelName || '').replace(/^models\//, '');
+            if (!cleanModel || triedModels.has(cleanModel)) return null;
+            triedModels.add(cleanModel);
+
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
             const aiRes = await fetch(endpoint, {
                 method: 'POST',
@@ -701,6 +705,7 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
 
         for (const model of models) {
             const attempt = await callGeminiModel(model);
+            if (!attempt) continue;
             if (attempt.ok) {
                 aiData = attempt.data;
                 break;
@@ -710,22 +715,32 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
             if (lastStatus === 401 || lastStatus === 403) break;
         }
 
-        if (!aiData && lastStatus === 404) {
+        if (!aiData && (lastStatus === 404 || lastStatus === 400)) {
             const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`).catch(() => null);
             if (listRes && listRes.ok) {
                 const listJson = await listRes.json().catch(() => ({}));
-                const available = (listJson.models || []).filter(m =>
-                    Array.isArray(m.supportedGenerationMethods) &&
-                    m.supportedGenerationMethods.includes('generateContent') &&
-                    /gemini.*flash/i.test(m.name || '')
-                );
-                if (available.length > 0) {
-                    const retry = await callGeminiModel(available[available.length - 1].name);
-                    if (retry.ok) aiData = retry.data;
-                    else {
-                        lastStatus = retry.status;
-                        lastErrorMsg = retry.msg;
+                const available = (listJson.models || [])
+                    .filter(m =>
+                        Array.isArray(m.supportedGenerationMethods) &&
+                        m.supportedGenerationMethods.includes('generateContent') &&
+                        /gemini/i.test(m.name || '') &&
+                        !/embedding|tts|imagen|veo|aqa|robotics|native-audio|lite/i.test(m.name || '')
+                    )
+                    .sort((a, b) => {
+                        const aFlash = /flash/i.test(a.name) ? 0 : 1;
+                        const bFlash = /flash/i.test(b.name) ? 0 : 1;
+                        return aFlash - bFlash;
+                    });
+                for (const m of available) {
+                    const retry = await callGeminiModel(m.name);
+                    if (!retry) continue;
+                    if (retry.ok) {
+                        aiData = retry.data;
+                        break;
                     }
+                    lastStatus = retry.status;
+                    lastErrorMsg = retry.msg;
+                    if (lastStatus === 401 || lastStatus === 403) break;
                 }
             }
         }
