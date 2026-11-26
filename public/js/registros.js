@@ -1101,9 +1101,11 @@
 
   function filtrosPedidosQuery() {
     const params = new URLSearchParams();
+    const filtroVoucher = document.getElementById('filtro-pedido-voucher');
     if (filtroPedidoSearch && filtroPedidoSearch.value.trim()) params.set('search', filtroPedidoSearch.value.trim());
     if (filtroPedidoEntrega && filtroPedidoEntrega.value) params.set('tipo_entrega', filtroPedidoEntrega.value);
     if (filtroPedidoPago && filtroPedidoPago.value) params.set('estado_pago', filtroPedidoPago.value);
+    if (filtroVoucher && filtroVoucher.value) params.set('voucher_ia', filtroVoucher.value);
     if (filtroPedidoEstado && filtroPedidoEstado.value) params.set('estado_pedido', filtroPedidoEstado.value);
     return params.toString();
   }
@@ -1252,10 +1254,10 @@
             })()}
             ${p.tiene_comprobante ? `
               <div>
-                <a href="/api/negocios/${NEGOCIO}/pedidos/${p.id}/comprobante" target="_blank" rel="noreferrer"
-                  class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] hover:underline">
-                  <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg> Ver voucher subido</span>
-                </a>
+                <button type="button" data-ver-voucher="${p.id}"
+                  class="btn-ver-voucher inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] hover:underline cursor-pointer">
+                  <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg> Ver / Auditar voucher</span>
+                </button>
               </div>
             ` : ''}
           </td>
@@ -1269,7 +1271,7 @@
                 <span class="text-[10px] font-bold text-[#B87352]">${escapeHtml(ETAPA_ARTESANO_LABELS[p.etapa_artesano] || '1. Recibido')}</span>
               </div>
               <div class="grid grid-cols-2 gap-1">
-                <input type="text" data-artesano-id="${p.id}" value="${escapeHtml(p.artesano_nombre || '')}" placeholder="Artesano asignado"
+                <input type="text" list="lista-artesanos-datalist" data-artesano-id="${p.id}" value="${escapeHtml(p.artesano_nombre || '')}" placeholder="Artesano asignado"
                   class="input-pedido-artesano w-full px-2 py-1 text-[11px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]">
                 <input type="number" step="0.01" min="0" data-costo-art-id="${p.id}" value="${p.costo_artesano_total !== null && p.costo_artesano_total !== undefined ? Number(p.costo_artesano_total) : ''}" placeholder="Cotización S/ (Art.)"
                   class="input-pedido-costo-art w-full px-2 py-1 text-[11px] rounded-lg border border-[#D5C9BD] bg-white focus:outline-none focus:border-[#B87352]"
@@ -1442,7 +1444,13 @@
       });
     });
 
-    // Eventos eliminar pedido
+    tbody.querySelectorAll('.btn-ver-voucher').forEach(btn => {
+      btn.addEventListener('click', () => {
+        abrirModalVisorVoucher(btn.dataset.verVoucher);
+      });
+    });
+
+    // Eventos imprimir packing slip y eliminar pedido
     tbody.querySelectorAll('.btn-imprimir-guia-despacho').forEach(btn => {
       btn.addEventListener('click', () => {
         abrirPackingSlipPedido(btn.dataset.imprimirGuia);
@@ -1464,16 +1472,145 @@
     });
   }
 
+  let visorVoucherBlobUrl = null;
+  let visorVoucherPedidoId = null;
+
+  function cerrarModalVisorVoucher() {
+    const modal = document.getElementById('modal-visor-voucher');
+    if (modal) modal.classList.add('hidden');
+    if (visorVoucherBlobUrl) {
+      URL.revokeObjectURL(visorVoucherBlobUrl);
+      visorVoucherBlobUrl = null;
+    }
+    const imgEl = document.getElementById('visor-voucher-img');
+    if (imgEl) imgEl.src = '';
+    visorVoucherPedidoId = null;
+  }
+
+  async function abrirModalVisorVoucher(pedidoId) {
+    const modal = document.getElementById('modal-visor-voucher');
+    const ped = pedidosCache.find(p => String(p.id) === String(pedidoId));
+    if (!modal || !ped) return;
+
+    visorVoucherPedidoId = ped.id;
+    const titEl = document.getElementById('visor-voucher-titulo');
+    const infoEl = document.getElementById('visor-voucher-info');
+    const iaEl = document.getElementById('visor-voucher-ia-estado');
+    const imgEl = document.getElementById('visor-voucher-img');
+    const loadingEl = document.getElementById('visor-voucher-loading');
+
+    if (titEl) titEl.textContent = `Comprobante · ${ped.codigo_pedido || ('ART-' + ped.id)}`;
+    if (infoEl) infoEl.textContent = `${ped.nombre} · Pagado: S/ ${Number(ped.monto_pagado || 0).toFixed(2)} de S/ ${Number(ped.producto_precio || 0).toFixed(2)}`;
+    if (iaEl) {
+      const op = ped.voucher_nro_operacion ? `Op #${ped.voucher_nro_operacion}` : 'Sin N° Op';
+      const det = ped.voucher_monto_detectado != null ? `S/ ${Number(ped.voucher_monto_detectado).toFixed(2)}` : 'Sin monto';
+      iaEl.textContent = `IA: ${(ped.voucher_verificacion_ia || 'pendiente').toUpperCase()} (${op} · ${det})`;
+    }
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (imgEl) imgEl.classList.add('hidden');
+    modal.classList.remove('hidden');
+
+    try {
+      const res = await apiFetch(`/pedidos/${ped.id}/comprobante`);
+      if (!res.ok) throw new Error('Error');
+      const blob = await res.blob();
+      if (visorVoucherBlobUrl) URL.revokeObjectURL(visorVoucherBlobUrl);
+      visorVoucherBlobUrl = URL.createObjectURL(blob);
+      if (imgEl) {
+        imgEl.src = visorVoucherBlobUrl;
+        imgEl.classList.remove('hidden');
+      }
+    } catch {
+      if (iaEl) iaEl.textContent = 'No se pudo cargar la imagen del comprobante.';
+    } finally {
+      if (loadingEl) loadingEl.classList.add('hidden');
+    }
+  }
+
+  function initVisorVoucherModal() {
+    const modal = document.getElementById('modal-visor-voucher');
+    const btnCerrar = document.getElementById('btn-cerrar-visor-voucher');
+    const btnAprobar = document.getElementById('btn-visor-aprobar-pago');
+    const btnObservar = document.getElementById('btn-visor-observar-pago');
+    const btnReanalizar = document.getElementById('btn-visor-reanalizar-ia');
+
+    if (btnCerrar) btnCerrar.addEventListener('click', cerrarModalVisorVoucher);
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModalVisorVoucher();
+      });
+    }
+
+    if (btnAprobar) {
+      btnAprobar.addEventListener('click', async () => {
+        if (!visorVoucherPedidoId) return;
+        const ped = pedidosCache.find(p => String(p.id) === String(visorVoucherPedidoId));
+        const montoTotal = ped ? Number(ped.producto_precio || 0) : undefined;
+        await apiFetch(`/pedidos/${visorVoucherPedidoId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            estado_pago: 'completo',
+            ...(montoTotal !== undefined ? { monto_pagado: montoTotal } : {}),
+            voucher_verificacion_ia: 'verificado'
+          })
+        });
+        cerrarModalVisorVoucher();
+        loadPedidos();
+      });
+    }
+
+    if (btnObservar) {
+      btnObservar.addEventListener('click', async () => {
+        if (!visorVoucherPedidoId) return;
+        await apiFetch(`/pedidos/${visorVoucherPedidoId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ voucher_verificacion_ia: 'monto_difiere' })
+        });
+        cerrarModalVisorVoucher();
+        loadPedidos();
+      });
+    }
+
+    if (btnReanalizar) {
+      btnReanalizar.addEventListener('click', async () => {
+        if (!visorVoucherPedidoId) return;
+        const orig = btnReanalizar.textContent;
+        btnReanalizar.disabled = true;
+        btnReanalizar.textContent = 'Analizando con IA...';
+        try {
+          const res = await apiFetch(`/pedidos/${visorVoucherPedidoId}/reanalizar-voucher`, { method: 'POST' });
+          const data = await res.json();
+          if (res.ok && data.success && data.voucher) {
+            const iaEl = document.getElementById('visor-voucher-ia-estado');
+            if (iaEl) {
+              iaEl.textContent = `IA: ${String(data.voucher.verificacion_ia || 'pendiente').toUpperCase()} (${data.voucher.nro_operacion || 'Sin N° Op'})`;
+            }
+            loadPedidos();
+          }
+        } finally {
+          btnReanalizar.disabled = false;
+          btnReanalizar.textContent = orig;
+        }
+      });
+    }
+  }
+  initVisorVoucherModal();
+
   // Eventos filtros de pedidos
+  const filtroPedidoVoucherEl = document.getElementById('filtro-pedido-voucher');
   if (filtroPedidoSearch) filtroPedidoSearch.addEventListener('input', () => loadPedidos());
   if (filtroPedidoEntrega) filtroPedidoEntrega.addEventListener('change', () => loadPedidos());
   if (filtroPedidoPago) filtroPedidoPago.addEventListener('change', () => loadPedidos());
+  if (filtroPedidoVoucherEl) filtroPedidoVoucherEl.addEventListener('change', () => loadPedidos());
   if (filtroPedidoEstado) filtroPedidoEstado.addEventListener('change', () => loadPedidos());
   if (btnLimpiarFiltrosPedidos) {
     btnLimpiarFiltrosPedidos.addEventListener('click', () => {
       if (filtroPedidoSearch) filtroPedidoSearch.value = '';
       if (filtroPedidoEntrega) filtroPedidoEntrega.value = '';
       if (filtroPedidoPago) filtroPedidoPago.value = '';
+      if (filtroPedidoVoucherEl) filtroPedidoVoucherEl.value = '';
       if (filtroPedidoEstado) filtroPedidoEstado.value = '';
       loadPedidos();
     });
@@ -1703,6 +1840,13 @@
       if (!res.ok) return;
       const data = await res.json();
       const artesanos = (data && data.artesanos) || [];
+      const datalistEl = document.getElementById('lista-artesanos-datalist');
+      if (datalistEl) {
+        datalistEl.innerHTML = artesanos
+          .filter(a => a.activo !== false)
+          .map(a => `<option value="${escapeHtml(a.nombre)}">`)
+          .join('');
+      }
       if (artesanos.length === 0) {
         artesanosListEl.innerHTML = `<p class="text-xs text-[#8C7A6B] italic col-span-full">Aún no hay artesanos registrados. Crea uno arriba o escribe su nombre en cualquier pedido para generar su Magic Link automático.</p>`;
         return;
@@ -1713,11 +1857,15 @@
         const waHref = cleanWa
           ? `https://wa.me/51${cleanWa}?text=${encodeURIComponent(`Hola ${a.nombre}! Aquí tienes tu enlace privado del Portal de Taller de Artesanitas Perú para revisar las especificaciones de tus solicitudes asignadas (cotización, onzas, colores, logos) y reportar avances de horno y pintado: ${magicUrl}`)}`
           : '';
+        const isActivo = a.activo !== false;
         return `
-          <div class="p-3 rounded-2xl bg-[#F9F6F0] border border-[#EBE5DE] flex flex-col justify-between gap-2">
+          <div class="p-3 rounded-2xl bg-[#F9F6F0] border ${isActivo ? 'border-[#EBE5DE]' : 'border-red-200 opacity-75'} flex flex-col justify-between gap-2">
             <div class="flex items-start justify-between gap-2">
               <div>
-                <h4 class="text-xs font-bold text-[#4A3C31]">${escapeHtml(a.nombre)}</h4>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <h4 class="text-xs font-bold text-[#4A3C31]">${escapeHtml(a.nombre)}</h4>
+                  ${!isActivo ? '<span class="text-[9px] font-extrabold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">PAUSADO</span>' : ''}
+                </div>
                 <span class="text-[11px] text-[#8C7A6B]">${Number(a.pedidos_activos || 0)} solicitudes activas · ${Number(a.total_pedidos || 0)} hist.</span>
               </div>
               ${Number(a.pendientes_qa || 0) > 0 ? `
@@ -1729,7 +1877,7 @@
             <div class="flex items-center gap-1.5 pt-1">
               <button type="button" data-copy-magic="${escapeHtml(magicUrl)}"
                 class="btn-copy-magic flex-1 bg-white hover:bg-[#B87352] text-[#4A3C31] hover:text-white border border-[#D5C9BD] text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors cursor-pointer">
-                Copiar Magic Link
+                Copiar Link
               </button>
               <a href="${escapeHtml(magicUrl)}" target="_blank" rel="noreferrer"
                 class="bg-white hover:bg-[#4A3C31] text-[#4A3C31] hover:text-white border border-[#D5C9BD] text-[11px] font-bold py-1.5 px-2.5 rounded-xl transition-colors"
@@ -1744,6 +1892,16 @@
                 </a>
               ` : ''}
             </div>
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#EBE5DE]">
+              <button type="button" data-rotar-art="${a.id}" data-rotar-nombre="${escapeHtml(a.nombre)}"
+                class="btn-rotar-magic text-[10px] font-bold text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">
+                Rotar Magic Link
+              </button>
+              <button type="button" data-toggle-art="${a.id}" data-art-activo="${isActivo}"
+                class="btn-toggle-art-activo text-[10px] font-bold ${isActivo ? 'text-red-600' : 'text-[#008f6b]'} hover:underline cursor-pointer">
+                ${isActivo ? 'Pausar acceso' : 'Reactivar acceso'}
+              </button>
+            </div>
           </div>
         `;
       }).join('');
@@ -1756,6 +1914,36 @@
             btn.textContent = '¡Link copiado!';
             setTimeout(() => { btn.textContent = orig; }, 1800);
           } catch {}
+        });
+      });
+
+      artesanosListEl.querySelectorAll('.btn-rotar-magic').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openConfirmModal({
+            title: '¿Rotar Magic Link de seguridad?',
+            message: `Se generará un nuevo enlace para "${btn.dataset.rotarNombre}" y el enlace anterior dejará de funcionar inmediatamente.`,
+            confirmText: 'Sí, rotar enlace',
+            onConfirm: async () => {
+              await apiFetch(`/artesanos/${btn.dataset.rotarArt}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rotar_token: true })
+              });
+              loadArtesanos();
+            }
+          });
+        });
+      });
+
+      artesanosListEl.querySelectorAll('.btn-toggle-art-activo').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const nuevoEstado = btn.dataset.artActivo !== 'true';
+          await apiFetch(`/artesanos/${btn.dataset.toggleArt}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activo: nuevoEstado })
+          });
+          loadArtesanos();
         });
       });
     } catch (e) {
@@ -1812,7 +2000,7 @@
           }
         }
         if (sub) {
-          await fetch(`/api/negocios/${NEGOCIO}/push/subscribe`, {
+          await apiFetch('/push/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rol: 'admin', subscription: sub.toJSON() })
@@ -1882,7 +2070,13 @@
       const elUnid = document.getElementById('inv-kpi-unidades'); if (elUnid) elUnid.textContent = Number(k.unidades_en_stock || 0);
       const elValC = document.getElementById('inv-kpi-valor-costo'); if (elValC) elValC.textContent = `S/ ${Number(k.valor_costo_soles || 0).toFixed(2)}`;
       const elValR = document.getElementById('inv-kpi-valor-retail'); if (elValR) elValR.textContent = `S/ ${Number(k.valor_retail_soles || 0).toFixed(2)}`;
-      const elAlert = document.getElementById('inv-kpi-alertas'); if (elAlert) elAlert.textContent = Number(k.alertas_bajo_stock || 0);
+      const alertasCount = Number(k.alertas_bajo_stock || 0);
+      const elAlert = document.getElementById('inv-kpi-alertas'); if (elAlert) elAlert.textContent = alertasCount;
+      const badgeStockAlerta = document.getElementById('badge-stock-alerta');
+      if (badgeStockAlerta) {
+        badgeStockAlerta.textContent = alertasCount;
+        badgeStockAlerta.classList.toggle('hidden', alertasCount <= 0);
+      }
 
       renderInventarioTable();
       renderKardexTable();
@@ -1899,8 +2093,10 @@
     return inventarioCache.filter(p => {
       if (lin && p.linea !== lin) return false;
       const stockNum = Number(p.stock_actual || 0);
+      const stockMin = Number(p.stock_minimo || 1);
       if (st === 'con_stock' && stockNum <= 0) return false;
       if (st === 'sin_stock' && stockNum > 0) return false;
+      if (st === 'bajo_stock' && stockNum > stockMin) return false;
       if (q) {
         const matchSku = (p.sku || '').toLowerCase().includes(q);
         const matchEan = (p.ean || '').toLowerCase().includes(q);
@@ -2346,11 +2542,20 @@
     var foto = (Array.isArray(p.imagenes) && p.imagenes[0]) ? p.imagenes[0] : '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
     var imgEl = document.getElementById('ficha-img-preview');
     if (imgEl) imgEl.src = foto;
+    var fotoInp = document.getElementById('ficha-foto-input');
+    if (fotoInp) fotoInp.value = '';
 
     document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + (p.sku || '----');
     document.getElementById('ficha-badge-ean').textContent = 'EAN: ' + (p.ean || '-------------');
     document.getElementById('ficha-titulo-header').textContent = p.nombre || 'Producto';
-    document.getElementById('ficha-slug-header').textContent = '/producto/' + (p.slug || '');
+    var linkPublico = document.getElementById('ficha-link-publico');
+    if (linkPublico) {
+      linkPublico.href = '/producto/' + encodeURIComponent(p.slug || '');
+      linkPublico.textContent = '/producto/' + (p.slug || '');
+    } else {
+      var slugHeader = document.getElementById('ficha-slug-header');
+      if (slugHeader) slugHeader.textContent = '/producto/' + (p.slug || '');
+    }
 
     document.getElementById('ficha-nombre').value = p.nombre || '';
     document.getElementById('ficha-sku').value = p.sku || '';
@@ -2368,6 +2573,8 @@
     document.getElementById('ficha-costo').value = p.costo_artesano !== null && p.costo_artesano !== undefined ? Number(p.costo_artesano).toFixed(2) : '';
     document.getElementById('ficha-precio').value = Number(p.precio || 0).toFixed(2);
     document.getElementById('ficha-oferta').value = (p.precio_oferta && Number(p.precio_oferta) > 0) ? Number(p.precio_oferta).toFixed(2) : '';
+    var stockMinEl = document.getElementById('ficha-stock-minimo');
+    if (stockMinEl) stockMinEl.value = p.stock_minimo !== undefined && p.stock_minimo !== null ? Number(p.stock_minimo) : 1;
     document.getElementById('ficha-politica').value = p.politica_sin_stock || 'compra_directa';
     document.getElementById('ficha-activo').value = p.activo !== false ? 'true' : 'false';
 
@@ -2389,7 +2596,8 @@
       recepcion_artesano: 'Recepción Artesano',
       conteo_fisico: 'Conteo Físico',
       salida_venta: 'Salida por Venta',
-      ajuste_merma: 'Ajuste / Merma'
+      ajuste_merma: 'Ajuste / Merma',
+      ajuste_ficha: 'Ajuste Ficha 360°'
     };
     tbody.innerHTML = kardexList.map(function (m) {
       var f = new Date(m.created_at).toLocaleString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -2433,6 +2641,7 @@
     var form = document.getElementById('form-ficha-producto');
     var btnRegenSku = document.getElementById('btn-ficha-regenerar-sku');
     var btnEtiqueta = document.getElementById('btn-ficha-abrir-etiqueta');
+    var btnAplicarMov = document.getElementById('btn-ficha-aplicar-mov');
 
     if (btnCerrar && modal) {
       btnCerrar.addEventListener('click', function () { modal.classList.add('hidden'); });
@@ -2471,6 +2680,47 @@
       });
     }
 
+    if (btnAplicarMov) {
+      btnAplicarMov.addEventListener('click', async function () {
+        var prodId = document.getElementById('ficha-prod-id')?.value;
+        var tipo = document.getElementById('ficha-mov-tipo')?.value || 'entrada_mercaderia';
+        var cant = parseInt(document.getElementById('ficha-mov-cant')?.value || '0', 10);
+        var motivo = (document.getElementById('ficha-mov-motivo')?.value || '').trim();
+        if (!prodId || Number.isNaN(cant) || cant < 0) {
+          alert('Ingresa una cantidad válida para el movimiento de almacén.');
+          return;
+        }
+        var origTxt = btnAplicarMov.textContent;
+        btnAplicarMov.disabled = true;
+        btnAplicarMov.textContent = '...';
+        try {
+          var res = await apiFetch('/inventario/movimiento', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              producto_id: prodId,
+              tipo_movimiento: tipo,
+              cantidad: cant,
+              motivo_referencia: motivo || ('Movimiento rápido desde Ficha 360° (' + tipo + ')')
+            })
+          });
+          var d = await res.json();
+          if (res.ok && d.success) {
+            var movMot = document.getElementById('ficha-mov-motivo');
+            if (movMot) movMot.value = '';
+            await loadInventario();
+            await loadProductos();
+            await abrirModalFichaProducto360(prodId);
+          } else {
+            alert(d.message || 'No se pudo registrar el movimiento.');
+          }
+        } finally {
+          btnAplicarMov.disabled = false;
+          btnAplicarMov.textContent = origTxt;
+        }
+      });
+    }
+
     if (form) {
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -2498,8 +2748,17 @@
           fd.append('costo_artesano', document.getElementById('ficha-costo').value);
           fd.append('precio', document.getElementById('ficha-precio').value);
           fd.append('precio_oferta', document.getElementById('ficha-oferta').value);
+          var stockMinInp = document.getElementById('ficha-stock-minimo');
+          if (stockMinInp) fd.append('stock_minimo', stockMinInp.value || '1');
           fd.append('politica_sin_stock', document.getElementById('ficha-politica').value);
           fd.append('activo', document.getElementById('ficha-activo').value);
+
+          var fotoInp = document.getElementById('ficha-foto-input');
+          var newFile = fotoInp && fotoInp.files && fotoInp.files[0];
+          if (newFile) {
+            var optFile = await comprimirImagenWeb(newFile);
+            fd.append('imagenes', optFile);
+          }
 
           var res = await apiFetch('/productos/' + encodeURIComponent(prodId), {
             method: 'PATCH',
@@ -2513,6 +2772,10 @@
             }
             document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + (data.producto.sku || '');
             document.getElementById('ficha-badge-ean').textContent = 'EAN: ' + (data.producto.ean || '');
+            if (Array.isArray(data.producto.imagenes) && data.producto.imagenes[0]) {
+              var previewImg = document.getElementById('ficha-img-preview');
+              if (previewImg) previewImg.src = data.producto.imagenes[0];
+            }
             await loadInventario();
             await loadProductos();
           } else {

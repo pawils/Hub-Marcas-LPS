@@ -406,26 +406,28 @@
       <!-- Tarjetas Métricas KPI -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Total Reservas</p>
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Total Órdenes</p>
           <p id="kpi-pedidos-total" class="text-2xl font-bold text-[#4A3C31] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">Tazas & Preventas</span>
+          <span class="text-[11px] text-[#8C7A6B]">Ventas Directas + Preventas</span>
         </div>
         <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Monto Reservas (Plin)</p>
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Total Recaudado</p>
           <p id="kpi-pedidos-recaudado" class="text-2xl font-bold text-[#008f6b] mt-1">S/ 0.00</p>
-          <span class="text-[11px] text-[#8C7A6B]">S/ 20 por unidad</span>
+          <span class="text-[11px] text-[#8C7A6B]">Plin / Yape / Mercado Pago</span>
         </div>
         <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
           <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Saldo por Cobrar</p>
           <p id="kpi-pedidos-saldo" class="text-2xl font-bold text-[#B87352] mt-1">S/ 0.00</p>
-          <span class="text-[11px] text-[#8C7A6B]">Al entregar</span>
+          <span class="text-[11px] text-[#8C7A6B]">Contra entrega / envío</span>
         </div>
         <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Envíos Shalom (Delivery)</p>
+          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Logística &amp; Despacho</p>
           <p id="kpi-pedidos-envios" class="text-2xl font-bold text-[#742284] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">Entrega 10 de Diciembre</span>
+          <span class="text-[11px] text-[#8C7A6B]">Shalom / Retiro en Taller</span>
         </div>
       </div>
+
+      <datalist id="lista-artesanos-datalist"></datalist>
 
       <!-- Sprint 3: Directorio de Artesanos Aliados & Magic Links (Portal Proveedores) -->
       <div class="bg-white rounded-2xl border border-[#EBE5DE] p-4 sm:p-5 shadow-2xs space-y-3">
@@ -474,6 +476,15 @@
               <option value="parcial">Parcial (Reserva S/ 20)</option>
               <option value="completo">Completo</option>
               <option value="pendiente">Pendiente</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Auditoría IA Voucher</label>
+            <select id="filtro-pedido-voucher" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos los vouchers</option>
+              <option value="verificado">Verificado IA</option>
+              <option value="alertas">Alertas (Duplicado / Difiere)</option>
+              <option value="pendiente">Pendiente revisión</option>
             </select>
           </div>
           <div>
@@ -804,6 +815,7 @@
             <select id="filtro-inv-stock" class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
               <option value="">Todos</option>
               <option value="con_stock">Con Stock Físico (&gt; 0)</option>
+              <option value="bajo_stock">Stock Bajo / Crítico (&le; mín.)</option>
               <option value="sin_stock">Stock 0 (En Preventa / Agotado)</option>
             </select>
           </div>
@@ -871,8 +883,14 @@
         <!-- Cabecera Ficha -->
         <div class="flex items-start justify-between gap-4 border-b border-[#EBE5DE] pb-4">
           <div class="flex items-center gap-3.5">
-            <img id="ficha-img-preview" src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Foto producto"
-              class="w-16 h-16 rounded-2xl object-cover border border-[#D5C9BD] bg-[#F9F6F0] shrink-0">
+            <div class="flex flex-col items-center gap-1 shrink-0">
+              <img id="ficha-img-preview" src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Foto producto"
+                class="w-16 h-16 rounded-2xl object-cover border border-[#D5C9BD] bg-[#F9F6F0]">
+              <label for="ficha-foto-input" class="text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">
+                Cambiar foto
+              </label>
+              <input type="file" id="ficha-foto-input" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" class="hidden">
+            </div>
             <div>
               <div class="flex flex-wrap items-center gap-2">
                 <span class="bg-[#007A78]/10 text-[#007A78] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Ficha Técnica Maestra 360°</span>
@@ -880,7 +898,7 @@
                 <span id="ficha-badge-ean" class="font-mono text-xs font-bold bg-[#F9F6F0] text-[#007A78] border border-[#D5C9BD] px-2.5 py-0.5 rounded-md">EAN: 775...</span>
               </div>
               <h3 id="ficha-titulo-header" class="font-serif font-bold text-lg sm:text-xl text-[#4A3C31] mt-1">Ficha de Producto</h3>
-              <p id="ficha-slug-header" class="text-[11px] font-mono text-[#8C7A6B]">/producto/--</p>
+              <a id="ficha-link-publico" href="/" target="_blank" rel="noreferrer" class="text-[11px] font-mono text-[#007A78] hover:underline">/producto/--</a>
             </div>
           </div>
           <button type="button" id="btn-cerrar-ficha-producto" class="text-[#8C7A6B] hover:text-[#4A3C31] p-1.5 rounded-xl hover:bg-[#F9F6F0] transition-colors cursor-pointer" aria-label="Cerrar ficha">
@@ -980,7 +998,7 @@
                 Margen Bruto: S/ 0.00 (0%)
               </span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
               <div>
                 <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Costo Artesano (S/)</label>
                 <input type="number" id="ficha-costo" step="0.10" min="0" placeholder="0.00"
@@ -997,7 +1015,12 @@
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-bold text-[#008f6b]">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Modalidad cuando Stock = 0</label>
+                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Stock Mín. Alerta</label>
+                <input type="number" id="ficha-stock-minimo" min="0" step="1" value="1"
+                  class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-bold text-[#B87352]">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Modalidad Stock = 0</label>
                 <select id="ficha-politica" class="w-full px-2.5 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-semibold text-[#4A3C31]">
                   <option value="compra_directa">Venta Directa (Con Stock)</option>
                   <option value="agotado">Bloquear (Mostrar Agotado)</option>
@@ -1031,8 +1054,25 @@
           </div>
         </form>
 
-        <!-- Bloque 4: Kardex Individual del Producto -->
+        <!-- Bloque 4: Movimiento Rápido de Almacén + Kardex Individual -->
         <div class="border-t border-[#EBE5DE] pt-4 space-y-3">
+          <div class="bg-[#F9F6F0] border border-[#EBE5DE] rounded-2xl p-3 flex flex-wrap items-center gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-[#4A3C31] mr-1">Movimiento rápido:</span>
+            <select id="ficha-mov-tipo" class="px-2.5 py-1.5 rounded-xl border border-[#D5C9BD] bg-white text-xs font-semibold">
+              <option value="entrada_mercaderia">+ Entrada Mercadería</option>
+              <option value="recepcion_artesano">+ Recepción Artesano</option>
+              <option value="conteo_fisico">= Conteo Físico Exacto</option>
+              <option value="ajuste_merma">- Ajuste / Merma</option>
+            </select>
+            <input type="number" id="ficha-mov-cant" min="0" value="1" class="w-20 px-2.5 py-1.5 rounded-xl border border-[#D5C9BD] bg-white text-xs font-bold text-center">
+            <input type="text" id="ficha-mov-motivo" maxlength="160" placeholder="Motivo (ej: Lote horno #4)"
+              class="flex-1 min-w-[160px] px-3 py-1.5 rounded-xl border border-[#D5C9BD] bg-white text-xs">
+            <button type="button" id="btn-ficha-aplicar-mov"
+              class="bg-[#4A3C31] hover:bg-[#B87352] text-white px-4 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+              Aplicar
+            </button>
+          </div>
+
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h4 class="font-serif font-bold text-sm text-[#4A3C31] flex items-center gap-1.5">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
@@ -1460,9 +1500,6 @@
     </div>
   </div>
 
-  <!-- Script modular externo con Cache-Buster -->
-  <script src="/js/registros.js?v=20261125_s6"></script>
-
   <!-- Modal Cámara Scanner de Código de Barras EAN-13 (Shopify Mobile WMS) -->
   <div id="modal-camara-scanner" class="fixed inset-0 z-50 hidden bg-[#4A3C31]/70 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#EBE5DE] space-y-4">
@@ -1502,6 +1539,47 @@
     </div>
   </div>
 
+  <!-- Modal Visor Seguro de Comprobante Yape/Plin (Autenticado vía JWT) -->
+  <div id="modal-visor-voucher" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3C31]/70 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-[#EBE5DE] space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-start justify-between gap-3 border-b border-[#EBE5DE] pb-3">
+        <div>
+          <h3 id="visor-voucher-titulo" class="font-serif font-bold text-lg text-[#4A3C31]">Comprobante de Pago</h3>
+          <p id="visor-voucher-info" class="text-xs text-[#8C7A6B]">--</p>
+        </div>
+        <button type="button" id="btn-cerrar-visor-voucher" class="text-[#8C7A6B] hover:text-[#4A3C31] p-1.5 rounded-xl hover:bg-[#F9F6F0] cursor-pointer" aria-label="Cerrar visor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div id="visor-voucher-ia-estado" class="text-xs font-bold bg-[#F9F6F0] text-[#4A3C31] px-3 py-2 rounded-xl border border-[#EBE5DE]">
+        IA: Pendiente
+      </div>
+
+      <div class="bg-[#F9F6F0] rounded-2xl border border-[#EBE5DE] p-3 flex items-center justify-center min-h-[220px]">
+        <span id="visor-voucher-loading" class="text-xs text-[#8C7A6B] font-medium">Cargando comprobante protegido...</span>
+        <img id="visor-voucher-img" src="" alt="Voucher de pago" class="hidden max-h-[52vh] w-auto rounded-xl object-contain">
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 pt-1">
+        <button type="button" id="btn-visor-aprobar-pago"
+          class="flex-1 bg-[#008f6b] hover:bg-[#007759] text-white text-xs font-bold py-2.5 px-3 rounded-xl transition-colors cursor-pointer">
+          Aprobar Pago 100%
+        </button>
+        <button type="button" id="btn-visor-observar-pago"
+          class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-bold py-2.5 px-3 rounded-xl transition-colors cursor-pointer">
+          Marcar Observado
+        </button>
+        <button type="button" id="btn-visor-reanalizar-ia"
+          class="bg-[#4A3C31] hover:bg-[#B87352] text-white text-xs font-bold py-2.5 px-3 rounded-xl transition-colors cursor-pointer">
+          Re-analizar IA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script modular externo al final del DOM para inicializar todos los modales -->
+  <script src="/js/registros.js?v=20261126_s7"></script>
 </body>
 
 </html>

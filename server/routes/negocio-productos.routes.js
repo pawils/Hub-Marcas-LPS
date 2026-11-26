@@ -12,6 +12,7 @@ const ExcelJS = require('exceljs');
 const pool = require('../db.config');
 const logger = require('../utils/logger');
 const { resolveNegocioSlug, requireNegocioAuth } = require('../middleware/negocio-auth.middleware');
+const { isSafeImageMime, setSafeBinaryHeaders } = require('../utils/security');
 const { PRODUCTOS_CATALOGO, getProductoPorSlug } = require('../data/artesanitas-productos');
 
 router.param('negocioSlug', resolveNegocioSlug);
@@ -22,8 +23,8 @@ const upload = multer({
     storage,
     limits: { fileSize: 10 * 1024 * 1024, files: 6 },
     fileFilter: (req, file, cb) => {
-        if (!file.mimetype.startsWith('image/')) {
-            return cb(new Error('Cada archivo debe ser una imagen.'));
+        if (!isSafeImageMime(file.mimetype)) {
+            return cb(new Error('Cada archivo debe ser una imagen válida (JPG, PNG, WEBP, GIF o HEIC).'));
         }
         cb(null, true);
     }
@@ -192,7 +193,7 @@ router.get('/:negocioSlug/productos/:id/foto/:posicion', async (req, res) => {
             return res.status(304).end();
         }
 
-        res.setHeader('Content-Type', foto.mime_type || 'image/webp');
+        setSafeBinaryHeaders(res, foto.mime_type);
         res.setHeader('ETag', etag);
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         res.send(foto.foto_data);
@@ -337,45 +338,72 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
     const b = req.body;
     const files = req.files || [];
 
-    const fields = [];
-    const values = [];
-    let i = 1;
-    const set = (col, val) => { fields.push(`${col} = $${i++}`); values.push(val); };
-
-    if (b.nombre !== undefined) set('nombre', String(b.nombre).trim().slice(0, 150));
-    if (b.precio !== undefined && b.precio !== '') set('precio', parseFloat(b.precio));
-    if (b.precio_oferta !== undefined) {
-        const ofNum = b.precio_oferta === '' || b.precio_oferta === null ? null : parseFloat(b.precio_oferta);
-        set('precio_oferta', Number.isFinite(ofNum) && ofNum > 0 ? ofNum : null);
-    }
-    if (b.etiqueta_promo !== undefined) set('etiqueta_promo', b.etiqueta_promo ? String(b.etiqueta_promo).trim().slice(0, 40) : null);
-    if (b.costo_artesano !== undefined) {
-        const cNum = b.costo_artesano === '' || b.costo_artesano === null ? null : parseFloat(b.costo_artesano);
-        set('costo_artesano', Number.isFinite(cNum) && cNum >= 0 ? cNum : null);
-    }
-    if (b.moneda !== undefined) set('moneda', b.moneda);
-    if (b.sku !== undefined) set('sku', String(b.sku).trim().slice(0, 60) || null);
-    if (b.ean !== undefined) set('ean', String(b.ean).trim().slice(0, 20) || null);
-    if (b.stock_actual !== undefined && b.stock_actual !== '') set('stock_actual', Math.max(0, parseInt(b.stock_actual, 10) || 0));
-    if (b.stock_minimo !== undefined && b.stock_minimo !== '') set('stock_minimo', Math.max(0, parseInt(b.stock_minimo, 10) || 0));
-    if (b.politica_sin_stock !== undefined) {
-        const pol = ['agotado', 'preventa', 'compra_directa'].includes(b.politica_sin_stock) ? b.politica_sin_stock : 'compra_directa';
-        set('politica_sin_stock', pol);
-    }
-    if (b.ubicacion_almacen !== undefined) set('ubicacion_almacen', String(b.ubicacion_almacen).trim().slice(0, 80) || 'Almacén Principal Trujillo');
-    if (b.linea !== undefined) set('linea', String(b.linea).trim().slice(0, 80));
-    if (b.sublinea !== undefined) set('sublinea', String(b.sublinea).trim().slice(0, 80));
-    if (b.sub_sublinea !== undefined) set('sub_sublinea', String(b.sub_sublinea).trim().slice(0, 80));
-    if (b.coleccion !== undefined) set('coleccion', String(b.coleccion).trim().slice(0, 80));
-    if (b.tipo_producto !== undefined) set('tipo_producto', String(b.tipo_producto).trim().slice(0, 60));
-    if (b.modelo !== undefined) set('modelo', String(b.modelo).trim().slice(0, 80) || null);
-    if (b.color !== undefined) set('color', String(b.color).trim().slice(0, 60) || null);
-    if (b.tamano_dimensiones !== undefined) set('tamano_dimensiones', String(b.tamano_dimensiones).trim().slice(0, 120) || null);
-    if (b.caracteristicas !== undefined) set('caracteristicas', String(b.caracteristicas).trim() || null);
-    if (b.descripcion !== undefined) set('descripcion', b.descripcion);
-    if (b.activo !== undefined) set('activo', b.activo === true || b.activo === 'true');
-
     try {
+        const { rows: prevRows } = await pool.query(
+            `SELECT id, sku, stock_actual, ubicacion_almacen, costo_artesano
+             FROM negocio_productos WHERE id = $1 AND negocio_id = $2`,
+            [id, req.negocio.id]
+        );
+        if (prevRows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
+        }
+        const prev = prevRows[0];
+
+        if (b.sku !== undefined) {
+            const nuevoSku = String(b.sku).trim().slice(0, 60);
+            if (nuevoSku && nuevoSku !== (prev.sku || '')) {
+                const { rows: dupSku } = await pool.query(
+                    `SELECT id FROM negocio_productos WHERE negocio_id = $1 AND sku = $2 AND id != $3 LIMIT 1`,
+                    [req.negocio.id, nuevoSku, id]
+                );
+                if (dupSku.length > 0) {
+                    return res.status(409).json({ success: false, message: `El SKU "${nuevoSku}" ya está asignado a otro producto.` });
+                }
+            }
+        }
+
+        const fields = [];
+        const values = [];
+        let i = 1;
+        const set = (col, val) => { fields.push(`${col} = $${i++}`); values.push(val); };
+
+        if (b.nombre !== undefined) set('nombre', String(b.nombre).trim().slice(0, 150));
+        if (b.precio !== undefined && b.precio !== '') set('precio', parseFloat(b.precio));
+        if (b.precio_oferta !== undefined) {
+            const ofNum = b.precio_oferta === '' || b.precio_oferta === null ? null : parseFloat(b.precio_oferta);
+            set('precio_oferta', Number.isFinite(ofNum) && ofNum > 0 ? ofNum : null);
+        }
+        if (b.etiqueta_promo !== undefined) set('etiqueta_promo', b.etiqueta_promo ? String(b.etiqueta_promo).trim().slice(0, 40) : null);
+        if (b.costo_artesano !== undefined) {
+            const cNum = b.costo_artesano === '' || b.costo_artesano === null ? null : parseFloat(b.costo_artesano);
+            set('costo_artesano', Number.isFinite(cNum) && cNum >= 0 ? cNum : null);
+        }
+        if (b.moneda !== undefined) set('moneda', b.moneda);
+        if (b.sku !== undefined) set('sku', String(b.sku).trim().slice(0, 60) || null);
+        if (b.ean !== undefined) set('ean', String(b.ean).trim().slice(0, 20) || null);
+        let nuevoStockFicha = null;
+        if (b.stock_actual !== undefined && b.stock_actual !== '') {
+            nuevoStockFicha = Math.max(0, parseInt(b.stock_actual, 10) || 0);
+            set('stock_actual', nuevoStockFicha);
+        }
+        if (b.stock_minimo !== undefined && b.stock_minimo !== '') set('stock_minimo', Math.max(0, parseInt(b.stock_minimo, 10) || 0));
+        if (b.politica_sin_stock !== undefined) {
+            const pol = ['agotado', 'preventa', 'compra_directa'].includes(b.politica_sin_stock) ? b.politica_sin_stock : 'compra_directa';
+            set('politica_sin_stock', pol);
+        }
+        if (b.ubicacion_almacen !== undefined) set('ubicacion_almacen', String(b.ubicacion_almacen).trim().slice(0, 80) || 'Almacén Principal Trujillo');
+        if (b.linea !== undefined) set('linea', String(b.linea).trim().slice(0, 80));
+        if (b.sublinea !== undefined) set('sublinea', String(b.sublinea).trim().slice(0, 80));
+        if (b.sub_sublinea !== undefined) set('sub_sublinea', String(b.sub_sublinea).trim().slice(0, 80));
+        if (b.coleccion !== undefined) set('coleccion', String(b.coleccion).trim().slice(0, 80));
+        if (b.tipo_producto !== undefined) set('tipo_producto', String(b.tipo_producto).trim().slice(0, 60));
+        if (b.modelo !== undefined) set('modelo', String(b.modelo).trim().slice(0, 80) || null);
+        if (b.color !== undefined) set('color', String(b.color).trim().slice(0, 60) || null);
+        if (b.tamano_dimensiones !== undefined) set('tamano_dimensiones', String(b.tamano_dimensiones).trim().slice(0, 120) || null);
+        if (b.caracteristicas !== undefined) set('caracteristicas', String(b.caracteristicas).trim() || null);
+        if (b.descripcion !== undefined) set('descripcion', b.descripcion);
+        if (b.activo !== undefined) set('activo', b.activo === true || b.activo === 'true');
+
         if (files.length > 0) {
             await pool.query(
                 `DELETE FROM negocio_producto_fotos WHERE producto_id = $1 AND negocio_id = $2`,
@@ -409,6 +437,27 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
 
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
+        }
+
+        if (nuevoStockFicha !== null && nuevoStockFicha !== Number(prev.stock_actual || 0)) {
+            const ant = Number(prev.stock_actual || 0);
+            const delta = nuevoStockFicha - ant;
+            await pool.query(
+                `INSERT INTO negocio_inventario_movimientos (
+                    negocio_id, producto_id, tipo_movimiento, cantidad_anterior, delta, cantidad_nueva,
+                    costo_unitario, ubicacion, motivo_referencia, usuario
+                 ) VALUES ($1, $2, 'ajuste_ficha', $3, $4, $5, $6, $7, $8, 'admin')`,
+                [
+                    req.negocio.id,
+                    id,
+                    ant,
+                    delta,
+                    nuevoStockFicha,
+                    rows[0].costo_artesano || prev.costo_artesano || null,
+                    rows[0].ubicacion_almacen || prev.ubicacion_almacen || 'Almacén Principal Trujillo',
+                    'Actualización desde Ficha Técnica 360°'
+                ]
+            ).catch(() => {});
         }
 
         res.json({ success: true, producto: rows[0] });
@@ -987,6 +1036,16 @@ router.get('/:negocioSlug/inventario/producto/:id/ficha', requireNegocioAuth, as
             .filter(m => m.tipo_movimiento === 'entrada_mercaderia' || m.tipo_movimiento === 'recepcion_artesano')
             .reduce((acc, m) => acc + Math.max(0, Number(m.delta || 0)), 0);
 
+        const precioEff = (producto.precio_oferta && Number(producto.precio_oferta) > 0 && Number(producto.precio_oferta) < Number(producto.precio))
+            ? Number(producto.precio_oferta)
+            : Number(producto.precio || 0);
+        const costoEff = Number(producto.costo_artesano || 0);
+        const margenUnitario = Number((precioEff - costoEff).toFixed(2));
+        const margenPct = precioEff > 0 ? Math.round((margenUnitario / precioEff) * 100) : 0;
+        const stockAct = Number(producto.stock_actual || 0);
+        const stockMin = Number(producto.stock_minimo || 1);
+        const estadoStock = stockAct <= 0 ? 'agotado' : (stockAct <= stockMin ? 'bajo' : 'ok');
+
         res.json({
             success: true,
             producto,
@@ -994,7 +1053,10 @@ router.get('/:negocioSlug/inventario/producto/:id/ficha', requireNegocioAuth, as
             resumen: {
                 total_salidas_venta: totalSalidas,
                 total_entradas: totalEntradas,
-                total_movimientos: kardex.length
+                total_movimientos: kardex.length,
+                margen_unitario: margenUnitario,
+                margen_pct: margenPct,
+                estado_stock: estadoStock
             }
         });
     } catch (error) {

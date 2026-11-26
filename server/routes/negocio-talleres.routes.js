@@ -18,13 +18,14 @@ const pool = require('../db.config');
 const logger = require('../utils/logger');
 const emailService = require('../utils/email.service');
 const { NEGOCIOS_JWT_SECRET, TOKEN_EXPIRES_IN, resolveNegocioSlug, requireNegocioAuth } = require('../middleware/negocio-auth.middleware');
+const { isSafeImageMime } = require('../utils/security');
 
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     fileFilter: (req, file, cb) => {
-        if (!file.mimetype.startsWith('image/')) {
-            return cb(new Error('El comprobante debe ser una imagen.'));
+        if (!isSafeImageMime(file.mimetype)) {
+            return cb(new Error('El comprobante debe ser una imagen válida (JPG, PNG, WEBP, GIF o HEIC).'));
         }
         cb(null, true);
     }
@@ -88,7 +89,7 @@ router.post('/auth/login', loginLimiter, async (req, res) => {
 });
 
 // POST /api/negocios/auth/change-password — requiere sesión válida + contraseña actual
-router.post('/auth/change-password', async (req, res) => {
+router.post('/auth/change-password', loginLimiter, async (req, res) => {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) return res.status(401).json({ success: false, message: 'No autenticado.' });

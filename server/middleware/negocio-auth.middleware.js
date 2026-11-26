@@ -13,7 +13,13 @@ const logger = require('../utils/logger');
 // Secreto derivado del JWT_SECRET del club pero distinto -- así un token de este
 // sistema nunca es válido en las rutas del club (o viceversa) aunque compartan
 // la misma env var de origen (no requiere una nueva variable en Railway).
-const NEGOCIOS_JWT_SECRET = crypto.createHash('sha256').update(`${process.env.JWT_SECRET}:negocios`).digest('hex');
+const rawJwtSecret = String(process.env.JWT_SECRET || '').trim();
+const hasStrongSecret = rawJwtSecret.length >= 16 && rawJwtSecret !== 'cambia_este_secreto_seguro_2026';
+if (!hasStrongSecret) {
+    logger.error('SEGURIDAD CRÍTICA: JWT_SECRET ausente o débil en entorno. Se usará secreto efímero en memoria hasta configurar JWT_SECRET (>=32 chars) en Railway.');
+}
+const secretSeed = hasStrongSecret ? rawJwtSecret : crypto.randomBytes(48).toString('hex');
+const NEGOCIOS_JWT_SECRET = crypto.createHash('sha256').update(`${secretSeed}:negocios`).digest('hex');
 const TOKEN_EXPIRES_IN = '12h';
 const VALID_SLUG_REGEX = /^[a-z0-9-]{2,60}$/;
 
@@ -83,4 +89,11 @@ function requireNegocioAuth(req, res, next) {
     }
 }
 
-module.exports = { NEGOCIOS_JWT_SECRET, TOKEN_EXPIRES_IN, resolveNegocioSlug, requireNegocioAuth, getNegocioMpCredentials };
+function requireSuperAdmin(req, res, next) {
+    if (!req.negocioUser || req.negocioUser.role !== 'superadmin') {
+        return res.status(403).json({ success: false, message: 'Requiere privilegios de superadministrador.' });
+    }
+    next();
+}
+
+module.exports = { NEGOCIOS_JWT_SECRET, TOKEN_EXPIRES_IN, resolveNegocioSlug, requireNegocioAuth, requireSuperAdmin, getNegocioMpCredentials };

@@ -6,6 +6,8 @@ const path = require('path');
 const helmet = require('helmet');
 const compression = require('compression');
 const cors = require('cors');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const { isAllowedCorsOrigin } = require('./utils/security');
 
 const { runMigrations } = require('./migrate');
 const negocioTalleresRoutes = require('./routes/negocio-talleres.routes');
@@ -18,17 +20,36 @@ const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
 app.use(
   helmet({
     contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   })
 );
 app.use(compression());
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, cb) => cb(null, isAllowedCorsOrigin(origin)),
+    credentials: false,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
+  })
+);
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+const apiGlobalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 350,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: ipKeyGenerator,
+  skip: (req) => req.path.includes('/webhooks/mercadopago'),
+  message: { success: false, message: 'Demasiadas solicitudes desde esta IP. Intenta en unos minutos.' }
+});
+app.use('/api/', apiGlobalLimiter);
 
 // Healthcheck para Railway
 app.get(['/api/health', '/health'], (req, res) => {

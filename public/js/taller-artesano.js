@@ -1,7 +1,6 @@
 // public/js/taller-artesano.js
-// Sprint 3 (Punto 3): Mini-Portal Móvil para Artesanos Tercerizados (Magic Link)
-// Soporta múltiples solicitudes simultáneas de distintos clientes, especificaciones técnicas
-// (cotización, onzas, tamaños, colores, logos), flujo Modelado -> 1° Horno -> 2° Horno -> Pintado -> QA -> Envío a Taller.
+// Sprint 3 + Módulo 4: Mini-Portal Móvil para Artesanos Tercerizados (Magic Link)
+// Progreso por 7 etapas, buscador, notas/incidencias al Admin, control QA y Zero-PII de clientes.
 (function () {
   const NEGOCIO = 'artesanitas';
   const params = new URLSearchParams(window.location.search);
@@ -14,15 +13,31 @@
   const btnWaAdmin = document.getElementById('btn-wa-admin');
   const solicitudesContainer = document.getElementById('solicitudes-container');
   const solicitudesEmpty = document.getElementById('solicitudes-empty');
+  const searchInput = document.getElementById('art-search-input');
+  const lastSyncEl = document.getElementById('portal-last-sync');
+  const toastEl = document.getElementById('portal-toast');
 
   let solicitudesCache = [];
   let filtroActual = 'todos';
   let whatsappTaller = '51929938466';
+  let toastTimer = null;
 
   function escapeHtml(str) {
     return String(str ?? '').replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
+  }
+
+  function showToast(msg, type = 'ok') {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-xs font-bold shadow-xl flex items-center gap-2 transition-all ' +
+      (type === 'err' ? 'bg-red-700 text-white' : 'bg-[#4A3C31] text-white');
+    toastEl.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastEl.classList.add('hidden');
+    }, 3200);
   }
 
   const ETAPAS_ARTESANO = [
@@ -96,7 +111,7 @@
     if (sol.qa_estado === 'aprobado') {
       return `
         <div class="bg-green-50 border border-green-200 rounded-2xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="text-xs font-extrabold text-green-800 flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 text-green-600"><polyline points="20 6 9 17 4 12"/></svg> Control de Calidad (QA) Aprobado por Artesanitas</span>
             <span class="text-[10px] font-bold bg-green-700 text-white px-2 py-0.5 rounded-full">Autorizado para envío</span>
           </div>
@@ -109,9 +124,9 @@
     if (sol.qa_estado === 'observado') {
       return `
         <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="text-xs font-extrabold text-red-800 flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-red-600"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Observación de Control de Calidad (QA Artesanitas)</span>
-            <span class="text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">Corregir detalle</span>
+            <span class="text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">Corregir detalle antes de enviar</span>
           </div>
           <p class="text-xs font-semibold text-red-700">${escapeHtml(sol.qa_observaciones || 'El administrador indicó revisar variación en onzas, logo o color antes de enviar al taller.')}</p>
           <div class="flex flex-wrap gap-1.5 pt-1">
@@ -136,10 +151,21 @@
   function renderSolicitudes() {
     if (!solicitudesContainer) return;
 
+    const queryText = (searchInput ? searchInput.value : '').trim().toLowerCase();
+
     const filtradas = solicitudesCache.filter(s => {
-      if (filtroActual === 'hornos') return ['recibido', 'modelado', 'primer_horno', 'segundo_horno'].includes(s.etapa_artesano);
-      if (filtroActual === 'pintado') return s.etapa_artesano === 'pintado_acabados';
-      if (filtroActual === 'qa') return ['listo_revision_qa', 'enviado_taller'].includes(s.etapa_artesano);
+      if (filtroActual === 'hornos' && !['recibido', 'modelado', 'primer_horno', 'segundo_horno'].includes(s.etapa_artesano)) return false;
+      if (filtroActual === 'pintado' && s.etapa_artesano !== 'pintado_acabados') return false;
+      if (filtroActual === 'qa' && s.etapa_artesano !== 'listo_revision_qa') return false;
+      if (filtroActual === 'entregados' && s.etapa_artesano !== 'enviado_taller') return false;
+
+      if (queryText) {
+        const matchCode = (s.codigo_pedido || '').toLowerCase().includes(queryText);
+        const matchProd = (s.producto_nombre || '').toLowerCase().includes(queryText);
+        const matchEspec = (s.especificaciones_artesano || '').toLowerCase().includes(queryText);
+        const matchItems = Array.isArray(s.items) && s.items.some(it => (it.nombre || '').toLowerCase().includes(queryText));
+        if (!matchCode && !matchProd && !matchEspec && !matchItems) return false;
+      }
       return true;
     });
 
@@ -149,7 +175,8 @@
 
     solicitudesContainer.innerHTML = filtradas.map((sol, idx) => {
       const sem = semaforoFecha(sol.fecha_compromiso_artesano, sol.etapa_artesano);
-      const etapaIdx = ETAPAS_ARTESANO.findIndex(e => e.key === sol.etapa_artesano);
+      const etapaIdx = Math.max(0, ETAPAS_ARTESANO.findIndex(e => e.key === sol.etapa_artesano));
+      const pctAvance = Math.round(((etapaIdx + 1) / ETAPAS_ARTESANO.length) * 100);
       const itemsHtml = Array.isArray(sol.items) && sol.items.length > 0
         ? sol.items.map(it => `
             <div class="flex items-center gap-2.5 bg-[#F9F6F0] p-2.5 rounded-xl border border-[#EBE5DE]">
@@ -169,29 +196,43 @@
             </div>
           `;
 
+      const historialNotas = Array.isArray(sol.historial_notas) ? sol.historial_notas : [];
       const waMsg = `Hola Admin Artesanitas! Soy del taller artesano. Consulto sobre la solicitud #${idx + 1} (${sol.codigo_pedido} - ${sol.producto_nombre}). Etapa actual: ${sol.etapa_artesano}.`;
 
       return `
         <article class="bg-white rounded-3xl border border-[#EBE5DE] shadow-xs overflow-hidden">
           <!-- Cabecera con N° de Solicitud, Código de Orden y Semáforo -->
-          <div class="p-4 sm:p-5 bg-gradient-to-r from-[#F9F6F0] to-white border-b border-[#EBE5DE] flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-              <span class="w-7 h-7 rounded-xl bg-[#4A3C31] text-white text-xs font-extrabold flex items-center justify-center">
-                #${idx + 1}
-              </span>
-              <div>
-                <div class="flex items-center gap-2">
-                  <span class="font-mono font-extrabold text-sm sm:text-base text-[#4A3C31]">${escapeHtml(sol.codigo_pedido)}</span>
-                  <span class="text-xs font-bold text-[#B87352] bg-[#B87352]/10 px-2 py-0.5 rounded-full">
-                    ${Number(sol.cantidad || 1)} ${Number(sol.cantidad || 1) === 1 ? 'pieza' : 'piezas'}
-                  </span>
+          <div class="p-4 sm:p-5 bg-gradient-to-r from-[#F9F6F0] to-white border-b border-[#EBE5DE] space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-xl bg-[#4A3C31] text-white text-xs font-extrabold flex items-center justify-center">
+                  #${idx + 1}
+                </span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-extrabold text-sm sm:text-base text-[#4A3C31]">${escapeHtml(sol.codigo_pedido)}</span>
+                    <span class="text-xs font-bold text-[#B87352] bg-[#B87352]/10 px-2 py-0.5 rounded-full">
+                      ${Number(sol.cantidad || 1)} ${Number(sol.cantidad || 1) === 1 ? 'pieza' : 'piezas'}
+                    </span>
+                  </div>
+                  <span class="text-[11px] text-[#8C7A6B]">Solicitud asignada por Admin Artesanitas</span>
                 </div>
-                <span class="text-[11px] text-[#8C7A6B]">Solicitud de Cliente asignada por Admin Artesanitas</span>
+              </div>
+              <span class="text-xs font-bold px-3 py-1 rounded-full border ${sem.color}">
+                ${sem.dot} ${escapeHtml(sem.texto)}
+              </span>
+            </div>
+
+            <!-- Barra de progreso de etapa -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[10px] font-bold text-[#8C7A6B]">
+                <span>Avance de producción</span>
+                <span class="text-[#4A3C31]">${pctAvance}%</span>
+              </div>
+              <div class="w-full h-2 bg-[#EBE5DE] rounded-full overflow-hidden">
+                <div class="h-full ${sol.etapa_artesano === 'enviado_taller' ? 'bg-[#008f6b]' : 'bg-[#B87352]'} rounded-full transition-all duration-300" style="width:${pctAvance}%"></div>
               </div>
             </div>
-            <span class="text-xs font-bold px-3 py-1 rounded-full border ${sem.color}">
-              ${sem.dot} ${escapeHtml(sem.texto)}
-            </span>
           </div>
 
           <div class="p-4 sm:p-5 space-y-4">
@@ -205,9 +246,9 @@
 
             <!-- Ficha de Especificaciones del Administrador (Cotización, Tamaños/Onzas, Colores, Logos) -->
             <div class="bg-[#FAF4EE] border border-[#B87352]/30 rounded-2xl p-3.5 sm:p-4 space-y-2">
-              <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
                 <span class="text-xs font-extrabold text-[#4A3C31] uppercase tracking-wider flex items-center gap-1.5">
-                  <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Detalles y Especificaciones del Administrador</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Detalles y Especificaciones del Administrador
                 </span>
                 ${sol.cotizacion_artesano !== null ? `
                   <span class="bg-white border border-[#B87352]/40 text-[#008f6b] font-extrabold text-xs px-2.5 py-1 rounded-xl">
@@ -226,7 +267,7 @@
 
             <!-- Botonera de Etapas de Producción en 1 Toque -->
             <div class="space-y-2 pt-1">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between flex-wrap gap-1">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B]">Actualizar Etapa de Producción (1 toque)</span>
                 <span class="text-xs font-bold text-[#B87352]">
                   ${escapeHtml((ETAPAS_ARTESANO[etapaIdx] && ETAPAS_ARTESANO[etapaIdx].label) || '1. Solicitud recibida')}
@@ -252,6 +293,25 @@
                   `;
                 }).join('')}
               </div>
+            </div>
+
+            <!-- Reportar Nota / Incidencia al Admin -->
+            <div class="bg-[#F9F6F0] border border-[#EBE5DE] rounded-2xl p-3 space-y-2">
+              <label class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B] block">Reportar Nota o Incidencia al Admin</label>
+              <div class="flex gap-2">
+                <input type="text" maxlength="300" data-nota-input="${sol.id}"
+                  placeholder="Ej: Pieza entró a 2° horno hoy / Faltan detalles de esmalte..."
+                  class="input-nota-artesano flex-1 px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs text-[#4A3C31] focus:outline-none focus:border-[#B87352]">
+                <button type="button" data-enviar-nota="${sol.id}"
+                  class="btn-enviar-nota-art bg-[#4A3C31] hover:bg-[#B87352] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors cursor-pointer shrink-0">
+                  Enviar Nota
+                </button>
+              </div>
+              ${historialNotas.length > 0 ? `
+                <div class="space-y-1 pt-1">
+                  ${historialNotas.slice(-3).map(n => `<p class="text-[11px] text-[#4A3C31] bg-white px-2.5 py-1.5 rounded-lg border border-[#EBE5DE]">${escapeHtml(n)}</p>`).join('')}
+                </div>
+              ` : ''}
             </div>
 
             <!-- Acciones Rápidas de Reporte a Artesanitas -->
@@ -288,16 +348,52 @@
           });
           const data = await res.json();
           if (res.ok && data.success) {
+            showToast('Etapa actualizada correctamente');
             await cargarPortal();
           } else {
-            alert(data.message || 'No se pudo actualizar la etapa.');
+            showToast(data.message || 'No se pudo actualizar la etapa.', 'err');
             btn.disabled = false;
             btn.textContent = originalText;
           }
         } catch {
-          alert('Error de conexión.');
+          showToast('Error de conexión al actualizar etapa.', 'err');
           btn.disabled = false;
           btn.textContent = originalText;
+        }
+      });
+    });
+
+    solicitudesContainer.querySelectorAll('.btn-enviar-nota-art').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const pedidoId = btn.dataset.enviarNota;
+        const inp = solicitudesContainer.querySelector(`.input-nota-artesano[data-nota-input="${pedidoId}"]`);
+        const nota = inp ? inp.value.trim() : '';
+        if (nota.length < 3) {
+          showToast('Escribe una nota o reporte antes de enviar.', 'err');
+          return;
+        }
+        const orig = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '...';
+        try {
+          const res = await fetch(`/api/negocios/${NEGOCIO}/artesano-portal/${encodeURIComponent(token)}/pedido/${pedidoId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nota_artesano: nota })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            showToast('Nota enviada al Administrador de Artesanitas');
+            await cargarPortal();
+          } else {
+            showToast(data.message || 'No se pudo enviar la nota.', 'err');
+            btn.disabled = false;
+            btn.textContent = orig;
+          }
+        } catch {
+          showToast('Error de conexión.', 'err');
+          btn.disabled = false;
+          btn.textContent = orig;
         }
       });
     });
@@ -342,6 +438,10 @@
       const elQa = document.getElementById('kpi-art-qa'); if (elQa) elQa.textContent = enQa;
       const elCot = document.getElementById('kpi-art-cotizacion'); if (elCot) elCot.textContent = `S/ ${totalCotizado.toFixed(2)}`;
 
+      if (lastSyncEl) {
+        lastSyncEl.textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+      }
+
       renderSolicitudes();
     } catch {
       if (errorBox) errorBox.classList.remove('hidden');
@@ -361,6 +461,7 @@
     });
   });
 
+  if (searchInput) searchInput.addEventListener('input', renderSolicitudes);
   if (btnReload) btnReload.addEventListener('click', cargarPortal);
 
   cargarPortal();

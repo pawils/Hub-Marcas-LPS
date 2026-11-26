@@ -6,15 +6,18 @@ const crypto = require('crypto');
 const targetPool = require('./db.config');
 const logger = require('./utils/logger');
 
-const MIGRATION_SNAPSHOT_KEY = crypto
-  .createHash('sha256')
-  .update('hub-lps-migration-2026:artesanitas-2026-panel')
-  .digest('hex');
+const MIGRATION_SNAPSHOT_SECRET = String(process.env.MIGRATION_SNAPSHOT_SECRET || '').trim();
+const MIGRATION_SNAPSHOT_KEY = MIGRATION_SNAPSHOT_SECRET
+  ? crypto.createHash('sha256').update(MIGRATION_SNAPSHOT_SECRET).digest('hex')
+  : null;
 
 const SOURCE_SNAPSHOT_URL =
   process.env.SOURCE_SNAPSHOT_URL || 'https://lospilares.pe/api/negocios/artesanitas/migration-snapshot';
 
 async function syncFromOldDatabase() {
+  if (process.env.ENABLE_LEGACY_SYNC !== 'true' || !MIGRATION_SNAPSHOT_KEY) {
+    return;
+  }
   try {
     const { rows: targetNeg } = await targetPool.query(`SELECT id FROM negocios WHERE slug = 'artesanitas' LIMIT 1`);
     if (!targetNeg.length) return;

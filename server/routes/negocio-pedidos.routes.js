@@ -15,15 +15,16 @@ const emailService = require('../utils/email.service');
 const { sendMetaCapiOrderEvent } = require('../utils/meta-capi.service');
 const { analizarVoucherConIA } = require('../utils/voucher-ai.service');
 const { getVapidPublicKey, savePushSubscription, notifyPushSubscribers } = require('../utils/web-push.service');
-const { resolveNegocioSlug, requireNegocioAuth, getNegocioMpCredentials } = require('../middleware/negocio-auth.middleware');
+const { resolveNegocioSlug, requireNegocioAuth, requireSuperAdmin, getNegocioMpCredentials } = require('../middleware/negocio-auth.middleware');
+const { isSafeImageMime, safeTimingEqual, setSafeBinaryHeaders } = require('../utils/security');
 const { getProductoPorSlug } = require('../data/artesanitas-productos');
 
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     fileFilter: (req, file, cb) => {
-        if (!file.mimetype.startsWith('image/')) {
-            return cb(new Error('El comprobante debe ser una imagen.'));
+        if (!isSafeImageMime(file.mimetype)) {
+            return cb(new Error('El comprobante debe ser una imagen válida (JPG, PNG, WEBP, GIF o HEIC).'));
         }
         cb(null, true);
     }
@@ -656,6 +657,163 @@ router.get('/:negocioSlug/pedidos/seguimiento', trackingLimiter, async (req, res
     }
 });
 
+// ── Helpers compartidos de Checkout, Validación de Stock y Descuento Atómico ──
+async function resolverItemsPedidoNegocio(negocioId, rawItemsInput, productoSlugInput, cantidadRaw, modalidadPagoRaw) {
+    const modalidadPago = sanitizeText(modalidadPagoRaw || '').toLowerCase();
+    let parsedItems = [];
+    if (rawItemsInput) {
+        try {
+            const raw = (typeof rawItemsInput === 'string') ? JSON.parse(rawItemsInput) : rawItemsInput;
+            if (Array.isArray(raw)) parsedItems = raw;
+        } catch (e) {}
+    }
+
+    async function resolverProducto(slugInput) {
+        const s = slugInput ? sanitizeText(slugInput).toLowerCase() : '';
+        if (!s) return null;
+
+        let dbProd = null;
+        const { rows: pRows } = await pool.query(
+            `SELECT id, slug, sku, ean, nombre, precio, precio_oferta, descripcion, imagenes, stock_actual, politica_sin_stock
+             FROM negocio_productos WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) AND activo = TRUE LIMIT 1`,
+            [negocioId, s]
+        );
+        if (pRows.length > 0) dbProd = pRows[0];
+
+        const prevProd = PRODUCTOS_PREVENTA[s];
+        const catProd = getProductoPorSlug ? getProductoPorSlug(s) : null;
+        if (!dbProd && !prevProd && !catProd) return null;
+
+        const esPreventaOriginal = Boolean(prevProd) || s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad');
+        const precioBase = dbProd
+            ? ((dbProd.precio_oferta && Number(dbProd.precio_oferta) > 0 && Number(dbProd.precio_oferta) < Number(dbProd.precio))
+                ? Number(dbProd.precio_oferta)
+                : Number(dbProd.precio))
+            : Number((prevProd && prevProd.precio) || (catProd && catProd.precio) || 59.90);
+
+        const esSoloReserva = esPreventaOriginal && modalidadPago !== 'completo';
+        const montoAdelantoUnitario = esSoloReserva ? 20.00 : precioBase;
+
+        return {
+            slug: (dbProd && dbProd.slug) || (prevProd && prevProd.slug) || (catProd && catProd.slug) || s,
+            sku: (dbProd && dbProd.sku) || '',
+            ean: (dbProd && dbProd.ean) || '',
+            nombre: (dbProd && dbProd.nombre) || (prevProd && prevProd.nombre) || (catProd && catProd.nombre) || s,
+            precio: precioBase,
+            reserva: montoAdelantoUnitario,
+            modalidad: esSoloReserva ? 'reserva' : 'compra_directa',
+            fecha_entrega: esPreventaOriginal ? FECHA_ENTREGA_OFICIAL : 'Despacho inmediato (24-48h)',
+            imagen: (dbProd && Array.isArray(dbProd.imagenes) && dbProd.imagenes[0])
+                || (prevProd && prevProd.imagen)
+                || (catProd && Array.isArray(catProd.imagenes) && catProd.imagenes[0])
+                || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
+            stock_actual: dbProd ? Number(dbProd.stock_actual || 0) : null,
+            politica_sin_stock: dbProd ? dbProd.politica_sin_stock : 'preventa'
+        };
+    }
+
+    const itemsValidados = [];
+    for (const item of parsedItems) {
+        const pInfo = await resolverProducto(item && item.slug);
+        if (!pInfo) continue;
+        const rawItemCant = parseInt(item.cantidad, 10);
+        const cant = (!Number.isNaN(rawItemCant) && rawItemCant >= 1) ? Math.min(rawItemCant, 50) : 1;
+        const esCompraDirectaItem = item.modalidad === 'compra_directa' || pInfo.modalidad === 'compra_directa' || modalidadPago === 'completo';
+        itemsValidados.push({
+            slug: pInfo.slug,
+            sku: pInfo.sku || '',
+            ean: pInfo.ean || '',
+            nombre: pInfo.nombre,
+            precio: Number(pInfo.precio),
+            reserva: esCompraDirectaItem ? Number(pInfo.precio) : Number(pInfo.reserva || 20.00),
+            modalidad: esCompraDirectaItem ? 'compra_directa' : 'reserva',
+            cantidad: cant,
+            imagen: pInfo.imagen || ''
+        });
+    }
+
+    if (itemsValidados.length === 0 && productoSlugInput) {
+        const prodInfo = await resolverProducto(productoSlugInput);
+        if (prodInfo) {
+            const rawCantidad = parseInt(cantidadRaw, 10);
+            const cleanCantidad = (!Number.isNaN(rawCantidad) && rawCantidad >= 1) ? Math.min(rawCantidad, 50) : 1;
+            itemsValidados.push({
+                slug: prodInfo.slug,
+                sku: prodInfo.sku || '',
+                ean: prodInfo.ean || '',
+                nombre: prodInfo.nombre,
+                precio: Number(prodInfo.precio),
+                reserva: Number(prodInfo.reserva),
+                modalidad: prodInfo.modalidad,
+                cantidad: cleanCantidad,
+                imagen: prodInfo.imagen || ''
+            });
+        }
+    }
+
+    return itemsValidados;
+}
+
+async function validarStockDisponible(negocioId, itemsValidados) {
+    for (const item of itemsValidados) {
+        const { rows } = await pool.query(
+            `SELECT nombre, stock_actual, politica_sin_stock
+             FROM negocio_productos
+             WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) AND activo = TRUE LIMIT 1`,
+            [negocioId, item.slug]
+        );
+        if (rows.length > 0) {
+            const prod = rows[0];
+            if (prod.politica_sin_stock === 'agotado' && Number(prod.stock_actual || 0) < Number(item.cantidad || 1)) {
+                return {
+                    ok: false,
+                    message: `Stock insuficiente para "${prod.nombre}" (disponibles: ${Math.max(0, Number(prod.stock_actual || 0))}).`
+                };
+            }
+        }
+    }
+    return { ok: true };
+}
+
+async function descontarStockAtomico(negocioId, itemsValidados, codigoPedido, usuario = 'checkout_web') {
+    for (const item of itemsValidados) {
+        try {
+            const cant = Math.max(1, Number(item.cantidad || 1));
+            const { rows: updated } = await pool.query(
+                `UPDATE negocio_productos
+                 SET stock_actual = stock_actual - $1
+                 WHERE negocio_id = $2 AND LOWER(slug) = LOWER($3) AND stock_actual >= $1
+                 RETURNING id, stock_actual, ubicacion_almacen`,
+                [cant, negocioId, item.slug]
+            );
+            if (updated.length > 0) {
+                const pRow = updated[0];
+                const nuevo = Number(pRow.stock_actual);
+                const ant = nuevo + cant;
+                await pool.query(
+                    `INSERT INTO negocio_inventario_movimientos (negocio_id, producto_id, tipo_movimiento, cantidad_anterior, delta, cantidad_nueva, ubicacion, motivo_referencia, usuario)
+                     VALUES ($1, $2, 'salida_venta', $3, $4, $5, $6, $7, $8)`,
+                    [negocioId, pRow.id, ant, -cant, nuevo, pRow.ubicacion_almacen || 'Almacén Principal Trujillo', `Orden Web ${codigoPedido}`, usuario]
+                );
+            }
+        } catch (invErr) {
+            logger.warn('Inventario: no se pudo descontar stock atómico', { error: invErr.message, slug: item.slug });
+        }
+    }
+}
+
+// ── 0C. GET /api/negocios/:negocioSlug/checkout/config — Público: Configuración Checkout y Mercado Pago ──
+router.get('/:negocioSlug/checkout/config', (req, res) => {
+    const mpCreds = getNegocioMpCredentials(req.negocio);
+    res.json({
+        success: true,
+        mp_habilitado: mpCreds.enabled,
+        mp_public_key: mpCreds.enabled ? mpCreds.publicKey : null,
+        envio_provincia: 10.00,
+        whatsapp: req.negocio.whatsapp_contacto || '51929938466'
+    });
+});
+
 // ── 1. POST /api/negocios/:negocioSlug/pedidos — Público: Registrar Reserva de Pedido ──
 router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (req, res) => {
     try {
@@ -688,103 +846,21 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
             return res.status(400).json({ success: false, message: 'Ingresa un número de WhatsApp válido.' });
         }
 
-        let parsedItems = [];
-        if (req.body.items) {
-            try {
-                const raw = (typeof req.body.items === 'string') ? JSON.parse(req.body.items) : req.body.items;
-                if (Array.isArray(raw)) parsedItems = raw;
-            } catch (e) {}
-        }
-
-        const modalidadPago = sanitizeText(req.body.modalidad_pago || '').toLowerCase(); // 'completo' | 'reserva'
-
-        async function resolverProductoCheckout(slugInput) {
-            const s = slugInput ? sanitizeText(slugInput).toLowerCase() : '';
-            if (!s) return null;
-
-            let dbProd = null;
-            const { rows: pRows } = await pool.query(
-                `SELECT id, slug, sku, ean, nombre, precio, precio_oferta, descripcion, imagenes, stock_actual, politica_sin_stock
-                 FROM negocio_productos WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) AND activo = TRUE LIMIT 1`,
-                [req.negocio.id, s]
-            );
-            if (pRows.length > 0) dbProd = pRows[0];
-
-            const prevProd = PRODUCTOS_PREVENTA[s];
-            const catProd = getProductoPorSlug ? getProductoPorSlug(s) : null;
-
-            if (!dbProd && !prevProd && !catProd) return null;
-
-            const esPreventaOriginal = Boolean(prevProd) || s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad');
-            const precioBase = dbProd
-                ? ((dbProd.precio_oferta && Number(dbProd.precio_oferta) > 0 && Number(dbProd.precio_oferta) < Number(dbProd.precio))
-                    ? Number(dbProd.precio_oferta)
-                    : Number(dbProd.precio))
-                : Number((prevProd && prevProd.precio) || (catProd && catProd.precio) || 59.90);
-
-            const esSoloReserva = esPreventaOriginal && modalidadPago !== 'completo';
-            const montoAdelantoUnitario = esSoloReserva ? 20.00 : precioBase;
-
-            return {
-                slug: (dbProd && dbProd.slug) || (prevProd && prevProd.slug) || (catProd && catProd.slug) || s,
-                sku: (dbProd && dbProd.sku) || '',
-                ean: (dbProd && dbProd.ean) || '',
-                nombre: (dbProd && dbProd.nombre) || (prevProd && prevProd.nombre) || (catProd && catProd.nombre) || s,
-                precio: precioBase,
-                reserva: montoAdelantoUnitario,
-                modalidad: esSoloReserva ? 'reserva' : 'compra_directa',
-                fecha_entrega: esPreventaOriginal ? FECHA_ENTREGA_OFICIAL : 'Despacho inmediato (24-48h)',
-                imagen: (dbProd && Array.isArray(dbProd.imagenes) && dbProd.imagenes[0])
-                    || (prevProd && prevProd.imagen)
-                    || (catProd && Array.isArray(catProd.imagenes) && catProd.imagenes[0])
-                    || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
-                descripcion: (dbProd && dbProd.descripcion) || (prevProd && prevProd.descripcion) || (catProd && catProd.descripcion) || ''
-            };
-        }
-
-        let itemsValidados = [];
-        if (parsedItems.length > 0) {
-            for (const item of parsedItems) {
-                const pInfo = await resolverProductoCheckout(item.slug);
-                if (pInfo) {
-                    const rawItemCant = parseInt(item.cantidad, 10);
-                    const cant = (!Number.isNaN(rawItemCant) && rawItemCant >= 1) ? Math.min(rawItemCant, 50) : 1;
-                    const esCompraDirectaItem = item.modalidad === 'compra_directa' || pInfo.modalidad === 'compra_directa' || modalidadPago === 'completo';
-                    itemsValidados.push({
-                        slug: pInfo.slug,
-                        sku: pInfo.sku || '',
-                        ean: pInfo.ean || '',
-                        nombre: pInfo.nombre,
-                        precio: Number(pInfo.precio),
-                        reserva: esCompraDirectaItem ? Number(pInfo.precio) : Number(pInfo.reserva || 20.00),
-                        modalidad: esCompraDirectaItem ? 'compra_directa' : 'reserva',
-                        cantidad: cant,
-                        imagen: pInfo.imagen || ''
-                    });
-                }
-            }
-        }
+        const itemsValidados = await resolverItemsPedidoNegocio(
+            req.negocio.id,
+            req.body.items,
+            producto_slug,
+            req.body.cantidad,
+            req.body.modalidad_pago
+        );
 
         if (itemsValidados.length === 0) {
-            const prodInfo = await resolverProductoCheckout(producto_slug);
-            if (!prodInfo) {
-                return res.status(400).json({ success: false, message: 'Por favor selecciona el producto que deseas comprar o reservar.' });
-            }
+            return res.status(400).json({ success: false, message: 'Por favor selecciona el producto que deseas comprar o reservar.' });
+        }
 
-            const rawCantidad = parseInt(req.body.cantidad, 10);
-            const cleanCantidad = (!Number.isNaN(rawCantidad) && rawCantidad >= 1) ? Math.min(rawCantidad, 50) : 1;
-
-            itemsValidados.push({
-                slug: prodInfo.slug,
-                sku: prodInfo.sku || '',
-                ean: prodInfo.ean || '',
-                nombre: prodInfo.nombre,
-                precio: Number(prodInfo.precio),
-                reserva: Number(prodInfo.reserva),
-                modalidad: prodInfo.modalidad,
-                cantidad: cleanCantidad,
-                imagen: prodInfo.imagen || ''
-            });
+        const stockCheck = await validarStockDisponible(req.negocio.id, itemsValidados);
+        if (!stockCheck.ok) {
+            return res.status(409).json({ success: false, message: stockCheck.message });
         }
 
         const totalCantidad = itemsValidados.reduce((sum, i) => sum + i.cantidad, 0);
@@ -867,29 +943,8 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
 
         const pedido = rows[0];
 
-        // Descuento automático de stock estilo Shopify si la pieza está en inventario físico (stock_actual > 0)
-        for (const item of itemsValidados) {
-            try {
-                const { rows: prodStockRows } = await pool.query(
-                    `SELECT id, stock_actual, ubicacion_almacen FROM negocio_productos WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) LIMIT 1`,
-                    [req.negocio.id, item.slug]
-                );
-                if (prodStockRows.length > 0 && Number(prodStockRows[0].stock_actual) > 0) {
-                    const pRow = prodStockRows[0];
-                    const ant = Number(pRow.stock_actual);
-                    const descontar = Math.min(ant, Number(item.cantidad || 1));
-                    const nuevo = Math.max(0, ant - descontar);
-                    await pool.query(`UPDATE negocio_productos SET stock_actual = $1 WHERE id = $2`, [nuevo, pRow.id]);
-                    await pool.query(
-                        `INSERT INTO negocio_inventario_movimientos (negocio_id, producto_id, tipo_movimiento, cantidad_anterior, delta, cantidad_nueva, ubicacion, motivo_referencia, usuario)
-                         VALUES ($1, $2, 'salida_venta', $3, $4, $5, $6, $7, 'checkout_web')`,
-                        [req.negocio.id, pRow.id, ant, -descontar, nuevo, pRow.ubicacion_almacen || 'Almacén Principal Trujillo', `Reserva Web ${pedido.codigo_pedido}`]
-                    );
-                }
-            } catch (invErr) {
-                logger.warn('Inventario: no se pudo descontar stock automático', { error: invErr.message });
-            }
-        }
+        // Descuento atómico de stock estilo Shopify si la pieza está en inventario físico
+        await descontarStockAtomico(req.negocio.id, itemsValidados, pedido.codigo_pedido, 'checkout_web');
 
         // Sprint 4: Meta Conversions API (CAPI Server-Side) con deduplicación 1:1 (event_id = codigo_pedido)
         sendMetaCapiOrderEvent({
@@ -960,6 +1015,149 @@ router.post('/:negocioSlug/pedidos', pedidoLimiter, uploadComprobante, async (re
     }
 });
 
+// ── 1A-bis. POST /api/negocios/:negocioSlug/checkout/mercadopago — Checkout Venta Directa 100% vía Mercado Pago ──
+router.post('/:negocioSlug/checkout/mercadopago', pedidoLimiter, async (req, res) => {
+    try {
+        const mpCreds = getNegocioMpCredentials(req.negocio);
+        if (!mpCreds.enabled) {
+            return res.status(400).json({
+                success: false,
+                message: `La pasarela de Mercado Pago aún no está activada para ${req.negocio.nombre}. Usa Yape / Plin QR mientras completamos la activación.`
+            });
+        }
+
+        const cleanTipoEntrega = (req.body.tipo_entrega === 'recojo_local' || req.body.tipo_entrega === 'local') ? 'recojo_local' : 'provincia';
+        const cleanNombre = sanitizeText(req.body.nombre);
+        const cleanDni = sanitizeText(req.body.dni).replace(/\D/g, '');
+        const cleanWhatsapp = sanitizeText(req.body.whatsapp).replace(/\D/g, '');
+        let cleanSedeShalom = sanitizeText(req.body.sede_shalom);
+        const cleanDireccion = sanitizeText(req.body.direccion_adicional);
+
+        if (!cleanNombre || cleanNombre.length < 3) {
+            return res.status(400).json({ success: false, message: 'Ingresa tu nombre y apellidos completos.' });
+        }
+        if (cleanDni.length !== 8) {
+            return res.status(400).json({ success: false, message: 'El DNI debe tener exactamente 8 dígitos.' });
+        }
+        if (cleanWhatsapp.length < 9) {
+            return res.status(400).json({ success: false, message: 'Ingresa un celular / WhatsApp válido de 9 dígitos.' });
+        }
+        if (cleanTipoEntrega === 'provincia' && (!cleanSedeShalom || cleanSedeShalom.length < 3)) {
+            return res.status(400).json({ success: false, message: 'Ingresa la ciudad y sede de agencia Shalom para tu envío.' });
+        }
+        if (cleanTipoEntrega !== 'provincia') {
+            cleanSedeShalom = 'Recojo en Local (Taller Trujillo)';
+        }
+
+        const itemsValidados = await resolverItemsPedidoNegocio(
+            req.negocio.id,
+            req.body.items,
+            req.body.producto_slug,
+            req.body.cantidad,
+            'completo'
+        );
+        if (itemsValidados.length === 0) {
+            return res.status(400).json({ success: false, message: 'Tu carro está vacío o contiene productos no válidos.' });
+        }
+
+        const stockCheck = await validarStockDisponible(req.negocio.id, itemsValidados);
+        if (!stockCheck.ok) {
+            return res.status(409).json({ success: false, message: stockCheck.message });
+        }
+
+        const totalCantidad = itemsValidados.reduce((sum, i) => sum + i.cantidad, 0);
+        const pPrecioTotal = itemsValidados.reduce((sum, i) => sum + (i.precio * i.cantidad), 0);
+        const pEnvio = cleanTipoEntrega === 'provincia' ? 10.00 : 0.00;
+        const totalCobrar = Number((pPrecioTotal + pEnvio).toFixed(2));
+        const pNombreResumen = itemsValidados.map(i => `${i.cantidad > 1 ? `${i.cantidad}x ` : ''}${i.nombre}`).join(' + ');
+        const codigoPedido = await generarCodigoPedidoUnico(req.negocio.slug);
+
+        const { rows } = await pool.query(
+            `INSERT INTO negocio_pedidos (
+                negocio_id, codigo_pedido, producto_slug, producto_nombre, cantidad, items, producto_precio,
+                monto_reserva, costo_envio, tipo_entrega, fecha_entrega,
+                nombre, dni, whatsapp, sede_shalom, direccion_adicional,
+                estado_pago, monto_pagado, estado_pedido, metodo_pago, origen, meta_event_id
+             ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7,
+                $8, $9, $10, 'Despacho Inmediato (24-48h)',
+                $11, $12, $13, $14, $15,
+                'pendiente', 0, 'cotizado', 'mercadopago', 'checkout_mp', $16
+             )
+             RETURNING id, codigo_pedido`,
+            [
+                req.negocio.id, codigoPedido, itemsValidados[0].slug, pNombreResumen, totalCantidad, JSON.stringify(itemsValidados), pPrecioTotal,
+                totalCobrar, pEnvio, cleanTipoEntrega,
+                cleanNombre, cleanDni, cleanWhatsapp, cleanSedeShalom, cleanDireccion || null,
+                codigoPedido
+            ]
+        );
+        const pedido = rows[0];
+
+        const mpClient = new MercadoPagoConfig({
+            accessToken: mpCreds.accessToken,
+            options: { timeout: 5000 }
+        });
+        const preference = new Preference(mpClient);
+
+        const host = req.get('host');
+        const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+        const baseUrl = `${protocol}://${host}`;
+        const checkoutUrl = `${baseUrl}/checkout?codigo=${encodeURIComponent(pedido.codigo_pedido)}`;
+
+        const mpItems = itemsValidados.map(it => ({
+            id: it.sku || it.slug,
+            title: it.nombre,
+            quantity: Number(it.cantidad || 1),
+            unit_price: Number(Number(it.precio).toFixed(2)),
+            currency_id: 'PEN'
+        }));
+        if (pEnvio > 0) {
+            mpItems.push({
+                id: 'envio-shalom',
+                title: 'Embalaje Frágil + Envío Agencia Shalom',
+                quantity: 1,
+                unit_price: Number(pEnvio.toFixed(2)),
+                currency_id: 'PEN'
+            });
+        }
+
+        const prefData = {
+            body: {
+                items: mpItems,
+                payer: { name: cleanNombre },
+                back_urls: {
+                    success: `${checkoutUrl}&mp=approved`,
+                    failure: `${checkoutUrl}&mp=failure`,
+                    pending: `${checkoutUrl}&mp=pending`
+                },
+                external_reference: `${req.negocio.slug}:${pedido.codigo_pedido}`,
+                statement_descriptor: mpCreds.descriptor,
+                notification_url: `${baseUrl}/api/negocios/${req.negocio.slug}/webhooks/mercadopago`
+            }
+        };
+        if (protocol === 'https') {
+            prefData.body.auto_return = 'approved';
+        }
+
+        const response = await preference.create(prefData);
+        await pool.query(
+            `UPDATE negocio_pedidos SET mp_preference_id = $1, updated_at = NOW() WHERE id = $2`,
+            [response.id, pedido.id]
+        );
+
+        res.status(201).json({
+            success: true,
+            codigo_pedido: pedido.codigo_pedido,
+            init_point: response.init_point,
+            preferenceId: response.id
+        });
+    } catch (error) {
+        logger.error('Negocios: error creando checkout Mercado Pago', { error: error.message });
+        res.status(500).json({ success: false, message: 'No se pudo iniciar la pasarela Mercado Pago.' });
+    }
+});
+
 // ── 1B. POST /api/negocios/:negocioSlug/pedidos/:codigo/checkout-mp — Checkout Mercado Pago con cuenta PROPIA del negocio ──
 router.post('/:negocioSlug/pedidos/:codigo/checkout-mp', pedidoLimiter, async (req, res) => {
     try {
@@ -999,7 +1197,7 @@ router.post('/:negocioSlug/pedidos/:codigo/checkout-mp', pedidoLimiter, async (r
         const host = req.get('host');
         const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
         const baseUrl = `${protocol}://${host}`;
-        const trackingUrl = `${baseUrl}/artesanitas/seguimiento?codigo=${encodeURIComponent(pedido.codigo_pedido)}`;
+        const trackingUrl = `${baseUrl}/seguimiento?codigo=${encodeURIComponent(pedido.codigo_pedido)}`;
 
         const prefData = {
             body: {
@@ -1060,7 +1258,7 @@ router.post('/:negocioSlug/webhooks/mercadopago', async (req, res) => {
         const rawPaymentId = req.query['data.id'] || req.query.id || req.body?.data?.id;
         if (topic !== 'payment' || !rawPaymentId) return;
 
-        // Validar firma HMAC si el negocio configuró su mp_webhook_secret
+        // Validar firma HMAC en tiempo constante si el negocio configuró su mp_webhook_secret
         if (mpCreds.webhookSecret) {
             const xSignature = req.headers['x-signature'] || '';
             const xRequestId = req.headers['x-request-id'] || '';
@@ -1072,7 +1270,7 @@ router.post('/:negocioSlug/webhooks/mercadopago', async (req, res) => {
             if (!parts.ts || !parts.v1) return;
             const template = `id:${String(rawPaymentId).toLowerCase()};request-id:${xRequestId};ts:${parts.ts}`;
             const expected = crypto.createHmac('sha256', mpCreds.webhookSecret).update(template).digest('hex');
-            if (expected !== parts.v1) {
+            if (!safeTimingEqual(expected, parts.v1)) {
                 logger.warn('Negocios MP Webhook: firma HMAC inválida', { negocio: req.negocio.slug });
                 return;
             }
@@ -1082,21 +1280,69 @@ router.post('/:negocioSlug/webhooks/mercadopago', async (req, res) => {
         const paymentClient = new Payment(mpClient);
         const paymentInfo = await paymentClient.get({ id: String(rawPaymentId) });
 
-        if (paymentInfo.status !== 'approved' || !paymentInfo.external_reference) return;
+        if (paymentInfo.status !== 'approved' || paymentInfo.currency_id !== 'PEN' || !paymentInfo.external_reference) return;
 
         const [slugRef, codigoRef] = String(paymentInfo.external_reference).split(':');
         if (slugRef !== req.negocio.slug || !codigoRef) return;
 
-        await pool.query(
+        const { rows: pedRows } = await pool.query(
+            `SELECT id, codigo_pedido, producto_slug, producto_nombre, cantidad, items, producto_precio, costo_envio,
+                    monto_pagado, estado_pago, estado_pedido, nombre, dni, whatsapp
+             FROM negocio_pedidos
+             WHERE negocio_id = $1 AND codigo_pedido = $2
+             LIMIT 1`,
+            [req.negocio.id, codigoRef]
+        );
+        if (pedRows.length === 0) return;
+
+        const ped = pedRows[0];
+        if (ped.estado_pago === 'completo') return;
+
+        const esCheckoutInicial = ped.estado_pedido === 'cotizado';
+        const montoEsperado = esCheckoutInicial
+            ? Number(ped.producto_precio || 0) + Number(ped.costo_envio || 0)
+            : Math.max(0, Number(ped.producto_precio || 0) - Number(ped.monto_pagado || 0));
+
+        if (Number(paymentInfo.transaction_amount || 0) < Math.max(1, montoEsperado - 0.50)) {
+            logger.warn('Negocios MP Webhook: monto pagado menor al esperado', {
+                codigo: codigoRef,
+                recibido: paymentInfo.transaction_amount,
+                esperado: montoEsperado
+            });
+            return;
+        }
+
+        const { rows: updatedRows } = await pool.query(
             `UPDATE negocio_pedidos
              SET estado_pago = 'completo',
-                 monto_pagado = producto_precio,
+                 monto_pagado = CASE WHEN estado_pedido = 'cotizado' THEN (producto_precio + COALESCE(costo_envio, 0)) ELSE producto_precio END,
+                 estado_pedido = CASE WHEN estado_pedido = 'cotizado' THEN 'reservado' ELSE estado_pedido END,
                  metodo_pago = 'mercadopago',
                  mp_payment_id = $1,
                  updated_at = NOW()
-             WHERE negocio_id = $2 AND codigo_pedido = $3 AND estado_pago != 'completo'`,
-            [String(rawPaymentId), req.negocio.id, codigoRef]
+             WHERE id = $2 AND estado_pago != 'completo'
+             RETURNING id, codigo_pedido, producto_slug, producto_nombre, cantidad, items, monto_pagado, nombre, dni, whatsapp`,
+            [String(rawPaymentId), ped.id]
         );
+
+        if (updatedRows.length > 0 && esCheckoutInicial) {
+            const up = updatedRows[0];
+            const itemsList = Array.isArray(up.items) ? up.items : [];
+            await descontarStockAtomico(req.negocio.id, itemsList, up.codigo_pedido, 'mercadopago_webhook');
+            sendMetaCapiOrderEvent({
+                negocio: req.negocio,
+                pedido: up,
+                req: null,
+                montoEvento: Number(up.monto_pagado || montoEsperado)
+            }).catch(() => {});
+            notifyPushSubscribers({
+                negocioId: req.negocio.id,
+                rol: 'admin',
+                title: `Compra Mercado Pago ${up.codigo_pedido}`,
+                body: `${up.nombre || 'Cliente'} pagó S/ ${Number(up.monto_pagado || 0).toFixed(2)} por ${up.producto_nombre}`,
+                url: '/registros'
+            }).catch(() => {});
+        }
         logger.info('Negocios MP Webhook: pedido pagado 100%', { negocio: req.negocio.slug, codigo: codigoRef });
     } catch (error) {
         logger.error('Negocios MP Webhook: error procesando pago', { error: error.message, negocio: req.negocio?.slug });
@@ -1316,7 +1562,7 @@ router.get('/:negocioSlug/bi-resumen', requireNegocioAuth, async (req, res) => {
 // ── 2. GET /api/negocios/:negocioSlug/pedidos — Admin: Listar Pedidos ──
 router.get('/:negocioSlug/pedidos', requireNegocioAuth, async (req, res) => {
     try {
-        const { search, estado_pago, estado_pedido, tipo_entrega } = req.query;
+        const { search, estado_pago, estado_pedido, tipo_entrega, voucher_ia } = req.query;
         const conditions = ['negocio_id = $1'];
         const params = [req.negocio.id];
 
@@ -1333,6 +1579,14 @@ router.get('/:negocioSlug/pedidos', requireNegocioAuth, async (req, res) => {
         if (estado_pedido) {
             params.push(estado_pedido);
             conditions.push(`estado_pedido = $${params.length}`);
+        }
+
+        if (voucher_ia === 'verificado') {
+            conditions.push(`voucher_verificacion_ia = 'verificado'`);
+        } else if (voucher_ia === 'alertas') {
+            conditions.push(`voucher_verificacion_ia IN ('duplicado', 'monto_difiere')`);
+        } else if (voucher_ia === 'pendiente') {
+            conditions.push(`COALESCE(voucher_verificacion_ia, 'pendiente') = 'pendiente'`);
         }
 
         if (search && search.trim()) {
@@ -1366,7 +1620,7 @@ router.get('/:negocioSlug/pedidos', requireNegocioAuth, async (req, res) => {
 });
 
 // ── 2C. GET /api/negocios/:negocioSlug/pedidos/:id/comprobante — Admin: Ver imagen del comprobante Plin/Yape ──
-router.get('/:negocioSlug/pedidos/:id/comprobante', async (req, res) => {
+router.get('/:negocioSlug/pedidos/:id/comprobante', requireNegocioAuth, async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT comprobante_mime, comprobante_data FROM negocio_pedidos WHERE id = $1 AND negocio_id = $2`,
@@ -1375,11 +1629,48 @@ router.get('/:negocioSlug/pedidos/:id/comprobante', async (req, res) => {
         if (rows.length === 0 || !rows[0].comprobante_data) {
             return res.status(404).send('Comprobante no disponible.');
         }
-        res.setHeader('Content-Type', rows[0].comprobante_mime || 'image/jpeg');
-        res.setHeader('Cache-Control', 'private, max-age=3600');
+        setSafeBinaryHeaders(res, rows[0].comprobante_mime || 'image/jpeg');
+        res.setHeader('Cache-Control', 'private, no-store');
         res.send(rows[0].comprobante_data);
     } catch (error) {
         res.status(500).send('Error al cargar comprobante.');
+    }
+});
+
+// ── 2D. POST /api/negocios/:negocioSlug/pedidos/:id/reanalizar-voucher — Admin: Re-auditar voucher con Visión IA ──
+router.post('/:negocioSlug/pedidos/:id/reanalizar-voucher', requireNegocioAuth, async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT id, monto_reserva, comprobante_mime, comprobante_data
+             FROM negocio_pedidos
+             WHERE id = $1 AND negocio_id = $2`,
+            [req.params.id, req.negocio.id]
+        );
+        if (rows.length === 0 || !rows[0].comprobante_data) {
+            return res.status(404).json({ success: false, message: 'Este pedido no tiene imagen de comprobante adjunta.' });
+        }
+        const ped = rows[0];
+        const ai = await analizarVoucherConIA({
+            fileBuffer: ped.comprobante_data,
+            mimeType: ped.comprobante_mime,
+            montoEsperado: Number(ped.monto_reserva || 20),
+            negocioId: req.negocio.id,
+            pedidoIdActual: ped.id
+        });
+        await pool.query(
+            `UPDATE negocio_pedidos
+             SET voucher_nro_operacion = $1,
+                 voucher_monto_detectado = $2,
+                 voucher_entidad_detectada = $3,
+                 voucher_verificacion_ia = $4,
+                 updated_at = NOW()
+             WHERE id = $5 AND negocio_id = $6`,
+            [ai.nro_operacion, ai.monto_detectado, ai.entidad_detectada, ai.verificacion_ia, ped.id, req.negocio.id]
+        );
+        res.json({ success: true, voucher: ai });
+    } catch (error) {
+        logger.error('Negocios: error reanalizando voucher con IA', { error: error.message });
+        res.status(500).json({ success: false, message: 'No se pudo re-analizar el voucher.' });
     }
 });
 
@@ -1629,6 +1920,48 @@ router.post('/:negocioSlug/artesanos', requireNegocioAuth, async (req, res) => {
     }
 });
 
+// PATCH /api/negocios/:negocioSlug/artesanos/:id — Admin: Pausar/Reactivar acceso, rotar Magic Link o actualizar contacto
+router.patch('/:negocioSlug/artesanos/:id', requireNegocioAuth, async (req, res) => {
+    try {
+        const artId = parseInt(req.params.id, 10);
+        if (!Number.isInteger(artId)) {
+            return res.status(400).json({ success: false, message: 'ID de artesano inválido.' });
+        }
+
+        const updates = [];
+        const params = [artId, req.negocio.id];
+        const set = (col, val) => {
+            params.push(val);
+            updates.push(`${col} = $${params.length}`);
+        };
+
+        if (req.body.activo !== undefined) set('activo', req.body.activo === true || req.body.activo === 'true');
+        if (req.body.whatsapp !== undefined) set('whatsapp', sanitizeText(req.body.whatsapp).slice(0, 25) || null);
+        if (req.body.especialidad !== undefined) set('especialidad', sanitizeText(req.body.especialidad).slice(0, 120) || 'Modelado y Pintura Cerámica');
+        if (req.body.rotar_token === true) {
+            set('access_token', crypto.randomBytes(24).toString('hex'));
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ success: false, message: 'Nada que actualizar.' });
+        }
+
+        const { rows } = await pool.query(
+            `UPDATE negocio_artesanos SET ${updates.join(', ')}
+             WHERE id = $1 AND negocio_id = $2
+             RETURNING id, nombre, whatsapp, especialidad, access_token, activo`,
+            params
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Artesano no encontrado.' });
+        }
+        res.json({ success: true, artesano: rows[0] });
+    } catch (error) {
+        logger.error('Negocios: error actualizando artesano', { error: error.message });
+        res.status(500).json({ success: false, message: 'No se pudo actualizar el artesano.' });
+    }
+});
+
 // GET /api/negocios/:negocioSlug/artesano-portal/:token — Público (Magic Link):
 // Devuelve TODAS las solicitudes asignadas al artesano (puede tener 3, 5, 10+ solicitudes de distintos clientes),
 // con las especificaciones del administrador (cotización pactada con el artesano, tamaños, onzas, colores, logos),
@@ -1696,6 +2029,10 @@ router.get('/:negocioSlug/artesano-portal/:token', trackingLimiter, async (req, 
                 cantidad: Number(it.cantidad || 1),
                 imagen: it.imagen || ''
             }));
+            const historialNotas = String(p.notas_taller || '')
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.startsWith('[Artesano]:'));
             return {
                 id: p.id,
                 codigo_pedido: p.codigo_pedido || `ART-${p.id}`,
@@ -1708,7 +2045,8 @@ router.get('/:negocioSlug/artesano-portal/:token', trackingLimiter, async (req, 
                 fecha_recepcion_taller: p.fecha_recepcion_taller,
                 estado_pedido: p.estado_pedido,
                 etapa_artesano: p.etapa_artesano,
-                especificaciones_artesano: p.especificaciones_artesano || p.notas_taller || '',
+                especificaciones_artesano: p.especificaciones_artesano || '',
+                historial_notas: historialNotas,
                 qa_estado: p.qa_estado,
                 qa_checklist: p.qa_checklist,
                 qa_observaciones: p.qa_observaciones || '',
@@ -1732,16 +2070,20 @@ router.get('/:negocioSlug/artesano-portal/:token', trackingLimiter, async (req, 
 });
 
 // PATCH /api/negocios/:negocioSlug/artesano-portal/:token/pedido/:id — Público (Magic Link):
-// Permite al artesano actualizar la etapa de producción de cualquiera de sus solicitudes asignadas:
+// Permite al artesano actualizar la etapa de producción o enviar una nota/incidencia al Admin:
 // modelado -> primer_horno -> segundo_horno -> pintado_acabados -> listo_revision_qa -> enviado_taller
 router.patch('/:negocioSlug/artesano-portal/:token/pedido/:id', trackingLimiter, async (req, res) => {
     try {
         const cleanToken = sanitizeText(req.params.token);
         const pedidoId = parseInt(req.params.id, 10);
         const { etapa_artesano, nota_artesano } = req.body;
+        const cleanNota = sanitizeText(nota_artesano).slice(0, 400);
 
         const validEtapas = ['recibido', 'modelado', 'primer_horno', 'segundo_horno', 'pintado_acabados', 'listo_revision_qa', 'enviado_taller'];
-        if (!validEtapas.includes(etapa_artesano)) {
+        if (!etapa_artesano && !cleanNota) {
+            return res.status(400).json({ success: false, message: 'Envía una etapa de producción o una nota.' });
+        }
+        if (etapa_artesano && !validEtapas.includes(etapa_artesano)) {
             return res.status(400).json({ success: false, message: 'Etapa de producción inválida.' });
         }
 
@@ -1754,29 +2096,47 @@ router.patch('/:negocioSlug/artesano-portal/:token/pedido/:id', trackingLimiter,
         }
         const artesano = artRows[0];
 
-        // Mapear la etapa del artesano al estado_pedido macro del ERP
-        let nuevoEstadoPedido = 'encargado_artesano';
-        if (['modelado', 'primer_horno', 'segundo_horno'].includes(etapa_artesano)) {
-            nuevoEstadoPedido = 'encargado_artesano';
-        } else if (['pintado_acabados', 'listo_revision_qa'].includes(etapa_artesano)) {
-            nuevoEstadoPedido = 'en_produccion';
-        } else if (etapa_artesano === 'enviado_taller') {
-            nuevoEstadoPedido = 'recibido_taller';
+        if (etapa_artesano === 'enviado_taller') {
+            const { rows: qaCheck } = await pool.query(
+                `SELECT qa_estado FROM negocio_pedidos
+                 WHERE id = $1 AND negocio_id = $2 AND (artesano_id = $3 OR LOWER(TRIM(artesano_nombre)) = LOWER(TRIM($4)))`,
+                [pedidoId, req.negocio.id, artesano.id, artesano.nombre]
+            );
+            if (qaCheck.length > 0 && qaCheck[0].qa_estado === 'observado') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Este pedido tiene una observación QA activa. Corrige el detalle y marca primero "Listo para Revisión QA".'
+                });
+            }
+        }
+
+        let nuevoEstadoPedido = null;
+        if (etapa_artesano) {
+            if (['modelado', 'primer_horno', 'segundo_horno'].includes(etapa_artesano)) {
+                nuevoEstadoPedido = 'encargado_artesano';
+            } else if (['pintado_acabados', 'listo_revision_qa'].includes(etapa_artesano)) {
+                nuevoEstadoPedido = 'en_produccion';
+            } else if (etapa_artesano === 'enviado_taller') {
+                nuevoEstadoPedido = 'recibido_taller';
+            } else {
+                nuevoEstadoPedido = 'encargado_artesano';
+            }
         }
 
         const { rows } = await pool.query(
             `UPDATE negocio_pedidos
-             SET etapa_artesano = $1,
+             SET etapa_artesano = COALESCE($1::varchar, etapa_artesano),
                  estado_pedido = CASE
+                     WHEN $2::varchar IS NULL THEN estado_pedido
                      WHEN estado_pedido IN ('enviado', 'entregado', 'post_venta') THEN estado_pedido
-                     ELSE $2
+                     ELSE $2::varchar
                  END,
                  qa_estado = CASE
-                     WHEN $1 = 'listo_revision_qa' AND qa_estado = 'observado' THEN 'pendiente'
+                     WHEN $1::varchar = 'listo_revision_qa' AND qa_estado = 'observado' THEN 'pendiente'
                      ELSE qa_estado
                  END,
                  fecha_recepcion_taller = CASE
-                     WHEN $1 = 'enviado_taller' THEN COALESCE(fecha_recepcion_taller, NOW())
+                     WHEN $1::varchar = 'enviado_taller' THEN COALESCE(fecha_recepcion_taller, NOW())
                      ELSE fecha_recepcion_taller
                  END,
                  notas = CASE
@@ -1789,7 +2149,7 @@ router.patch('/:negocioSlug/artesano-portal/:token/pedido/:id', trackingLimiter,
                AND negocio_id = $5
                AND (artesano_id = $6 OR LOWER(TRIM(artesano_nombre)) = LOWER(TRIM($7)))
              RETURNING id, codigo_pedido, producto_nombre, etapa_artesano, estado_pedido, qa_estado, fecha_recepcion_taller`,
-            [etapa_artesano, nuevoEstadoPedido, sanitizeText(nota_artesano) || null, pedidoId, req.negocio.id, artesano.id, artesano.nombre]
+            [etapa_artesano || null, nuevoEstadoPedido, cleanNota || null, pedidoId, req.negocio.id, artesano.id, artesano.nombre]
         );
 
         if (rows.length === 0) {
@@ -1798,14 +2158,17 @@ router.patch('/:negocioSlug/artesano-portal/:token/pedido/:id', trackingLimiter,
 
         const ped = rows[0];
 
-        // Si el artesano marca "listo_revision_qa" o "enviado_taller", enviar alerta Push al Administrador de Artesanitas
-        if (etapa_artesano === 'listo_revision_qa' || etapa_artesano === 'enviado_taller') {
+        if (etapa_artesano === 'listo_revision_qa' || etapa_artesano === 'enviado_taller' || cleanNota) {
             const msgTitle = etapa_artesano === 'listo_revision_qa'
                 ? `Revisión QA requerida (${ped.codigo_pedido})`
-                : `Pedido enviado al taller (${ped.codigo_pedido})`;
-            const msgBody = etapa_artesano === 'listo_revision_qa'
-                ? `${artesano.nombre} terminó ${ped.producto_nombre}. Valida onzas, logos y colores antes del envío.`
-                : `${artesano.nombre} despachó ${ped.producto_nombre} hacia el taller de Artesanitas.`;
+                : etapa_artesano === 'enviado_taller'
+                    ? `Pedido enviado al taller (${ped.codigo_pedido})`
+                    : `Nota de taller (${ped.codigo_pedido})`;
+            const msgBody = cleanNota
+                ? `${artesano.nombre}: ${cleanNota}`
+                : etapa_artesano === 'listo_revision_qa'
+                    ? `${artesano.nombre} terminó ${ped.producto_nombre}. Valida onzas, logos y colores antes del envío.`
+                    : `${artesano.nombre} despachó ${ped.producto_nombre} hacia el taller de Artesanitas.`;
             notifyPushSubscribers({
                 negocioId: req.negocio.id,
                 rol: 'admin',
@@ -1818,16 +2181,25 @@ router.patch('/:negocioSlug/artesano-portal/:token/pedido/:id', trackingLimiter,
         res.json({ success: true, solicitud: ped });
     } catch (error) {
         logger.error('Negocios: error actualizando etapa en artesano-portal', { error: error.message });
-        res.status(500).json({ success: false, message: 'No se pudo actualizar la etapa.' });
+        res.status(500).json({ success: false, message: 'No se pudo actualizar la solicitud.' });
     }
 });
 
-// ── 4. SPRINT 6: Endpoints de Suscripción Web Push (Admin y Comprador) ──
+// ── 4. SPRINT 6: Endpoints de Suscripción Web Push (Admin protegido por JWT y Comprador por código) ──
 router.get('/:negocioSlug/push/vapid-public-key', (req, res) => {
     res.json({ success: true, publicKey: getVapidPublicKey() });
 });
 
-router.post('/:negocioSlug/push/subscribe', async (req, res) => {
+router.post('/:negocioSlug/push/subscribe', trackingLimiter, async (req, res, next) => {
+    const rolSolicitado = ['admin', 'comprador', 'artesano'].includes(req.body?.rol) ? req.body.rol : 'comprador';
+    if (rolSolicitado !== 'comprador') {
+        return requireNegocioAuth(req, res, next);
+    }
+    if (!sanitizeText(req.body?.codigo_pedido || '')) {
+        return res.status(400).json({ success: false, message: 'Se requiere tu código de pedido para activar notificaciones.' });
+    }
+    next();
+}, async (req, res) => {
     try {
         const { rol, codigo_pedido, subscription } = req.body;
         const result = await savePushSubscription({
@@ -1996,17 +2368,18 @@ router.get('/:negocioSlug/pedidos/export.xlsx', requireNegocioAuth, async (req, 
     }
 });
 
-// GET /api/negocios/:negocioSlug/migration-snapshot — Exportación segura HTTPS (Zero-Data-Loss)
-// Permite que Hub Marcas LPS (artesanitas.lospilares.pe) sincronice automáticamente todas las reservas,
-// comprobantes, talleres, inscritos y estados sin necesidad de exponer el puerto privado de PostgreSQL.
-const MIGRATION_SNAPSHOT_KEY = crypto
-    .createHash('sha256')
-    .update('hub-lps-migration-2026:artesanitas-2026-panel')
-    .digest('hex');
+// GET /api/negocios/:negocioSlug/migration-snapshot — Exportación segura HTTPS (desactivada salvo configuración explícita)
+const MIGRATION_SNAPSHOT_SECRET = String(process.env.MIGRATION_SNAPSHOT_SECRET || '').trim();
+const MIGRATION_SNAPSHOT_KEY = MIGRATION_SNAPSHOT_SECRET
+    ? crypto.createHash('sha256').update(MIGRATION_SNAPSHOT_SECRET).digest('hex')
+    : null;
 
-router.get('/:negocioSlug/migration-snapshot', async (req, res) => {
-    const providedKey = req.headers['x-hub-migration-key'] || '';
-    if (providedKey !== MIGRATION_SNAPSHOT_KEY) {
+router.get('/:negocioSlug/migration-snapshot', requireNegocioAuth, requireSuperAdmin, async (req, res) => {
+    if (!MIGRATION_SNAPSHOT_KEY) {
+        return res.status(404).json({ success: false, message: 'Endpoint de migración desactivado.' });
+    }
+    const providedKey = String(req.headers['x-hub-migration-key'] || '');
+    if (!safeTimingEqual(providedKey, MIGRATION_SNAPSHOT_KEY)) {
         return res.status(403).json({ success: false, message: 'No autorizado.' });
     }
     try {

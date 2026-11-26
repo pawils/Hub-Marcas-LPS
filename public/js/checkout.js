@@ -63,10 +63,16 @@
   var leadTracked = false;
   var initiateTracked = false;
   var ultimoPedidoConfirmado = null;
+  var mpHabilitado = false;
 
   function getTipoEntrega() {
     var r = document.querySelector('input[name="tipo_entrega"]:checked');
     return r ? r.value : 'local';
+  }
+
+  function getMetodoPago() {
+    var r = document.querySelector('input[name="metodo_pago"]:checked');
+    return r ? r.value : 'plin_yape';
   }
 
   function renderCheckoutCart() {
@@ -76,6 +82,7 @@
     var envEl = document.getElementById('chk-envio');
     var totEl = document.getElementById('chk-total');
     var qrMontoEl = document.getElementById('chk-qr-monto');
+    var mpMontoEl = document.getElementById('chk-mp-monto');
     var submitTxt = document.getElementById('chk-submit-text');
 
     var totalQty = cartItems.reduce(function (s, i) { return s + Number(i.cantidad || 1); }, 0);
@@ -92,10 +99,15 @@
     }
     if (totEl) totEl.textContent = 'S/ ' + totalPagar.toFixed(2);
     if (qrMontoEl) qrMontoEl.textContent = 'S/ ' + totalPagar.toFixed(2);
+    if (mpMontoEl) mpMontoEl.textContent = 'S/ ' + totalPagar.toFixed(2);
     if (submitTxt) {
-      submitTxt.textContent = totalQty > 0
-        ? 'Confirmar Compra (S/ ' + totalPagar.toFixed(2) + ') y Descargar PDF'
-        : 'Agrega una pieza al carro para continuar';
+      if (totalQty <= 0) {
+        submitTxt.textContent = 'Agrega una pieza al carro para continuar';
+      } else if (getMetodoPago() === 'mercadopago') {
+        submitTxt.textContent = 'Pagar S/ ' + totalPagar.toFixed(2) + ' con Mercado Pago';
+      } else {
+        submitTxt.textContent = 'Confirmar Compra (S/ ' + totalPagar.toFixed(2) + ') y Descargar PDF';
+      }
     }
 
     if (!listEl) return;
@@ -113,6 +125,13 @@
     listEl.innerHTML = cartItems.map(function (item) {
       var slugAttr = escapeHtml(item.slug).replace(/'/g, "\\'");
       var sub = (Number(item.precio || 0) * Number(item.cantidad || 1)).toFixed(2);
+      var catInfo = CATALOGO_BASE[item.slug] || {};
+      var stockDisp = typeof catInfo.stock_actual === 'number' ? catInfo.stock_actual : null;
+      var stockLabel = catInfo.agotado
+        ? '<span class="text-[10px] font-bold text-red-600">Sin stock disponible</span>'
+        : (stockDisp !== null && stockDisp > 0
+          ? '<span class="text-[10px] font-bold text-[#137333]">Stock inmediato (' + stockDisp + ' disp.)</span>'
+          : '<span class="text-[10px] font-bold text-[#137333]">Despacho inmediato</span>');
       return '' +
         '<div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#F9F6F0] border border-[#EBE5DE]">' +
         '<div class="flex items-center gap-3 min-w-0">' +
@@ -120,7 +139,7 @@
         '<div class="min-w-0">' +
         '<h4 class="text-xs sm:text-sm font-bold text-[#333c48] truncate">' + escapeHtml(item.nombre) + '</h4>' +
         '<span class="text-[11px] text-[#8C7A6B] block">S/ ' + Number(item.precio).toFixed(2) + ' c/u' + (item.sku ? ' · SKU ' + escapeHtml(item.sku) : '') + '</span>' +
-        '<span class="text-[10px] font-bold text-[#137333]">Despacho inmediato</span>' +
+        stockLabel +
         '</div>' +
         '</div>' +
         '<div class="flex flex-col items-end gap-1.5 shrink-0">' +
@@ -342,10 +361,13 @@
             sku: p.sku || '1001',
             nombre: p.nombre,
             precio: pr,
+            stock_actual: Number(p.stock_actual || 0),
+            agotado: Number(p.stock_actual || 0) <= 0 && p.politica_sin_stock === 'agotado',
             imagen: (Array.isArray(p.imagenes) && p.imagenes[0]) || (CATALOGO_BASE[p.slug] && CATALOGO_BASE[p.slug].imagen) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg'
           };
         });
         populateQuickAdd();
+        renderCheckoutCart();
 
         // Si viene ?producto=slug en la URL y aún no está en el carro, agregarlo
         var params = new URLSearchParams(window.location.search);
@@ -421,6 +443,61 @@
       });
     });
 
+    function aplicarMetodoPagoUI() {
+      var isMp = getMetodoPago() === 'mercadopago';
+      var panelPlin = document.getElementById('chk-panel-plin');
+      var panelMp = document.getElementById('chk-panel-mp');
+      var lblPlin = document.getElementById('lbl-pago-plin');
+      var lblMp = document.getElementById('lbl-pago-mp');
+      if (panelPlin) panelPlin.classList.toggle('hidden', isMp);
+      if (panelMp) panelMp.classList.toggle('hidden', !isMp);
+      if (lblPlin) {
+        lblPlin.className = 'relative flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ' +
+          (!isMp ? 'border-[#333c48] bg-[#F9F6F0]/60' : 'border-[#D5C9BD] bg-white');
+      }
+      if (lblMp) {
+        lblMp.className = 'relative flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ' +
+          (mpHabilitado ? (isMp ? 'border-[#009ee3] bg-[#009ee3]/5' : 'border-[#D5C9BD] bg-white') : 'border-[#D5C9BD] bg-white opacity-60 cursor-not-allowed');
+      }
+      renderCheckoutCart();
+    }
+
+    document.querySelectorAll('input[name="metodo_pago"]').forEach(function (r) {
+      r.addEventListener('change', aplicarMetodoPagoUI);
+    });
+
+    // Consultar configuración de Mercado Pago para Artesanitas
+    fetch('/api/negocios/' + NEGOCIO + '/checkout/config')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        var radioMp = document.getElementById('radio-pago-mp');
+        var badgeMp = document.getElementById('chk-mp-status-badge');
+        var descMp = document.getElementById('chk-mp-desc');
+        if (cfg && cfg.mp_habilitado) {
+          mpHabilitado = true;
+          if (radioMp) radioMp.disabled = false;
+          if (badgeMp) {
+            badgeMp.textContent = 'Disponible';
+            badgeMp.className = 'text-[10px] font-bold bg-[#009ee3]/15 text-[#0073a8] px-2 py-0.5 rounded-full';
+          }
+        } else {
+          mpHabilitado = false;
+          if (radioMp) radioMp.disabled = true;
+          if (badgeMp) {
+            badgeMp.textContent = 'Próximamente';
+            badgeMp.className = 'text-[10px] font-bold bg-[#F1EDE7] text-[#8C7A6B] px-2 py-0.5 rounded-full';
+          }
+          if (descMp) descMp.textContent = 'Usa Yape o Plin QR mientras completamos activación de tarjeta.';
+        }
+        aplicarMetodoPagoUI();
+      })
+      .catch(function () {});
+
+    // Manejar retorno de Mercado Pago (?mp=approved|pending|failure&codigo=ART-...)
+    var urlParamsMp = new URLSearchParams(window.location.search);
+    var mpStatusParam = urlParamsMp.get('mp');
+    var codigoMpParam = urlParamsMp.get('codigo');
+
     // 4. Copiar teléfono Plin
     var copyBtn = document.getElementById('chk-copy-phone');
     if (copyBtn) {
@@ -458,6 +535,61 @@
       errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    if (mpStatusParam === 'failure') {
+      showError('El pago con Mercado Pago no se completó o fue cancelado. Puedes reintentar o pagar directamente con Yape / Plin QR sin perder tu carro.');
+    } else if ((mpStatusParam === 'approved' || mpStatusParam === 'pending') && codigoMpParam) {
+      fetch('/api/negocios/' + NEGOCIO + '/pedidos/seguimiento?codigo=' + encodeURIComponent(codigoMpParam))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          var ped = d && d.pedidos && d.pedidos[0];
+          if (!ped) return;
+          ultimoPedidoConfirmado = {
+            codigo_pedido: ped.codigo_pedido,
+            nombre: ped.nombre || 'Cliente Artesanitas',
+            dni: ped.dni || '',
+            whatsapp: ped.whatsapp || '',
+            tipo_entrega: ped.tipo_entrega,
+            sede_shalom: ped.sede_shalom,
+            items: ped.items,
+            precio_total: Number(ped.producto_precio || 0),
+            costo_envio: Number(ped.costo_envio || 0),
+            monto_pagado: Number(ped.monto_pagado || ped.producto_precio || 0),
+            created_at: ped.created_at
+          };
+          cartItems = [];
+          saveCart([]);
+          document.getElementById('checkout-main-grid').classList.add('hidden');
+          var successBox = document.getElementById('checkout-success-box');
+          if (successBox) successBox.classList.remove('hidden');
+          var badgeSuc = document.getElementById('chk-success-badge');
+          if (badgeSuc && mpStatusParam === 'pending') {
+            badgeSuc.textContent = 'Pago en Validación Mercado Pago';
+          }
+          document.getElementById('chk-success-code').textContent = ped.codigo_pedido;
+          document.getElementById('chk-btn-tracking').href = '/seguimiento?codigo=' + encodeURIComponent(ped.codigo_pedido);
+          var btnPdf = document.getElementById('chk-btn-download-pdf');
+          if (btnPdf) btnPdf.onclick = function () { abrirComprobantePDF(ultimoPedidoConfirmado); };
+
+          if (mpStatusParam === 'approved' && typeof fbq === 'function') {
+            try {
+              fbq(
+                'trackSingle',
+                '851775257895823',
+                'Purchase',
+                {
+                  value: Number(ped.monto_pagado || ped.producto_precio || 0),
+                  currency: 'PEN',
+                  content_ids: Array.isArray(ped.items) ? ped.items.map(function (i) { return i.slug; }) : [ped.producto_slug],
+                  content_type: 'product'
+                },
+                { eventID: ped.codigo_pedido }
+              );
+            } catch (e) {}
+          }
+        })
+        .catch(function () {});
+    }
+
     if (form) {
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -473,6 +605,7 @@
         var tipoEntrega = getTipoEntrega();
         var sedeShalom = (document.getElementById('chk-sede-shalom')?.value || '').trim();
         var direccion = (document.getElementById('chk-direccion')?.value || '').trim();
+        var metodoPago = getMetodoPago();
         var file = fileInput && fileInput.files ? fileInput.files[0] : null;
 
         if (nombre.length < 3) return showError('Por favor ingresa tu nombre y apellidos completos.');
@@ -481,17 +614,10 @@
         if (tipoEntrega === 'provincia' && sedeShalom.length < 3) {
           return showError('Indica la ciudad y sede de agencia Shalom para el despacho.');
         }
-        if (!file) {
-          return showError('Por favor adjunta la captura de tu pago por Yape o Plin para procesar tu compra.');
-        }
 
         checkAndTrackLead();
 
-        var fd = new FormData();
-        fd.append('modalidad_pago', 'completo');
-        fd.append('producto_slug', cartItems[0].slug);
-        fd.append('cantidad', String(cartItems.reduce(function (s, i) { return s + Number(i.cantidad || 1); }, 0)));
-        fd.append('items', JSON.stringify(cartItems.map(function (i) {
+        var itemsPayload = cartItems.map(function (i) {
           return {
             slug: i.slug,
             sku: i.sku || '',
@@ -502,7 +628,52 @@
             cantidad: Number(i.cantidad || 1),
             imagen: i.imagen || ''
           };
-        })));
+        });
+
+        // Flujo Mercado Pago
+        if (metodoPago === 'mercadopago') {
+          var origMpHtml = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>Conectando con Mercado Pago...</span>';
+          try {
+            var mpRes = await fetch('/api/negocios/' + NEGOCIO + '/checkout/mercadopago', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                items: itemsPayload,
+                producto_slug: cartItems[0].slug,
+                nombre: nombre,
+                dni: dni,
+                whatsapp: whatsapp,
+                tipo_entrega: tipoEntrega,
+                sede_shalom: tipoEntrega === 'provincia' ? sedeShalom : 'Recojo en Local (Taller Trujillo)',
+                direccion_adicional: direccion || ''
+              })
+            });
+            var mpData = await mpRes.json();
+            if (mpRes.ok && mpData.success && mpData.init_point) {
+              window.location.href = mpData.init_point;
+              return;
+            }
+            showError(mpData.message || 'No se pudo iniciar el pago con Mercado Pago.');
+          } catch (mpErr) {
+            showError('Error de conexión con la pasarela de pago.');
+          }
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origMpHtml;
+          return;
+        }
+
+        // Flujo Yape / Plin QR
+        if (!file) {
+          return showError('Por favor adjunta la captura de tu pago por Yape o Plin para procesar tu compra.');
+        }
+
+        var fd = new FormData();
+        fd.append('modalidad_pago', 'completo');
+        fd.append('producto_slug', cartItems[0].slug);
+        fd.append('cantidad', String(cartItems.reduce(function (s, i) { return s + Number(i.cantidad || 1); }, 0)));
+        fd.append('items', JSON.stringify(itemsPayload));
         fd.append('nombre', nombre);
         fd.append('dni', dni);
         fd.append('whatsapp', whatsapp);
