@@ -151,6 +151,20 @@ function cleanProductTitle(texto) {
         .slice(0, 150);
 }
 
+let _productColsEnsured = null;
+async function ensureProductColumns() {
+    if (!_productColsEnsured) {
+        _productColsEnsured = pool.query(`
+            ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS vender_sin_stock BOOLEAN NOT NULL DEFAULT FALSE;
+            ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS fecha_entrega_estimada DATE;
+        `).catch((err) => {
+            _productColsEnsured = null;
+            logger.warn('Negocios: no se pudo asegurar columnas de producto', { error: err.message });
+        });
+    }
+    return _productColsEnsured;
+}
+
 const PRODUCT_COLUMNS = `
     id, slug, nombre, precio, precio_oferta, etiqueta_promo, costo_artesano, moneda,
     sku, ean, stock_actual, stock_minimo, politica_sin_stock, vender_sin_stock, fecha_entrega_estimada,
@@ -165,6 +179,7 @@ const PRODUCT_COLUMNS = `
 // GET /api/negocios/:negocioSlug/productos — productos activos con ficha técnica y stock
 router.get('/:negocioSlug/productos', async (req, res) => {
     try {
+        await ensureProductColumns();
         const { rows } = await pool.query(
             `SELECT ${PRODUCT_COLUMNS}
              FROM negocio_productos
@@ -216,6 +231,7 @@ router.get('/:negocioSlug/productos/:id/foto/:posicion', async (req, res) => {
 // GET /api/negocios/:negocioSlug/productos/admin — todos los productos con ficha completa
 router.get('/:negocioSlug/productos/admin', requireNegocioAuth, async (req, res) => {
     try {
+        await ensureProductColumns();
         const { rows } = await pool.query(
             `SELECT ${PRODUCT_COLUMNS}
              FROM negocio_productos
@@ -252,7 +268,8 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
     const stockNum = Number.isFinite(parseInt(stock_actual, 10)) ? Math.max(0, parseInt(stock_actual, 10)) : 0;
     const stockMinNum = Number.isFinite(parseInt(stock_minimo, 10)) ? Math.max(0, parseInt(stock_minimo, 10)) : 1;
     const venderSinStock = req.body.vender_sin_stock === true || req.body.vender_sin_stock === 'true' || politica_sin_stock === 'preventa';
-    const fechaEntregaEst = req.body.fecha_entrega_estimada ? String(req.body.fecha_entrega_estimada).trim().slice(0, 10) : null;
+    const rawFechaEst = req.body.fecha_entrega_estimada ? String(req.body.fecha_entrega_estimada).trim().slice(0, 10) : '';
+    const fechaEntregaEst = /^\d{4}-\d{2}-\d{2}$/.test(rawFechaEst) ? rawFechaEst : null;
     const cleanLinea = String(linea || 'Vajilla Artesanal').trim().slice(0, 80);
     const cleanSublinea = String(sublinea || 'Tazas & Mugs').trim().slice(0, 80);
     const cleanSubSublinea = String(sub_sublinea || 'Cerámica Pintada a Mano').trim().slice(0, 80);
@@ -260,9 +277,26 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
     const cleanUbicacion = String(req.body.ubicacion_almacen || 'Almacén Principal Trujillo').trim().slice(0, 80);
 
     try {
+        await ensureProductColumns();
         const autoCodes = await generarMatriculaUnica(req.negocio.id, req.negocio.slug, cleanLinea, cleanSublinea);
         const cleanSku = String(sku || '').trim().slice(0, 60) || autoCodes.sku;
         const cleanEan = String(ean || '').trim().slice(0, 20) || autoCodes.ean;
+
+        const { rows: dupCodes } = await pool.query(
+            `SELECT id, nombre, sku, ean FROM negocio_productos
+             WHERE negocio_id = $1 AND ((sku IS NOT NULL AND sku = $2) OR (ean IS NOT NULL AND ean = $3))
+             LIMIT 1`,
+            [req.negocio.id, cleanSku, cleanEan]
+        );
+        if (dupCodes.length > 0) {
+            const dup = dupCodes[0];
+            const conflictField = dup.sku === cleanSku ? `SKU "${cleanSku}"` : `EAN "${cleanEan}"`;
+            return res.status(409).json({
+                success: false,
+                message: `Ya existe un producto con el ${conflictField} (${dup.nombre}). Haz clic en "Generar nuevo SKU + EAN-13" o usa otro código.`
+            });
+        }
+
         const slug = await slugUnico(req.negocio.id, slugify(cleanNombre));
         const files = req.files || [];
         const fallbackImg = req.body.imagen_url ? [String(req.body.imagen_url).trim()] : [];
@@ -339,8 +373,14 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
 
         res.status(201).json({ success: true, producto });
     } catch (error) {
-        logger.error('Negocios: error creando producto', { error: error.message });
-        res.status(500).json({ success: false, message: 'Error interno al crear producto.' });
+        logger.error('Negocios: error creando producto', { error: error.message, code: error.code, detail: error.detail });
+        if (error.code === '23505') {
+            return res.status(409).json({ success: false, message: 'Ya existe un producto registrado con ese nombre, SKU o código EAN.' });
+        }
+        if (error.code === '22P02' || error.code === '22007') {
+            return res.status(400).json({ success: false, message: 'Verifica que el precio, stock, costo y fechas tengan un formato válido.' });
+        }
+        res.status(500).json({ success: false, message: `No se pudo crear el producto (${error.code || 'error de base de datos'}).` });
     }
 });
 

@@ -41,7 +41,7 @@
     });
     if (res.status === 401) {
       localStorage.removeItem(STORAGE_KEY);
-      alert('Tu sesión expiró. Vuelve a ingresar.');
+      await window.LpsModal.alert({ title: 'Sesión expirada', message: 'Tu sesión expiró. Vuelve a ingresar.', type: 'warning' });
       location.reload();
       throw new Error('No autenticado');
     }
@@ -360,7 +360,7 @@
 
   async function descargarExport(path, filename) {
     const res = await apiFetch(path);
-    if (!res.ok) { alert('Error al exportar.'); return; }
+    if (!res.ok) { await window.LpsModal.alert('Error al exportar.', 'error'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -491,7 +491,9 @@
 
   function openConfirmModal({ title, message, confirmText = 'Sí, eliminar', onConfirm }) {
     if (!modalConfirmacion) {
-      if (confirm(message || title)) onConfirm && onConfirm();
+      window.LpsModal.confirm({ title: title || 'Confirmar acción', message: message || title, confirmText, danger: true }).then((ok) => {
+        if (ok && onConfirm) onConfirm();
+      });
       return;
     }
     if (modalConfirmTitulo) modalConfirmTitulo.textContent = title || '¿Estás seguro?';
@@ -760,17 +762,22 @@
 
       lista.querySelectorAll('.btn-migrar-producto-estatico').forEach(btn => {
         btn.addEventListener('click', async () => {
-          if (!confirm(`"${btn.dataset.nombre}" pasará a ser un producto editable (arriba en la lista), con su nombre/precio/descripción/fotos actuales. La tarjeta vieja del catálogo se reemplaza por esta -- ¿continuar?`)) return;
+          const ok = await window.LpsModal.confirm({
+            title: 'Migrar producto a editable',
+            message: `"${btn.dataset.nombre}" pasará a ser un producto editable (arriba en la lista), con su nombre, precio, descripción y fotos actuales. La tarjeta anterior del catálogo se reemplazará por esta. ¿Continuar?`,
+            confirmText: 'Sí, migrar'
+          });
+          if (!ok) return;
           try {
             const res = await apiFetch(`/productos-estaticos/${btn.dataset.slug}/migrar`, { method: 'POST' });
             const data = await res.json();
             if (res.ok && data.success) {
               loadProductos();
             } else {
-              alert(data.message || 'Error al migrar el producto.');
+              await window.LpsModal.alert(data.message || 'Error al migrar el producto.', 'error');
             }
           } catch {
-            alert('Error de conexión.');
+            await window.LpsModal.alert('Error de conexión.', 'error');
           }
         });
       });
@@ -1979,13 +1986,13 @@
   if (btnPushAdmin) {
     btnPushAdmin.addEventListener('click', async () => {
       if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-        alert('Tu navegador no soporta notificaciones Web Push.');
+        await window.LpsModal.alert('Tu navegador no soporta notificaciones Web Push.', 'warning');
         return;
       }
       try {
         const perm = await Notification.requestPermission();
         if (perm !== 'granted') {
-          alert('Permiso de notificaciones no concedido.');
+          await window.LpsModal.alert('Permiso de notificaciones no concedido.', 'warning');
           return;
         }
         const reg = await navigator.serviceWorker.register('/sw.js');
@@ -2379,10 +2386,10 @@
         if (res.ok && data.success) {
           await loadInventario();
           await loadProductos();
-          alert(data.message);
+          await window.LpsModal.alert(data.message || 'Catálogo matriculado correctamente.', 'success');
         }
       } catch {
-        alert('Error de conexión al matricular catálogo.');
+        await window.LpsModal.alert('Error de conexión al matricular catálogo.', 'error');
       } finally {
         btnInvMatricularMasivo.disabled = false;
         btnInvMatricularMasivo.textContent = orig;
@@ -2404,7 +2411,7 @@
         .filter(c => !Number.isNaN(c.stock_fisico) && c.stock_fisico !== c.stock_orig);
 
       if (conteos.length === 0) {
-        alert('Modifica primero las cantidades físicas contadas en una o más filas para guardar diferencias.');
+        await window.LpsModal.alert('Modifica primero las cantidades físicas contadas en una o más filas para guardar diferencias.', 'warning');
         return;
       }
 
@@ -2503,15 +2510,27 @@
         }
 
         const res = await apiFetch('/productos', { method: 'POST', body: fd });
-        const data = await res.json();
+        let data = {};
+        try { data = await res.json(); } catch { data = {}; }
         if (res.ok && data.success) {
           formMatricula.reset();
           formMatricula.classList.add('hidden');
           await loadInventario();
           await loadProductos();
+          window.LpsModal.toast('Producto matriculado y registrado en inventario.', 'success');
         } else {
-          alert(data.message || 'No se pudo matricular la mercadería.');
+          await window.LpsModal.alert({
+            title: 'No se pudo matricular el producto',
+            message: data.message || 'Ocurrió un error al guardar la mercadería. Verifica los campos e intenta nuevamente.',
+            type: 'error'
+          });
         }
+      } catch {
+        await window.LpsModal.alert({
+          title: 'Error de conexión',
+          message: 'No pudimos comunicarnos con el servidor para matricular el producto.',
+          type: 'error'
+        });
       } finally {
         if (btnSubmit) {
           btnSubmit.disabled = false;
@@ -2760,7 +2779,7 @@
         var cant = parseInt(document.getElementById('ficha-mov-cant')?.value || '0', 10);
         var motivo = (document.getElementById('ficha-mov-motivo')?.value || '').trim();
         if (!prodId || Number.isNaN(cant) || cant < 0) {
-          alert('Ingresa una cantidad válida para el movimiento de almacén.');
+          await window.LpsModal.alert('Ingresa una cantidad válida para el movimiento de almacén.', 'warning');
           return;
         }
         var origTxt = btnAplicarMov.textContent;
@@ -2785,7 +2804,7 @@
             await loadProductos();
             await abrirModalFichaProducto360(prodId);
           } else {
-            alert(d.message || 'No se pudo registrar el movimiento.');
+            await window.LpsModal.alert(d.message || 'No se pudo registrar el movimiento.', 'error');
           }
         } finally {
           btnAplicarMov.disabled = false;
@@ -2826,7 +2845,7 @@
           var vssChkVal = Boolean(document.getElementById('ficha-vender-sin-stock')?.checked);
           var vssFechaVal = (document.getElementById('ficha-fecha-entrega')?.value || '').trim();
           if (vssChkVal && !vssFechaVal) {
-            alert('Por favor indica la fecha de entrega estimada cuando activas "Vender sin stock".');
+            await window.LpsModal.alert('Por favor indica la fecha de entrega estimada cuando activas "Vender sin stock".', 'warning');
             document.getElementById('ficha-fecha-entrega')?.focus();
             btnSave.disabled = false;
             btnSave.textContent = orig;
@@ -2862,7 +2881,7 @@
             await loadInventario();
             await loadProductos();
           } else {
-            alert(data.message || 'Error al actualizar la ficha del producto.');
+            await window.LpsModal.alert(data.message || 'Error al actualizar la ficha del producto.', 'error');
           }
         } finally {
           btnSave.disabled = false;

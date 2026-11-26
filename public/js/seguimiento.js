@@ -303,13 +303,13 @@
         btn.addEventListener('click', async () => {
           const cod = btn.dataset.pushCodigo;
           if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-            alert('Tu navegador no soporta notificaciones Web Push.');
+            await window.LpsModal.alert('Tu navegador no soporta notificaciones Web Push.', 'warning');
             return;
           }
           try {
             const perm = await Notification.requestPermission();
             if (perm !== 'granted') {
-              alert('Permiso de notificaciones denegado.');
+              await window.LpsModal.alert('Permiso de notificaciones denegado.', 'warning');
               return;
             }
             const reg = await navigator.serviceWorker.register('/sw.js');
@@ -355,12 +355,12 @@
             if (mpRes.ok && mpData.init_point) {
               window.location.href = mpData.init_point;
             } else {
-              alert(mpData.message || 'No se pudo iniciar Mercado Pago.');
+              await window.LpsModal.alert(mpData.message || 'No se pudo iniciar Mercado Pago.', 'error');
               btn.disabled = false;
               btn.textContent = 'Pagar Saldo con Mercado Pago';
             }
           } catch {
-            alert('Error de conexión con la pasarela.');
+            await window.LpsModal.alert('Error de conexión con la pasarela.', 'error');
             btn.disabled = false;
             btn.textContent = 'Pagar Saldo con Mercado Pago';
           }
