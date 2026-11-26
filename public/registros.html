@@ -763,10 +763,27 @@
               class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] font-bold text-sm focus:outline-none focus:border-[#B87352]">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Colección / Ubicación</label>
-            <input type="text" id="mat-coleccion" maxlength="80" placeholder="Catálogo General"
-              class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Colección</label>
+            <select id="mat-coleccion" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#B87352]">
+              <option value="Catálogo General">Catálogo General</option>
+              <option value="Colección Navidad">Colección Navidad</option>
+              <option value="Colección Van Gogh">Colección Van Gogh</option>
+              <option value="Colección Rapunzel">Colección Rapunzel</option>
+              <option value="Regalos & Temporada">Regalos &amp; Temporada</option>
+            </select>
           </div>
+        </div>
+
+        <div class="bg-[#F9F6F0] p-3.5 rounded-2xl border border-[#EBE5DE] space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label for="mat-descripcion" class="text-xs font-semibold text-[#4A3C31]">Descripción Comercial (opcional · visible al cliente)</label>
+            <button type="button" id="btn-mat-ia-descripcion" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#007A78]/10 hover:bg-[#007A78]/20 text-[#007A78] text-[11px] font-bold border border-[#007A78]/25 transition-colors cursor-pointer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16z"/></svg>
+              Redactar con IA según la imagen
+            </button>
+          </div>
+          <textarea id="mat-descripcion" rows="2" maxlength="1000" placeholder="Sube una foto arriba/abajo y haz clic en 'Redactar con IA según la imagen', o escribe la descripción manualmente..."
+            class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm text-[#4A3C31] focus:outline-none focus:border-[#B87352]"></textarea>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -953,9 +970,22 @@
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-medium">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Colección</label>
-                <input type="text" id="ficha-coleccion" maxlength="60" placeholder="Catálogo General"
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <label class="block text-[11px] font-semibold text-[#8C7A6B]">Colección</label>
+                  <label class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] cursor-pointer select-none">
+                    <input type="checkbox" id="ficha-chk-navidad" class="w-3.5 h-3.5 accent-[#007A78] rounded cursor-pointer">
+                    Navidad
+                  </label>
+                </div>
+                <input type="text" id="ficha-coleccion" maxlength="60" placeholder="Catálogo General" list="lps-colecciones-list"
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-medium">
+                <datalist id="lps-colecciones-list">
+                  <option value="Catálogo General"></option>
+                  <option value="Colección Navidad"></option>
+                  <option value="Colección Van Gogh"></option>
+                  <option value="Colección Rapunzel"></option>
+                  <option value="Regalos &amp; Temporada"></option>
+                </datalist>
               </div>
               <div>
                 <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Ubicación en Almacén</label>
@@ -1347,8 +1377,14 @@
                 class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
             </div>
             <div>
-              <label class="block text-xs font-medium text-[#4A3C31] mb-1">4. Colección / Temporada</label>
-              <input type="text" id="np-coleccion" maxlength="80" placeholder="Ej: Navidad 2026 / Van Gogh / Rapunzel"
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <label class="block text-xs font-medium text-[#4A3C31]">4. Colección / Temporada</label>
+                <label class="inline-flex items-center gap-1 text-[10px] font-bold text-[#007A78] cursor-pointer select-none">
+                  <input type="checkbox" id="np-chk-navidad" class="w-3.5 h-3.5 accent-[#007A78] rounded cursor-pointer">
+                  Navidad
+                </label>
+              </div>
+              <input type="text" id="np-coleccion" maxlength="80" placeholder="Ej: Colección Navidad / Van Gogh" list="lps-colecciones-list"
                 class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
             </div>
           </div>
@@ -1416,7 +1452,13 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-[#4A3C31] mb-1">Descripción Comercial</label>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+              <label class="block text-xs font-semibold text-[#4A3C31]">Descripción Comercial</label>
+              <button type="button" id="btn-np-ia-descripcion" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#007A78]/10 hover:bg-[#007A78]/20 text-[#007A78] text-[11px] font-bold border border-[#007A78]/25 transition-colors cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16z"/></svg>
+                Redactar con IA según la imagen
+              </button>
+            </div>
             <textarea id="np-descripcion" rows="2" maxlength="600" placeholder="Historia y encanto de la pieza..."
               class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm focus:outline-none focus:border-[#B87352]"></textarea>
           </div>
@@ -1627,7 +1669,7 @@
 
   <!-- Script modular externo al final del DOM para inicializar todos los modales -->
   <script src="/js/lps-modal.js?v=20261126_s1"></script>
-  <script src="/js/registros.js?v=20261126_s10"></script>
+  <script src="/js/registros.js?v=20261126_s11"></script>
 </body>
 
 </html>

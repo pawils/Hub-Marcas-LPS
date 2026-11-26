@@ -428,6 +428,7 @@ initSlider('slider-taza-navidad');
       vender_sin_stock: permiteSinStock,
       fecha_entrega_estimada: p.fecha_entrega_estimada || null,
       agotado: agotado,
+      coleccion: p.coleccion || 'Catálogo General',
       imagenes: imgsList,
       descripcion: p.descripcion || '',
       tamano_dimensiones: p.tamano_dimensiones || '',
@@ -437,7 +438,7 @@ initSlider('slider-taza-navidad');
     registerProductInStore(prodObj);
 
     return '' +
-      '<div class="group flex flex-col bg-white rounded-3xl p-3.5 border border-[#EBE5DE] shadow-2xs hover:shadow-md transition-all" data-slug="' + escapeHtml(p.slug) + '" data-cat="' + cat + '" data-price="' + precioEfectivo + '" data-name="' + nombre.toLowerCase() + '" data-sku="' + escapeHtml(prodObj.sku) + '">' +
+      '<div class="group flex flex-col bg-white rounded-3xl p-3.5 border border-[#EBE5DE] shadow-2xs hover:shadow-md transition-all" data-slug="' + escapeHtml(p.slug) + '" data-cat="' + cat + '" data-coleccion="' + escapeHtml((p.coleccion || '').toLowerCase()) + '" data-price="' + precioEfectivo + '" data-name="' + nombre.toLowerCase() + '" data-sku="' + escapeHtml(prodObj.sku) + '">' +
       '<div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#F9F6F0] cursor-pointer" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')">' +
       '<img src="' + escapeHtml(img) + '" alt="' + nombre + '" loading="lazy" onerror="this.onerror=null; this.src=\'/imagenes/Artesanitas/logo_artesanitas.peru.jpg\';" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />' +
       '</div>' +
@@ -1015,13 +1016,16 @@ initSlider('slider-taza-navidad');
       }
       var slug = card.getAttribute('data-slug') || '';
       var cat = card.getAttribute('data-cat') || 'tazas';
+      var colAttr = (card.getAttribute('data-coleccion') || '').toLowerCase();
       var name = card.getAttribute('data-name') || '';
       var sku = (card.getAttribute('data-sku') || '').toLowerCase();
       var prod = PRODUCTOS_STORE_MAP[slug] || {};
       var desc = (prod.descripcion || '').toLowerCase();
+      var colProd = (prod.coleccion || colAttr || '').toLowerCase();
 
-      var matchCat = (activeCategory === 'todos') || (cat === activeCategory);
-      var matchQuery = !q || name.indexOf(q) !== -1 || slug.indexOf(q) !== -1 || sku.indexOf(q) !== -1 || desc.indexOf(q) !== -1;
+      var matchCat = (activeCategory === 'todos') ||
+        (activeCategory === 'navidad' ? (colProd.indexOf('navid') !== -1 || slug.indexOf('navid') !== -1) : (cat === activeCategory));
+      var matchQuery = !q || name.indexOf(q) !== -1 || slug.indexOf(q) !== -1 || sku.indexOf(q) !== -1 || desc.indexOf(q) !== -1 || colProd.indexOf(q) !== -1;
 
       if (matchCat && matchQuery) {
         card.style.display = '';
@@ -1239,6 +1243,13 @@ initSlider('slider-taza-navidad');
         });
         if (contenedor) {
           contenedor.innerHTML = nuevosDinamicos.map(cardHtml).join('');
+        }
+        var navDinamicosBox = document.getElementById('coleccion-navidad-dinamicos');
+        if (navDinamicosBox) {
+          var navItems = nuevosDinamicos.filter(function (p) {
+            return /navid/i.test(p.coleccion || '');
+          });
+          navDinamicosBox.innerHTML = navItems.map(cardHtml).join('');
         }
         refreshCardActionSlots();
         applyCatalogFilters();

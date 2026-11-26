@@ -2151,9 +2151,13 @@
                 class="w-11 h-11 rounded-xl object-cover border border-[#EBE5DE] shrink-0 bg-[#F9F6F0]">
               <div class="min-w-0">
                 <button type="button" data-ficha-id="${p.id}" class="btn-inv-ver-ficha font-bold text-[#4A3C31] hover:text-[#B87352] hover:underline text-xs sm:text-sm text-left cursor-pointer block">${escapeHtml(cleanNombre)}</button>
-                <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                <div class="flex items-center gap-1.5 flex-wrap mt-1">
                   <span class="font-mono font-bold text-[10px] text-[#4A3C31] bg-[#F9F6F0] px-1.5 py-0.5 rounded border border-[#EBE5DE]">SKU: ${escapeHtml(p.sku || '----')}</span>
-                  <span class="text-[10px] font-semibold text-[#B87352]">${escapeHtml(p.coleccion || 'Catálogo General')}</span>
+                  <button type="button" data-nav-prod-id="${p.id}" data-nav-active="${/navid/i.test(p.coleccion || '') ? '1' : '0'}"
+                    title="Activar o quitar de la Colección Navideña en la tienda"
+                    class="btn-inv-toggle-navidad inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors cursor-pointer ${/navid/i.test(p.coleccion || '') ? 'bg-[#B87352]/15 text-[#B87352] border border-[#B87352]/40 hover:bg-[#B87352]/25' : 'bg-[#F9F6F0] text-[#8C7A6B] border border-dashed border-[#D5C9BD] hover:border-[#B87352] hover:text-[#4A3C31]'}">
+                    ${/navid/i.test(p.coleccion || '') ? 'Colección Navidad ✓' : '+ Colección Navidad'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -2324,6 +2328,32 @@
       });
     });
 
+    tbody.querySelectorAll('.btn-inv-toggle-navidad').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const prodId = btn.dataset.navProdId;
+        const wasActive = btn.dataset.navActive === '1';
+        const nextColeccion = wasActive ? 'Catálogo General' : 'Colección Navidad';
+        btn.disabled = true;
+        try {
+          const res = await apiFetch(`/productos/${prodId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coleccion: nextColeccion })
+          });
+          if (res.ok) {
+            window.LpsModal.toast(
+              wasActive ? 'Producto quitado de Colección Navidad.' : 'Producto activado en Colección Navidad.',
+              'success'
+            );
+            await loadInventario();
+            await loadProductos();
+          }
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
     tbody.querySelectorAll('.btn-inv-ver-etiqueta').forEach(btn => {
       btn.addEventListener('click', () => {
         const prod = inventarioCache.find(x => String(x.id) === String(btn.dataset.etiquetaId));
@@ -2481,6 +2511,93 @@
   if (matLinea) matLinea.addEventListener('change', autollenarCodigosMatricula);
   if (matSublinea) matSublinea.addEventListener('change', autollenarCodigosMatricula);
 
+  let matIaMeta = { color: '', caracteristicas: '' };
+
+  async function solicitarDescripcionIa({ file, productoId, nombre, linea, sublinea, coleccion, btnEl, descEl, colorEl, carEl, onMeta }) {
+    if (!file && !productoId) {
+      await window.LpsModal.alert('Primero selecciona al menos una foto del producto para que la IA pueda analizarla.', 'warning');
+      return;
+    }
+    const origHtml = btnEl.innerHTML;
+    btnEl.disabled = true;
+    btnEl.textContent = 'Analizando imagen con IA...';
+    try {
+      const fd = new FormData();
+      if (productoId) fd.append('producto_id', productoId);
+      fd.append('nombre', nombre || '');
+      fd.append('linea', linea || '');
+      fd.append('sublinea', sublinea || '');
+      fd.append('coleccion', coleccion || '');
+      if (file) {
+        const optIaFile = await comprimirImagenWeb(file);
+        fd.append('imagenes', optIaFile);
+      }
+      const res = await apiFetch('/productos/ia-descripcion', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (descEl && data.descripcion) descEl.value = data.descripcion;
+        if (colorEl && !colorEl.value.trim() && data.color) colorEl.value = data.color;
+        if (carEl && !carEl.value.trim() && data.caracteristicas) carEl.value = data.caracteristicas;
+        if (typeof onMeta === 'function') onMeta(data);
+        window.LpsModal.toast('Descripción generada con IA según la imagen.', 'success');
+      } else {
+        await window.LpsModal.alert(data.message || 'No se pudo generar la descripción con IA.', 'error');
+      }
+    } catch {
+      await window.LpsModal.alert('Error de conexión al consultar la IA.', 'error');
+    } finally {
+      btnEl.disabled = false;
+      btnEl.innerHTML = origHtml;
+    }
+  }
+
+  const btnMatIa = document.getElementById('btn-mat-ia-descripcion');
+  if (btnMatIa) {
+    btnMatIa.addEventListener('click', () => {
+      const matFile = document.getElementById('mat-imagen')?.files?.[0] || null;
+      solicitarDescripcionIa({
+        file: matFile,
+        nombre: document.getElementById('mat-nombre')?.value.trim() || '',
+        linea: matLinea?.value || '',
+        sublinea: matSublinea?.value || '',
+        coleccion: document.getElementById('mat-coleccion')?.value || '',
+        btnEl: btnMatIa,
+        descEl: document.getElementById('mat-descripcion'),
+        onMeta: (d) => { matIaMeta = { color: d.color || '', caracteristicas: d.caracteristicas || '' }; }
+      });
+    });
+  }
+
+  const btnNpIa = document.getElementById('btn-np-ia-descripcion');
+  if (btnNpIa) {
+    btnNpIa.addEventListener('click', () => {
+      const npFile = document.getElementById('np-imagenes')?.files?.[0] || null;
+      solicitarDescripcionIa({
+        file: npFile,
+        productoId: editingProductoId || '',
+        nombre: document.getElementById('np-nombre')?.value.trim() || '',
+        linea: document.getElementById('np-linea')?.value || '',
+        sublinea: document.getElementById('np-sublinea')?.value || '',
+        coleccion: document.getElementById('np-coleccion')?.value.trim() || '',
+        btnEl: btnNpIa,
+        descEl: document.getElementById('np-descripcion'),
+        colorEl: document.getElementById('np-color'),
+        carEl: document.getElementById('np-caracteristicas')
+      });
+    });
+  }
+
+  const npChkNav = document.getElementById('np-chk-navidad');
+  const npColInp = document.getElementById('np-coleccion');
+  if (npChkNav && npColInp) {
+    npChkNav.addEventListener('change', () => {
+      npColInp.value = npChkNav.checked ? 'Colección Navidad' : 'Catálogo General';
+    });
+    npColInp.addEventListener('input', () => {
+      npChkNav.checked = /navid/i.test(npColInp.value || '');
+    });
+  }
+
   if (formMatricula) {
     formMatricula.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -2501,6 +2618,10 @@
         fd.append('costo_artesano', document.getElementById('mat-costo')?.value || '');
         fd.append('precio', document.getElementById('mat-precio')?.value || '0');
         fd.append('coleccion', document.getElementById('mat-coleccion')?.value.trim() || 'Catálogo General');
+        const matDesc = document.getElementById('mat-descripcion')?.value.trim() || '';
+        if (matDesc) fd.append('descripcion', matDesc);
+        if (matIaMeta.color) fd.append('color', matIaMeta.color);
+        if (matIaMeta.caracteristicas) fd.append('caracteristicas', matIaMeta.caracteristicas);
         const imgFile = document.getElementById('mat-imagen')?.files?.[0];
         if (imgFile) {
           const optFile = await comprimirImagenWeb(imgFile);
@@ -2514,6 +2635,7 @@
         try { data = await res.json(); } catch { data = {}; }
         if (res.ok && data.success) {
           formMatricula.reset();
+          matIaMeta = { color: '', caracteristicas: '' };
           formMatricula.classList.add('hidden');
           await loadInventario();
           await loadProductos();
@@ -2679,6 +2801,8 @@
     document.getElementById('ficha-linea').value = p.linea || 'Vajilla Artesanal';
     document.getElementById('ficha-sublinea').value = p.sublinea || 'Tazas & Mugs';
     document.getElementById('ficha-coleccion').value = p.coleccion || 'Catálogo General';
+    var fichaNavChk = document.getElementById('ficha-chk-navidad');
+    if (fichaNavChk) fichaNavChk.checked = /navid/i.test(p.coleccion || '');
     document.getElementById('ficha-ubicacion').value = p.ubicacion_almacen || 'Almacén Principal Trujillo';
 
     document.getElementById('ficha-dimensiones').value = p.tamano_dimensiones || '';
@@ -2795,47 +2919,34 @@
       });
     }
 
+    var fichaNavInit = document.getElementById('ficha-chk-navidad');
+    var fichaColInit = document.getElementById('ficha-coleccion');
+    if (fichaNavInit && fichaColInit) {
+      fichaNavInit.addEventListener('change', function () {
+        fichaColInit.value = fichaNavInit.checked ? 'Colección Navidad' : 'Catálogo General';
+      });
+      fichaColInit.addEventListener('input', function () {
+        fichaNavInit.checked = /navid/i.test(fichaColInit.value || '');
+      });
+    }
+
     var btnIaDesc = document.getElementById('btn-ficha-ia-descripcion');
     if (btnIaDesc) {
-      btnIaDesc.addEventListener('click', async function () {
+      btnIaDesc.addEventListener('click', function () {
         var prodId = document.getElementById('ficha-prod-id')?.value || '';
-        if (fichaNuevosArchivos.length === 0 && fichaImagenesExistentes.filter(function (u) { return !u.includes('logo_artesanitas.peru.jpg'); }).length === 0) {
-          await window.LpsModal.alert('Primero agrega al menos una foto del producto para que la IA pueda analizarla.', 'warning');
-          return;
-        }
-        var origHtml = btnIaDesc.innerHTML;
-        btnIaDesc.disabled = true;
-        btnIaDesc.textContent = 'Analizando imagen con IA...';
-        try {
-          var fd = new FormData();
-          fd.append('producto_id', prodId);
-          fd.append('nombre', document.getElementById('ficha-nombre')?.value.trim() || '');
-          fd.append('linea', document.getElementById('ficha-linea')?.value || '');
-          fd.append('sublinea', document.getElementById('ficha-sublinea')?.value.trim() || '');
-          fd.append('coleccion', document.getElementById('ficha-coleccion')?.value.trim() || '');
-          if (fichaNuevosArchivos[0]) {
-            var optIaFile = await comprimirImagenWeb(fichaNuevosArchivos[0]);
-            fd.append('imagenes', optIaFile);
-          }
-          var res = await apiFetch('/productos/ia-descripcion', { method: 'POST', body: fd });
-          var data = await res.json();
-          if (res.ok && data.success) {
-            var descEl = document.getElementById('ficha-descripcion');
-            var colEl = document.getElementById('ficha-color');
-            var carEl = document.getElementById('ficha-caracteristicas');
-            if (descEl && data.descripcion) descEl.value = data.descripcion;
-            if (colEl && !colEl.value.trim() && data.color) colEl.value = data.color;
-            if (carEl && !carEl.value.trim() && data.caracteristicas) carEl.value = data.caracteristicas;
-            window.LpsModal.toast('Descripción generada con IA. Recuerda hacer clic en Guardar Ficha.', 'success');
-          } else {
-            await window.LpsModal.alert(data.message || 'No se pudo generar la descripción con IA.', 'error');
-          }
-        } catch {
-          await window.LpsModal.alert('Error de conexión al consultar la IA.', 'error');
-        } finally {
-          btnIaDesc.disabled = false;
-          btnIaDesc.innerHTML = origHtml;
-        }
+        var hasSavedPhoto = fichaImagenesExistentes.some(function (u) { return !u.includes('logo_artesanitas.peru.jpg'); });
+        solicitarDescripcionIa({
+          file: fichaNuevosArchivos[0] || null,
+          productoId: hasSavedPhoto ? prodId : '',
+          nombre: document.getElementById('ficha-nombre')?.value.trim() || '',
+          linea: document.getElementById('ficha-linea')?.value || '',
+          sublinea: document.getElementById('ficha-sublinea')?.value.trim() || '',
+          coleccion: document.getElementById('ficha-coleccion')?.value.trim() || '',
+          btnEl: btnIaDesc,
+          descEl: document.getElementById('ficha-descripcion'),
+          colorEl: document.getElementById('ficha-color'),
+          carEl: document.getElementById('ficha-caracteristicas')
+        });
       });
     }
 
