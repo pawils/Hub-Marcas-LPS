@@ -8,6 +8,8 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const multer = require('multer');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const ExcelJS = require('exceljs');
 const pool = require('../db.config');
 const logger = require('../utils/logger');
@@ -468,21 +470,77 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
         if (b.descripcion !== undefined) set('descripcion', b.descripcion);
         if (b.activo !== undefined) set('activo', b.activo === true || b.activo === 'true');
 
-        if (files.length > 0) {
+        if (b.imagenes_existentes !== undefined || files.length > 0) {
+            let keptUrls = [];
+            if (b.imagenes_existentes !== undefined) {
+                try {
+                    const parsed = JSON.parse(b.imagenes_existentes);
+                    if (Array.isArray(parsed)) {
+                        keptUrls = parsed.filter(u => typeof u === 'string' && u.trim());
+                    }
+                } catch {
+                    keptUrls = [];
+                }
+            } else {
+                const { rows: curProdRows } = await pool.query(
+                    `SELECT imagenes FROM negocio_productos WHERE id = $1 AND negocio_id = $2`,
+                    [id, req.negocio.id]
+                );
+                const curImgs = curProdRows[0]?.imagenes;
+                if (Array.isArray(curImgs)) keptUrls = curImgs;
+            }
+
+            if (files.length > 0) {
+                keptUrls = keptUrls.filter(u => !u.includes('logo_artesanitas.peru.jpg'));
+            }
+
+            const { rows: existingPhotos } = await pool.query(
+                `SELECT posicion, mime_type, foto_data FROM negocio_producto_fotos
+                 WHERE producto_id = $1 AND negocio_id = $2 ORDER BY posicion ASC`,
+                [id, req.negocio.id]
+            );
+            const photoByPos = new Map(existingPhotos.map(r => [Number(r.posicion), r]));
+
+            const finalEntries = [];
+            const fotoPrefix = `/api/negocios/${req.negocio.slug}/productos/${id}/foto/`;
+
+            for (const url of keptUrls) {
+                if (finalEntries.length >= 6) break;
+                if (url.startsWith(fotoPrefix)) {
+                    const posNum = parseInt(url.slice(fotoPrefix.length), 10);
+                    const found = photoByPos.get(posNum);
+                    if (found) {
+                        finalEntries.push({ kind: 'db', mime_type: found.mime_type, buffer: found.foto_data });
+                    }
+                } else {
+                    finalEntries.push({ kind: 'url', url });
+                }
+            }
+
+            for (const f of files) {
+                if (finalEntries.length >= 6) break;
+                finalEntries.push({ kind: 'db', mime_type: f.mimetype || 'image/webp', buffer: f.buffer });
+            }
+
             await pool.query(
                 `DELETE FROM negocio_producto_fotos WHERE producto_id = $1 AND negocio_id = $2`,
                 [id, req.negocio.id]
             );
 
             const imagenesUrls = [];
-            for (let idx = 0; idx < files.length; idx++) {
-                const f = files[idx];
-                await pool.query(
-                    `INSERT INTO negocio_producto_fotos (producto_id, negocio_id, posicion, mime_type, foto_data)
-                     VALUES ($1, $2, $3, $4, $5)`,
-                    [id, req.negocio.id, idx, f.mimetype || 'image/webp', f.buffer]
-                );
-                imagenesUrls.push(`/api/negocios/${req.negocio.slug}/productos/${id}/foto/${idx}`);
+            let dbIdx = 0;
+            for (const entry of finalEntries) {
+                if (entry.kind === 'db') {
+                    await pool.query(
+                        `INSERT INTO negocio_producto_fotos (producto_id, negocio_id, posicion, mime_type, foto_data)
+                         VALUES ($1, $2, $3, $4, $5)`,
+                        [id, req.negocio.id, dbIdx, entry.mime_type || 'image/webp', entry.buffer]
+                    );
+                    imagenesUrls.push(`/api/negocios/${req.negocio.slug}/productos/${id}/foto/${dbIdx}`);
+                    dbIdx += 1;
+                } else {
+                    imagenesUrls.push(entry.url);
+                }
             }
             set('imagenes', JSON.stringify(imagenesUrls));
         }
@@ -528,6 +586,126 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
     } catch (error) {
         logger.error('Negocios: error actualizando producto', { error: error.message });
         res.status(500).json({ success: false, message: 'Error interno.' });
+    }
+});
+
+// POST /api/negocios/:negocioSlug/productos/ia-descripcion — redacta descripción comercial desde la imagen con Gemini 2.5 Flash
+router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, uploadImagenes, async (req, res) => {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) {
+        return res.status(503).json({
+            success: false,
+            message: 'Falta configurar GEMINI_API_KEY en el servidor para generar descripciones con IA.'
+        });
+    }
+
+    try {
+        let imgBuffer = null;
+        let imgMime = 'image/webp';
+
+        if (req.files && req.files.length > 0) {
+            imgBuffer = req.files[0].buffer;
+            imgMime = req.files[0].mimetype || 'image/webp';
+        } else if (req.body.producto_id) {
+            const prodId = parseInt(req.body.producto_id, 10);
+            const { rows: fotoRows } = await pool.query(
+                `SELECT mime_type, foto_data FROM negocio_producto_fotos
+                 WHERE producto_id = $1 AND negocio_id = $2
+                 ORDER BY posicion ASC LIMIT 1`,
+                [prodId, req.negocio.id]
+            );
+            if (fotoRows.length > 0 && fotoRows[0].foto_data) {
+                imgBuffer = fotoRows[0].foto_data;
+                imgMime = fotoRows[0].mime_type || 'image/webp';
+            } else {
+                const { rows: prodRows } = await pool.query(
+                    `SELECT imagenes FROM negocio_productos WHERE id = $1 AND negocio_id = $2 LIMIT 1`,
+                    [prodId, req.negocio.id]
+                );
+                const firstUrl = Array.isArray(prodRows[0]?.imagenes) ? prodRows[0].imagenes[0] : '';
+                if (firstUrl && firstUrl.startsWith('/imagenes/') && !firstUrl.includes('logo_artesanitas.peru.jpg')) {
+                    const publicRoot = path.resolve(__dirname, '..', '..', 'public');
+                    const candidate = path.resolve(publicRoot, firstUrl.replace(/^\/+/, ''));
+                    if (candidate.startsWith(publicRoot) && fs.existsSync(candidate)) {
+                        imgBuffer = fs.readFileSync(candidate);
+                        const ext = path.extname(candidate).toLowerCase();
+                        imgMime = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+                    }
+                }
+            }
+        }
+
+        if (!imgBuffer) {
+            return res.status(400).json({
+                success: false,
+                message: 'Primero selecciona o guarda al menos una foto del producto para que la IA pueda analizarla.'
+            });
+        }
+
+        const nombre = String(req.body.nombre || '').trim();
+        const linea = String(req.body.linea || '').trim();
+        const sublinea = String(req.body.sublinea || '').trim();
+        const coleccion = String(req.body.coleccion || '').trim();
+
+        const prompt = [
+            `Eres copywriter e-commerce experto para la tienda "${req.negocio.nombre || 'Artesanitas Perú'}".`,
+            'Analiza con precisión la imagen del producto y redacta una ficha comercial atractiva en español.',
+            `Contexto del producto: Nombre="${nombre || 'Producto'}", Línea="${linea || 'General'}", Sublínea="${sublinea || 'General'}", Colección="${coleccion || 'Catálogo General'}".`,
+            'Devuelve EXCLUSIVAMENTE un JSON válido (sin markdown ni bloques de código) con esta estructura:',
+            '{',
+            '  "descripcion": "Descripción comercial cálida y persuasiva de 2 a 4 oraciones (máx 450 caracteres), destacando diseño, acabados visibles, usos ideales y por qué es un regalo o pieza especial. Puedes incluir 2 o 3 emojis sutiles y acordes al producto.",',
+            '  "color": "Color(es) y acabado principal visible en la foto (ej: Rojo y verde navideño con esmalte brillante), máx 60 caracteres",',
+            '  "caracteristicas": "2 a 3 atributos clave separados por · (ej: Acabado esmaltado · Diseño temático · Ideal para regalo), máx 120 caracteres"',
+            '}'
+        ].join('\n');
+
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const aiRes = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: imgMime, data: imgBuffer.toString('base64') } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.5,
+                    responseMimeType: 'application/json'
+                }
+            })
+        });
+
+        if (!aiRes.ok) {
+            const errTxt = await aiRes.text().catch(() => '');
+            logger.warn('IA Descripción: Gemini API respondió error', { status: aiRes.status, body: errTxt.slice(0, 200) });
+            return res.status(502).json({ success: false, message: 'No se pudo obtener respuesta de Gemini IA en este momento.' });
+        }
+
+        const aiData = await aiRes.json();
+        const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        let parsed = {};
+        try {
+            parsed = JSON.parse(rawText);
+        } catch {
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+        }
+
+        if (!parsed.descripcion) {
+            return res.status(502).json({ success: false, message: 'La IA no devolvió una descripción válida.' });
+        }
+
+        res.json({
+            success: true,
+            descripcion: String(parsed.descripcion).trim().slice(0, 1000),
+            color: parsed.color ? String(parsed.color).trim().slice(0, 80) : '',
+            caracteristicas: parsed.caracteristicas ? String(parsed.caracteristicas).trim().slice(0, 160) : ''
+        });
+    } catch (error) {
+        logger.error('IA Descripción: error generando descripción', { error: error.message });
+        res.status(500).json({ success: false, message: 'Error al generar la descripción con IA.' });
     }
 });
 

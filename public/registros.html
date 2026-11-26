@@ -889,9 +889,9 @@
               <img id="ficha-img-preview" src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Foto producto"
                 class="w-16 h-16 rounded-2xl object-cover border border-[#D5C9BD] bg-[#F9F6F0]">
               <label for="ficha-foto-input" class="text-[10px] font-bold text-[#B87352] hover:underline cursor-pointer">
-                Cambiar foto
+                Cambiar / Agregar fotos
               </label>
-              <input type="file" id="ficha-foto-input" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" class="hidden">
+              <input type="file" id="ficha-foto-input" multiple accept="image/jpeg,image/png,image/webp,image/heic,image/heif" class="hidden">
             </div>
             <div>
               <div class="flex flex-wrap items-center gap-2">
@@ -968,8 +968,23 @@
           <!-- Bloque 2: Especificaciones Físicas y Descripción Detallada -->
           <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] space-y-3.5 text-left">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#F1EDE7] pb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-[#B87352]">2. Descripción Detallada &amp; Ficha Técnica (Visible al Cliente)</span>
-              <span class="text-[11px] text-[#8C7A6B]">Los emoticonos se permiten aquí en la descripción, no en el título de almacén.</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-[#B87352]">2. Imágenes, Descripción Detallada &amp; Ficha Técnica</span>
+              <span class="text-[11px] text-[#8C7A6B]">Los emoticonos se permiten en la descripción, no en el título de almacén.</span>
+            </div>
+
+            <!-- Galería de Imágenes del Producto (hasta 6 fotos) -->
+            <div class="bg-[#F9F6F0] p-3.5 rounded-xl border border-[#EBE5DE] space-y-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span class="text-xs font-bold text-[#4A3C31] block">Fotos del Producto (hasta 6 imágenes)</span>
+                  <span class="text-[11px] text-[#8C7A6B]">La primera foto se muestra como portada en el catálogo.</span>
+                </div>
+                <label for="ficha-foto-input" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#4A3C31] hover:bg-[#322821] text-white text-xs font-semibold cursor-pointer transition-colors">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Cambiar / Agregar Imágenes
+                </label>
+              </div>
+              <div id="ficha-galeria-grid" class="flex flex-wrap items-center gap-2.5"></div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
@@ -989,7 +1004,13 @@
               </div>
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-[#4A3C31] mb-1">Descripción Comercial Detallada</label>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                <label class="block text-[11px] font-semibold text-[#4A3C31]">Descripción Comercial Detallada</label>
+                <button type="button" id="btn-ficha-ia-descripcion" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#007A78]/10 hover:bg-[#007A78]/20 text-[#007A78] text-[11px] font-bold border border-[#007A78]/25 transition-colors cursor-pointer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16z"/></svg>
+                  Redactar con IA según la imagen
+                </button>
+              </div>
               <textarea id="ficha-descripcion" rows="3" maxlength="1000" placeholder="Describe la historia, técnica artesanal y cuidados de esta pieza..."
                 class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm font-normal text-[#4A3C31] leading-relaxed focus:bg-white focus:outline-none focus:border-[#B87352]"></textarea>
             </div>
@@ -1606,7 +1627,7 @@
 
   <!-- Script modular externo al final del DOM para inicializar todos los modales -->
   <script src="/js/lps-modal.js?v=20261126_s1"></script>
-  <script src="/js/registros.js?v=20261126_s9"></script>
+  <script src="/js/registros.js?v=20261126_s10"></script>
 </body>
 
 </html>

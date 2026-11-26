@@ -2608,13 +2608,58 @@
     }
   }
 
+  var fichaImagenesExistentes = [];
+  var fichaNuevosArchivos = [];
+
+  function renderFichaGaleria() {
+    var grid = document.getElementById('ficha-galeria-grid');
+    var headerImg = document.getElementById('ficha-img-preview');
+    var items = [];
+    fichaImagenesExistentes.forEach(function (url, idx) {
+      items.push({ kind: 'url', src: url, idx: idx });
+    });
+    fichaNuevosArchivos.forEach(function (file, idx) {
+      items.push({ kind: 'file', src: URL.createObjectURL(file), idx: idx });
+    });
+
+    if (headerImg) {
+      headerImg.src = items[0] ? items[0].src : '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
+    }
+    if (!grid) return;
+    if (items.length === 0) {
+      grid.innerHTML = '<span class="text-xs text-[#8C7A6B]">Sin imágenes cargadas. Haz clic en "Cambiar / Agregar Imágenes".</span>';
+      return;
+    }
+
+    grid.innerHTML = items.map(function (item, pos) {
+      var badge = pos === 0 ? '<span class="absolute bottom-1 left-1 bg-[#4A3C31]/85 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Principal</span>' : '';
+      return '<div class="relative w-16 h-16 rounded-xl overflow-hidden border border-[#D5C9BD] bg-white shrink-0 group">' +
+        '<img src="' + escapeHtml(item.src) + '" alt="Foto ' + (pos + 1) + '" class="w-full h-full object-cover">' +
+        badge +
+        '<button type="button" data-gal-kind="' + item.kind + '" data-gal-idx="' + item.idx + '" title="Quitar imagen" class="btn-ficha-gal-remove absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600/90 text-white text-[11px] font-bold flex items-center justify-center opacity-90 hover:bg-red-700 cursor-pointer">&times;</button>' +
+        '</div>';
+    }).join('');
+
+    grid.querySelectorAll('.btn-ficha-gal-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var kind = btn.dataset.galKind;
+        var idx = parseInt(btn.dataset.galIdx, 10);
+        if (kind === 'url') fichaImagenesExistentes.splice(idx, 1);
+        else if (kind === 'file') fichaNuevosArchivos.splice(idx, 1);
+        renderFichaGaleria();
+      });
+    });
+  }
+
   function poblarCamposFicha360(p, kardexList, resumen) {
     document.getElementById('ficha-prod-id').value = p.id;
-    var foto = (Array.isArray(p.imagenes) && p.imagenes[0]) ? p.imagenes[0] : '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
-    var imgEl = document.getElementById('ficha-img-preview');
-    if (imgEl) imgEl.src = foto;
+    fichaImagenesExistentes = Array.isArray(p.imagenes)
+      ? p.imagenes.filter(function (u) { return typeof u === 'string' && u.trim(); })
+      : [];
+    fichaNuevosArchivos = [];
     var fotoInp = document.getElementById('ficha-foto-input');
     if (fotoInp) fotoInp.value = '';
+    renderFichaGaleria();
 
     document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + (p.sku || '----');
     document.getElementById('ficha-badge-ean').textContent = 'EAN: ' + (p.ean || '-------------');
@@ -2731,6 +2776,68 @@
       var el = document.getElementById(id);
       if (el) el.addEventListener('input', calcularMargenFichaEnVivo);
     });
+
+    var fotoInpInit = document.getElementById('ficha-foto-input');
+    if (fotoInpInit) {
+      fotoInpInit.addEventListener('change', function () {
+        var picked = Array.from(fotoInpInit.files || []);
+        if (picked.length === 0) return;
+        fichaImagenesExistentes = fichaImagenesExistentes.filter(function (u) { return !u.includes('logo_artesanitas.peru.jpg'); });
+        var espacio = Math.max(0, 6 - (fichaImagenesExistentes.length + fichaNuevosArchivos.length));
+        if (espacio === 0) {
+          window.LpsModal.alert('Máximo 6 imágenes por producto. Elimina alguna para agregar otra.', 'warning');
+          fotoInpInit.value = '';
+          return;
+        }
+        fichaNuevosArchivos = fichaNuevosArchivos.concat(picked.slice(0, espacio));
+        fotoInpInit.value = '';
+        renderFichaGaleria();
+      });
+    }
+
+    var btnIaDesc = document.getElementById('btn-ficha-ia-descripcion');
+    if (btnIaDesc) {
+      btnIaDesc.addEventListener('click', async function () {
+        var prodId = document.getElementById('ficha-prod-id')?.value || '';
+        if (fichaNuevosArchivos.length === 0 && fichaImagenesExistentes.filter(function (u) { return !u.includes('logo_artesanitas.peru.jpg'); }).length === 0) {
+          await window.LpsModal.alert('Primero agrega al menos una foto del producto para que la IA pueda analizarla.', 'warning');
+          return;
+        }
+        var origHtml = btnIaDesc.innerHTML;
+        btnIaDesc.disabled = true;
+        btnIaDesc.textContent = 'Analizando imagen con IA...';
+        try {
+          var fd = new FormData();
+          fd.append('producto_id', prodId);
+          fd.append('nombre', document.getElementById('ficha-nombre')?.value.trim() || '');
+          fd.append('linea', document.getElementById('ficha-linea')?.value || '');
+          fd.append('sublinea', document.getElementById('ficha-sublinea')?.value.trim() || '');
+          fd.append('coleccion', document.getElementById('ficha-coleccion')?.value.trim() || '');
+          if (fichaNuevosArchivos[0]) {
+            var optIaFile = await comprimirImagenWeb(fichaNuevosArchivos[0]);
+            fd.append('imagenes', optIaFile);
+          }
+          var res = await apiFetch('/productos/ia-descripcion', { method: 'POST', body: fd });
+          var data = await res.json();
+          if (res.ok && data.success) {
+            var descEl = document.getElementById('ficha-descripcion');
+            var colEl = document.getElementById('ficha-color');
+            var carEl = document.getElementById('ficha-caracteristicas');
+            if (descEl && data.descripcion) descEl.value = data.descripcion;
+            if (colEl && !colEl.value.trim() && data.color) colEl.value = data.color;
+            if (carEl && !carEl.value.trim() && data.caracteristicas) carEl.value = data.caracteristicas;
+            window.LpsModal.toast('Descripción generada con IA. Recuerda hacer clic en Guardar Ficha.', 'success');
+          } else {
+            await window.LpsModal.alert(data.message || 'No se pudo generar la descripción con IA.', 'error');
+          }
+        } catch {
+          await window.LpsModal.alert('Error de conexión al consultar la IA.', 'error');
+        } finally {
+          btnIaDesc.disabled = false;
+          btnIaDesc.innerHTML = origHtml;
+        }
+      });
+    }
 
     var vssChkInit = document.getElementById('ficha-vender-sin-stock');
     var vssWrapInit = document.getElementById('ficha-fecha-entrega-wrap');
@@ -2855,10 +2962,9 @@
           fd.append('fecha_entrega_estimada', vssChkVal ? vssFechaVal : '');
           fd.append('activo', document.getElementById('ficha-activo').value);
 
-          var fotoInp = document.getElementById('ficha-foto-input');
-          var newFile = fotoInp && fotoInp.files && fotoInp.files[0];
-          if (newFile) {
-            var optFile = await comprimirImagenWeb(newFile);
+          fd.append('imagenes_existentes', JSON.stringify(fichaImagenesExistentes));
+          for (var fIdx = 0; fIdx < fichaNuevosArchivos.length; fIdx++) {
+            var optFile = await comprimirImagenWeb(fichaNuevosArchivos[fIdx]);
             fd.append('imagenes', optFile);
           }
 
@@ -2874,10 +2980,9 @@
             }
             document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + (data.producto.sku || '');
             document.getElementById('ficha-badge-ean').textContent = 'EAN: ' + (data.producto.ean || '');
-            if (Array.isArray(data.producto.imagenes) && data.producto.imagenes[0]) {
-              var previewImg = document.getElementById('ficha-img-preview');
-              if (previewImg) previewImg.src = data.producto.imagenes[0];
-            }
+            fichaImagenesExistentes = Array.isArray(data.producto.imagenes) ? data.producto.imagenes.slice() : [];
+            fichaNuevosArchivos = [];
+            renderFichaGaleria();
             await loadInventario();
             await loadProductos();
           } else {
