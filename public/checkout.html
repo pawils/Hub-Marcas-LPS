@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout · Carro de Compras — Artesanitas Perú</title>
+  <meta name="description" content="Finaliza tu compra online en Artesanitas Perú. Pago 100% seguro, descarga automática de stock y comprobante en PDF.">
+  <link rel="icon" type="image/jpeg" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#333c48">
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1563612551863150');
+    fbq('init', '851775257895823');
+    fbq('track', 'PageView');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+  <script src="/js/icons.js"></script>
+</head>
+
+<body class="bg-[#F9F6F0] text-[#333c48] min-h-screen flex flex-col" style="font-family:'Inter',sans-serif;">
+
+  <!-- Header Checkout E-Commerce 2026 -->
+  <header class="bg-white border-b border-[#EBE5DE] sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <a href="/#catalogo" class="flex items-center gap-3 group">
+        <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas Perú" class="w-10 h-10 rounded-full object-cover border border-[#D5C9BD]">
+        <div>
+          <span class="font-serif font-bold text-base sm:text-lg text-[#4A3C31] block leading-none">Artesanitas Perú</span>
+          <span class="text-[11px] text-[#8C7A6B] group-hover:text-[#B87352] transition-colors">← Seguir comprando en el catálogo</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-[#137333] bg-[#e6f4ea] px-3 py-1.5 rounded-full">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-3.5 h-3.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Checkout Seguro · Stock en Tiempo Real</span>
+        </div>
+        <a href="/seguimiento" class="text-xs font-bold text-[#4A3C31] hover:text-[#B87352] border border-[#D5C9BD] px-3.5 py-1.5 rounded-full transition-colors">
+          Rastrear Pedido
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal Checkout 2 Columnas -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+    <!-- Vista Activa del Checkout -->
+    <div id="checkout-main-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+
+      <!-- Columna Derecha en Desktop / Superior en Mobile: Resumen del Carro de Compras (Agregar / Quitar) -->
+      <section class="lg:col-span-5 lg:order-2 bg-white rounded-3xl border border-[#EBE5DE] p-5 sm:p-6 shadow-sm space-y-5 lg:sticky lg:top-20">
+        <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3.5">
+          <div class="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 text-[#333c48]"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            <h2 class="font-bold text-base sm:text-lg text-[#333c48]">Tu Carro de Compras</h2>
+          </div>
+          <span id="chk-badge-count" class="bg-[#333c48] text-white text-xs font-extrabold px-2.5 py-1 rounded-full">0 piezas</span>
+        </div>
+
+        <!-- Lista de Productos en el Carro (Con botones + / - / Eliminar) -->
+        <div id="chk-cart-items" class="space-y-3 max-h-[360px] overflow-y-auto pr-1"></div>
+
+        <!-- Selector rápido para agregar otra pieza sin salir del Checkout -->
+        <div class="bg-[#F9F6F0] p-3.5 rounded-2xl border border-[#EBE5DE] space-y-2">
+          <label for="chk-quick-add-select" class="block text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B]">
+            + Agregar otra pieza al carro:
+          </label>
+          <div class="flex gap-2">
+            <select id="chk-quick-add-select" class="flex-1 px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-semibold text-[#333c48] focus:outline-none focus:border-[#333c48]">
+              <option value="">— Selecciona una pieza del catálogo —</option>
+            </select>
+            <button type="button" id="chk-quick-add-btn" class="bg-[#333c48] hover:bg-[#1e242b] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors cursor-pointer shrink-0">
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        <!-- Desglose Financiero Transparente -->
+        <div class="border-t border-[#EBE5DE] pt-4 space-y-2 text-xs sm:text-sm">
+          <div class="flex justify-between text-[#8C7A6B]">
+            <span>Subtotal de productos:</span>
+            <span id="chk-subtotal" class="font-bold text-[#333c48]">S/ 0.00</span>
+          </div>
+          <div class="flex justify-between text-[#8C7A6B]">
+            <span>Costo de envío:</span>
+            <span id="chk-envio" class="font-bold text-[#137333]">Gratis (Retiro en Taller)</span>
+          </div>
+          <div class="flex justify-between items-baseline border-t border-[#EBE5DE] pt-3 text-base sm:text-lg font-extrabold text-[#333c48]">
+            <span>Total a Pagar Hoy:</span>
+            <span id="chk-total" class="text-xl sm:text-2xl text-[#008f6b]">S/ 0.00</span>
+          </div>
+          <p class="text-[11px] text-[#8C7A6B] flex items-center gap-1.5 pt-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-3.5 h-3.5 text-[#137333] shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Descarga automática de inventario y comprobante PDF al instante.</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- Columna Izquierda: Formulario de Datos, Entrega y Pago -->
+      <form id="checkout-form" class="lg:col-span-7 lg:order-1 space-y-6" novalidate>
+
+        <!-- Paso 1: Datos del Comprador (Dispara evento Lead en Meta Pixel) -->
+        <div class="bg-white rounded-3xl border border-[#EBE5DE] p-5 sm:p-7 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-full bg-[#333c48] text-white text-xs font-extrabold flex items-center justify-center">1</span>
+              <h3 class="font-bold text-base sm:text-lg text-[#333c48]">Datos del Comprador</h3>
+            </div>
+            <span id="chk-lead-badge" class="hidden text-[11px] font-bold text-[#137333] bg-[#e6f4ea] px-2.5 py-0.5 rounded-full">✓ Datos verificados</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-[#4A3C31] mb-1">Nombre y Apellidos *</label>
+              <input type="text" id="chk-nombre" required maxlength="120" placeholder="Ej: María Fernanda Gómez"
+                class="w-full px-4 py-3 rounded-2xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#333c48]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#4A3C31] mb-1">DNI (8 dígitos) *</label>
+              <input type="text" id="chk-dni" required maxlength="8" inputmode="numeric" placeholder="12345678"
+                class="w-full px-4 py-3 rounded-2xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-sm font-mono font-bold focus:outline-none focus:border-[#333c48]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#4A3C31] mb-1">Celular / WhatsApp (9 dígitos) *</label>
+              <input type="tel" id="chk-whatsapp" required maxlength="9" inputmode="numeric" placeholder="987654321"
+                class="w-full px-4 py-3 rounded-2xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-sm font-mono font-bold focus:outline-none focus:border-[#333c48]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 2: Método de Despacho / Retiro -->
+        <div class="bg-white rounded-3xl border border-[#EBE5DE] p-5 sm:p-7 shadow-sm space-y-4">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-full bg-[#333c48] text-white text-xs font-extrabold flex items-center justify-center">2</span>
+            <h3 class="font-bold text-base sm:text-lg text-[#333c48]">Método de Entrega</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="relative flex items-start gap-3 p-4 rounded-2xl border-2 border-[#333c48] bg-[#F9F6F0]/60 cursor-pointer transition-all" id="lbl-entrega-local">
+              <input type="radio" name="tipo_entrega" value="local" checked class="mt-1 accent-[#333c48]">
+              <div>
+                <span class="font-bold text-sm text-[#333c48] block">Retiro en Taller Trujillo</span>
+                <span class="text-xs text-[#137333] font-bold block">Gratis · S/ 0.00</span>
+                <span class="text-[11px] text-[#8C7A6B]">Retira tu pedido en nuestro taller de Trujillo.</span>
+              </div>
+            </label>
+
+            <label class="relative flex items-start gap-3 p-4 rounded-2xl border-2 border-[#D5C9BD] bg-white cursor-pointer transition-all" id="lbl-entrega-provincia">
+              <input type="radio" name="tipo_entrega" value="provincia" class="mt-1 accent-[#333c48]">
+              <div>
+                <span class="font-bold text-sm text-[#333c48] block">Envío Nacional Shalom</span>
+                <span class="text-xs text-[#B87352] font-bold block">+ S/ 10.00 (Embalaje Frágil + Envío)</span>
+                <span class="text-[11px] text-[#8C7A6B]">Despacho seguro a cualquier agencia Shalom del Perú.</span>
+              </div>
+            </label>
+          </div>
+
+          <div id="chk-shalom-fields" class="hidden space-y-3 pt-2">
+            <div>
+              <label class="block text-xs font-bold text-[#4A3C31] mb-1">Ciudad y Sede de Agencia Shalom *</label>
+              <input type="text" id="chk-sede-shalom" maxlength="160" placeholder="Ej: Lima - Agencia Shalom La Victoria / Arequipa - Cercado"
+                class="w-full px-4 py-3 rounded-2xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#333c48]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#4A3C31] mb-1">Dirección o Nota Adicional (Opcional)</label>
+              <input type="text" id="chk-direccion" maxlength="200" placeholder="Referencia o indicación para tu paquete"
+                class="w-full px-4 py-2.5 rounded-2xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-xs sm:text-sm focus:outline-none focus:border-[#333c48]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 3: Pago 100% Online (Plin / Yape con Validación IA) -->
+        <div class="bg-white rounded-3xl border border-[#EBE5DE] p-5 sm:p-7 shadow-sm space-y-5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-full bg-[#333c48] text-white text-xs font-extrabold flex items-center justify-center">3</span>
+              <h3 class="font-bold text-base sm:text-lg text-[#333c48]">Pago Directo (Plin / Yape)</h3>
+            </div>
+            <span class="bg-[#e6f4ea] text-[#137333] text-[11px] font-extrabold px-3 py-1 rounded-full">Validación Automática IA</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 items-center bg-[#F9F6F0] p-4 rounded-2xl border border-[#EBE5DE]">
+            <div class="text-center space-y-2">
+              <img src="/imagenes/Artesanitas/qr-plin.jpeg" alt="QR Plin Artesanitas"
+                onerror="this.onerror=null;this.src='/imagenes/Artesanitas/logo_artesanitas.peru.jpg';"
+                class="w-44 h-44 object-contain mx-auto rounded-2xl bg-white p-2 border border-[#D5C9BD] shadow-xs">
+              <span class="text-[11px] font-semibold text-[#8C7A6B] block">Escanea el QR desde Yape o Plin</span>
+            </div>
+
+            <div class="space-y-3 text-xs sm:text-sm">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B] block">Monto exacto a transferir:</span>
+                <span id="chk-qr-monto" class="text-2xl font-extrabold text-[#008f6b]">S/ 0.00</span>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B] block">Número Plin / Yape:</span>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="font-mono font-extrabold text-base text-[#333c48]">929 938 466</span>
+                  <button type="button" id="chk-copy-phone" class="text-[11px] font-bold bg-white border border-[#D5C9BD] px-2.5 py-1 rounded-lg hover:bg-[#EBE5DE] cursor-pointer">
+                    Copiar
+                  </button>
+                </div>
+                <span class="text-xs text-[#8C7A6B] block mt-0.5">Titular: Keythleen Salirrosas</span>
+              </div>
+
+              <!-- Subida de Comprobante -->
+              <div class="pt-1">
+                <label class="block text-xs font-bold text-[#4A3C31] mb-1.5">Adjunta la captura de tu pago *</label>
+                <label for="chk-comprobante" class="flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#B87352] rounded-2xl bg-white hover:bg-[#FAF4EE] cursor-pointer transition-colors text-center">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-[#B87352] mb-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span id="chk-file-label" class="text-xs font-bold text-[#4A3C31]">Subir captura de Yape / Plin</span>
+                  <span class="text-[10px] text-[#8C7A6B]">Verificación instantánea por Visión IA</span>
+                  <input type="file" id="chk-comprobante" accept="image/*" class="hidden">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div id="chk-error-box" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs font-semibold p-3.5 rounded-2xl"></div>
+
+          <button type="submit" id="chk-submit-btn"
+            class="w-full rounded-full bg-[#333c48] hover:bg-[#1e242b] text-white font-extrabold text-sm sm:text-base py-4 px-6 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-5 h-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span id="chk-submit-text">Confirmar Compra y Descargar Comprobante</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Pantalla de Compra Confirmada (Purchase Completado + Descarga PDF) -->
+    <div id="checkout-success-box" class="hidden max-w-xl mx-auto bg-white rounded-3xl border border-[#EBE5DE] p-7 sm:p-9 text-center shadow-lg space-y-5">
+      <div class="w-16 h-16 rounded-full bg-[#e6f4ea] text-[#137333] flex items-center justify-center mx-auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-8 h-8"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="space-y-1.5">
+        <span class="bg-[#e6f4ea] text-[#137333] text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full">Compra Confirmada · Stock Descargado</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#333c48]">¡Gracias por tu compra!</h2>
+        <p id="chk-success-msg" class="text-xs sm:text-sm text-[#8C7A6B]">Tu pedido ha sido procesado y las unidades fueron descontadas de nuestro almacén.</p>
+      </div>
+
+      <div class="bg-[#F9F6F0] border border-[#D5C9BD] rounded-2xl p-4 space-y-1">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B] block">Código Oficial de Orden</span>
+        <span id="chk-success-code" class="font-mono text-2xl font-extrabold text-[#B87352] block">ART-2026-0000</span>
+        <span class="text-[11px] text-[#8C7A6B] block">Tu comprobante PDF se ha generado automáticamente.</span>
+      </div>
+
+      <div class="flex flex-col gap-2.5 pt-2">
+        <button type="button" id="chk-btn-download-pdf"
+          class="w-full rounded-full bg-[#333c48] hover:bg-[#1e242b] text-white font-bold py-3.5 px-6 text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Descargar Comprobante de Compra (PDF)</span>
+        </button>
+        <a id="chk-btn-tracking" href="/seguimiento"
+          class="w-full rounded-full bg-[#B87352] hover:bg-[#A36244] text-white font-bold py-3.5 px-6 text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2">
+          <span>Rastrear mi Pedido en Vivo</span>
+        </a>
+        <a href="/#catalogo" class="text-xs font-semibold text-[#8C7A6B] hover:text-[#333c48] pt-2">
+          ← Volver a la tienda
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="/js/checkout.js?v=20261125_s1"></script>
+</body>
+
+</html>

@@ -270,49 +270,157 @@ initSlider('slider-taza-navidad');
     return '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
   }
 
+  function classifyCategoryBySlug(slug, nombre) {
+    var s = String(slug || '').toLowerCase() + ' ' + String(nombre || '').toLowerCase();
+    if (s.indexOf('adorno') !== -1 || s.indexOf('elefant') !== -1 || s.indexOf('jarron') !== -1 || s.indexOf('jarrón') !== -1 || s.indexOf('macet') !== -1 || s.indexOf('munequita') !== -1) return 'decoracion';
+    if (s.indexOf('tetera') !== -1 || s.indexOf('azucarera') !== -1 || s.indexOf('vasito') !== -1) return 'teteras';
+    if ((s.indexOf('plato') !== -1 || s.indexOf('platito') !== -1 || s.indexOf('caspiana') !== -1 || s.indexOf('set') !== -1) && s.indexOf('taza') !== -1 && s.indexOf('sin-plato') === -1) return 'sets';
+    if (s.indexOf('plato') !== -1 && s.indexOf('taza') === -1) return 'platos';
+    return 'tazas';
+  }
+
+  // Renderiza el bloque inferior de acción estilo Saga Falabella (Botón Agregar al Carro o Stepper - 1 + en vivo)
+  function renderFalabellaActionHtml(slug, isRes, agotado) {
+    if (agotado) {
+      return '<button type="button" disabled class="w-full rounded-full bg-[#EBE5DE] text-[#8C7A6B] font-bold text-xs sm:text-sm py-2.5 px-4 cursor-not-allowed">Agotado</button>';
+    }
+    var itemInCart = null;
+    for (var i = 0; i < cartItems.length; i++) {
+      if (cartItems[i].slug === slug) { itemInCart = cartItems[i]; break; }
+    }
+    var slugAttr = escapeHtml(slug).replace(/'/g, "\\'");
+
+    if (itemInCart && itemInCart.cantidad > 0) {
+      var targetUrl = isRes ? ('/pedido?producto=' + encodeURIComponent(slug)) : '/checkout';
+      return '' +
+        '<div class="space-y-1.5">' +
+        '<div class="flex items-center justify-between bg-[#333c48] text-white rounded-full p-1 shadow-sm">' +
+        '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', -1)" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white font-extrabold text-sm flex items-center justify-center transition-colors cursor-pointer" aria-label="Quitar 1">−</button>' +
+        '<span class="text-xs font-extrabold tracking-wide px-2">' + itemInCart.cantidad + ' en tu carro</span>' +
+        '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', 1)" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white font-extrabold text-sm flex items-center justify-center transition-colors cursor-pointer" aria-label="Sumar 1">+</button>' +
+        '</div>' +
+        '<a href="' + targetUrl + '" class="w-full rounded-full bg-[#008f6b] hover:bg-[#007759] text-white font-bold text-[11px] py-1.5 px-3 flex items-center justify-center gap-1 transition-all shadow-2xs">' +
+        '<span>' + (isRes ? 'Completar Reserva →' : 'Ir a Pagar (Checkout) →') + '</span>' +
+        '</a>' +
+        '</div>';
+    }
+
+    if (isRes) {
+      return '' +
+        '<div class="grid grid-cols-2 gap-1.5">' +
+        '<button type="button" onclick="window.ArtesanitasCart.addBySlug(\'' + slugAttr + '\', this)" class="w-full rounded-full bg-[#333c48] hover:bg-[#1e242b] text-white font-bold text-xs py-2.5 px-3 transition-all cursor-pointer shadow-xs">+ Reserva</button>' +
+        '<a href="/pedido?producto=' + encodeURIComponent(slug) + '" class="w-full rounded-full bg-[#B87352] hover:bg-[#A36244] text-white font-bold text-xs py-2.5 px-3 transition-all text-center shadow-xs flex items-center justify-center">Reservar S/ 20</a>' +
+        '</div>';
+    }
+
+    return '' +
+      '<button type="button" onclick="window.ArtesanitasCart.addBySlug(\'' + slugAttr + '\', this)" ' +
+      'class="w-full rounded-full bg-[#333c48] hover:bg-[#1e242b] text-white font-bold text-xs sm:text-sm py-2.5 px-5 transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2">' +
+      '<span>Agregar al Carro</span>' +
+      '</button>';
+  }
+
+  function buildFalabellaCardBodyHtml(prod) {
+    var slug = prod.slug;
+    var slugJs = escapeHtml(slug).replace(/'/g, "\\'");
+    var nombre = escapeHtml(prod.nombre);
+    var nombreJs = nombre.replace(/'/g, "\\'");
+    var path = '/producto/' + slug;
+    var isRes = prod.modalidad === 'reserva';
+    var precioNum = Number(prod.precio || 59.90);
+    var precioRegular = Number(prod.precio_regular || precioNum);
+    var hasPromo = precioRegular > precioNum;
+    var discountPct = hasPromo ? Math.round(((precioRegular - precioNum) / precioRegular) * 100) : 0;
+
+    var pillsHtml = isRes
+      ? '<span class="inline-block bg-[#fef3c7] text-[#92400e] text-[11px] font-bold px-2 py-0.5 rounded">Preventa · Reserva S/ 20</span>' +
+        '<span class="inline-block bg-[#e6f4ea] text-[#137333] text-[11px] font-bold px-2 py-0.5 rounded">Entrega 10 Dic</span>'
+      : '<span class="inline-block bg-[#e6f4ea] text-[#137333] text-[11px] font-bold px-2 py-0.5 rounded">Despacho inmediato</span>' +
+        '<span class="inline-block bg-[#e6f4ea] text-[#137333] text-[11px] font-bold px-2 py-0.5 rounded">Retira o Envío Shalom</span>';
+
+    return '' +
+      '<div class="flex flex-col flex-grow justify-between pt-3 px-1 space-y-2.5">' +
+      '<div class="space-y-1">' +
+      '<!-- Marca + Icono Compartir (Estilo Saga Falabella) -->' +
+      '<div class="flex items-center justify-between gap-2">' +
+      '<span class="text-[11px] font-bold uppercase tracking-wider text-[#8C7A6B]">ARTESANITAS PERÚ</span>' +
+      '<button type="button" onclick="shareProducto(\'' + path + '\', \'' + nombreJs + '\')" class="text-[#8C7A6B] hover:text-[#B87352] p-1 rounded-full hover:bg-[#EBE5DE]/60 transition-colors cursor-pointer" title="Compartir o copiar link de esta pieza">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-4 h-4"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>' +
+      '</button>' +
+      '</div>' +
+
+      '<!-- Título del Producto (Clicable para abrir Ficha Rápida) -->' +
+      '<h3 onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" ' +
+      'class="font-sans text-[15px] font-bold text-[#333c48] hover:text-[#B87352] leading-snug cursor-pointer transition-colors line-clamp-2">' +
+      nombre +
+      '</h3>' +
+
+      '<!-- Vendedor + SKU Numérico -->' +
+      '<div class="flex items-center gap-1.5 text-[11px] text-[#8C7A6B]">' +
+      '<span>Por Artesanitas</span>' +
+      '<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-xs bg-[#82c91e] text-white font-serif font-bold text-[10px] leading-none">A</span>' +
+      '<span class="font-mono text-[10px] text-[#8C7A6B] ml-auto" data-card-sku="' + escapeHtml(slug) + '">SKU ' + escapeHtml(prod.sku || '1001') + '</span>' +
+      '</div>' +
+
+      '<!-- Precio y Descuento -->' +
+      '<div class="pt-0.5 flex items-center gap-2">' +
+      '<span class="text-lg font-extrabold text-[#333c48]">S/ ' + precioNum.toFixed(2) + '</span>' +
+      (hasPromo ? '<span class="bg-[#e02020] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">-' + discountPct + '%</span>' : '') +
+      '</div>' +
+      (hasPromo ? '<div class="text-xs text-[#8C7A6B] line-through">S/ ' + precioRegular.toFixed(2) + '</div>' : '') +
+
+      '<!-- Píldoras Verdes de Entrega -->' +
+      '<div class="flex flex-wrap gap-1.5 pt-1">' +
+      pillsHtml +
+      '</div>' +
+
+      '<!-- Estrellas + Link Ficha -->' +
+      '<div class="flex items-center justify-between pt-1 text-xs">' +
+      '<div class="flex items-center gap-1">' +
+      '<span class="text-[#f59f00] tracking-tight">★★★★★</span>' +
+      '<span class="text-[11px] text-[#8C7A6B]">(5.0)</span>' +
+      '</div>' +
+      '<button type="button" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" class="text-[11px] font-semibold text-[#B87352] hover:underline cursor-pointer">Ver detalles</button>' +
+      '</div>' +
+      '</div>' +
+
+      '<!-- Botón Agregar al Carro (o Stepper en vivo) + Link Discreto WhatsApp Debajo -->' +
+      '<div class="pt-2 space-y-1.5">' +
+      '<div data-cart-action-slot="' + escapeHtml(slug) + '">' +
+      renderFalabellaActionHtml(slug, isRes, prod.agotado) +
+      '</div>' +
+      '<a href="' + waLink(prod.nombre + ' (SKU ' + (prod.sku || '') + ')') + '" target="_blank" rel="noreferrer" ' +
+      'class="w-full py-1 text-[11px] text-[#8C7A6B] hover:text-[#4A3C31] flex items-center justify-center gap-1 transition-colors">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 text-[#008f6b]"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>' +
+      '<span>Consultar duda por WhatsApp</span>' +
+      '</a>' +
+      '</div>' +
+      '</div>';
+  }
+
   function cardHtml(p) {
     var img = resolverFotoProducto(p);
-    var path = '/producto/' + p.slug;
     var nombre = escapeHtml(p.nombre);
-    var nombreJs = nombre.replace(/'/g, "\\'");
     var hasPromo = p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio);
     var stockNum = Number(p.stock_actual || 0);
     var agotado = stockNum <= 0 && p.politica_sin_stock === 'agotado';
-    var promoBadge = hasPromo
-      ? '<span class="bg-[#008f6b] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow">' + escapeHtml(p.etiqueta_promo || 'Oferta') + '</span>'
-      : (p.etiqueta_promo ? '<span class="bg-[#B87352] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow">' + escapeHtml(p.etiqueta_promo) + '</span>' : '');
     var isRes = esProductoReserva(p.slug, p.politica_sin_stock);
-    var stockBadge = stockNum > 0
-      ? '<span class="bg-white/90 backdrop-blur-sm text-[#008f6b] text-[10px] font-bold px-2.5 py-1 rounded-full shadow">En Stock (' + stockNum + ')</span>'
-      : (agotado
-          ? '<span class="bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">Agotado</span>'
-          : (isRes ? '<span class="bg-white/90 backdrop-blur-sm text-[#4A3C31] text-[10px] font-semibold px-2.5 py-1 rounded-full shadow">Preventa · S/ 20</span>' : '<span class="bg-white/90 backdrop-blur-sm text-[#007A78] text-[10px] font-bold px-2.5 py-1 rounded-full shadow">Compra Directa</span>'));
-    var precioHtml = hasPromo
-      ? '<div class="text-right shrink-0"><span class="text-xs line-through text-[#8C7A6B] block">S/ ' + Number(p.precio).toFixed(2) + '</span><span class="font-bold text-[#008f6b]">S/ ' + Number(p.precio_oferta).toFixed(2) + '</span></div>'
-      : '<span class="font-bold text-[#B87352] shrink-0">S/ ' + Number(p.precio).toFixed(2) + '</span>';
-    var fichaSpecs = [];
-    if (p.sku) fichaSpecs.push('SKU: ' + escapeHtml(p.sku));
-    if (p.tamano_dimensiones) fichaSpecs.push(escapeHtml(p.tamano_dimensiones));
-    if (p.color) fichaSpecs.push('Color: ' + escapeHtml(p.color));
-    if (p.caracteristicas) fichaSpecs.push(escapeHtml(p.caracteristicas));
-    var specsHtml = fichaSpecs.length > 0
-      ? '<p class="text-xs text-[#B87352] font-medium mt-1.5">' + fichaSpecs.join(' · ') + '</p>'
-      : '';
     var precioEfectivo = hasPromo ? Number(p.precio_oferta) : Number(p.precio);
     var reservaUnit = isRes ? 20.00 : precioEfectivo;
     var modalidadStr = isRes ? 'reserva' : 'compra_directa';
-    var imgJs = escapeHtml(img).replace(/'/g, "\\'");
     var slugJs = escapeHtml(p.slug).replace(/'/g, "\\'");
     var imgsList = (Array.isArray(p.imagenes) && p.imagenes.length > 0) ? p.imagenes : [img];
+    var cat = classifyCategoryBySlug(p.slug, p.nombre);
 
-    // Registrar en el diccionario de Quick-View
-    registerProductInStore({
+    var prodObj = {
       slug: p.slug,
-      sku: p.sku || '',
+      sku: p.sku || '1029',
       nombre: p.nombre,
       precio: precioEfectivo,
+      precio_regular: Number(p.precio),
       reserva: reservaUnit,
       modalidad: modalidadStr,
+      categoria: cat,
       stock_actual: stockNum,
       agotado: agotado,
       imagenes: imgsList,
@@ -320,45 +428,15 @@ initSlider('slider-taza-navidad');
       tamano_dimensiones: p.tamano_dimensiones || '',
       color: p.color || '',
       caracteristicas: p.caracteristicas || ''
-    });
+    };
+    registerProductInStore(prodObj);
 
     return '' +
-      '<div class="group flex flex-col space-y-5" data-slug="' + escapeHtml(p.slug) + '">' +
-      '<div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EBE5DE]">' +
-      '<img src="' + escapeHtml(img) + '" alt="' + nombre + '" loading="lazy" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" onerror="this.onerror=null; this.src=\'/imagenes/Artesanitas/logo_artesanitas.peru.jpg\';" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" />' +
-      '<div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>' +
-      '<div class="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start pointer-events-none">' + promoBadge + stockBadge + '</div>' +
-      '<div class="absolute top-3 right-3 z-10">' +
-      '<button type="button" onclick="shareProducto(\'' + path + '\', \'' + nombreJs + '\')" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-white hover:scale-105 transition-all cursor-pointer" title="Compartir o copiar enlace" aria-label="Compartir producto">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#4A3C31]"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
-      '</button>' +
+      '<div class="group flex flex-col bg-white rounded-3xl p-3.5 border border-[#EBE5DE] shadow-2xs hover:shadow-md transition-all" data-slug="' + escapeHtml(p.slug) + '" data-cat="' + cat + '" data-price="' + precioEfectivo + '" data-name="' + nombre.toLowerCase() + '" data-sku="' + escapeHtml(prodObj.sku) + '">' +
+      '<div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#F9F6F0] cursor-pointer" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')">' +
+      '<img src="' + escapeHtml(img) + '" alt="' + nombre + '" loading="lazy" onerror="this.onerror=null; this.src=\'/imagenes/Artesanitas/logo_artesanitas.peru.jpg\';" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />' +
       '</div>' +
-      (agotado ? '' : '<div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">' +
-      '<button type="button" onclick="window.ArtesanitasCart.addItem({slug:\'' + slugJs + '\',nombre:\'' + nombreJs + '\',precio:' + precioEfectivo.toFixed(2) + ',reserva:' + reservaUnit.toFixed(2) + ',modalidad:\'' + modalidadStr + '\',imagen:\'' + imgJs + '\'}, this)" class="w-full bg-[#4A3C31] hover:bg-[#322821] text-white py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold shadow-lg transition-all cursor-pointer">' +
-      '<span>' + (isRes ? '+ Agregar a mi reserva' : '+ Agregar al Carrito') + '</span>' +
-      '</button>' +
-      '<a href="/pedido?producto=' + encodeURIComponent(p.slug) + (isRes ? '' : '&modo=compra') + '" class="w-full bg-[#B87352] hover:bg-[#A36244] text-white py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold shadow transition-all">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (isRes ? 'Reservar ahora (S/ 20)' : 'Comprar Ahora (S/ ' + precioEfectivo.toFixed(2) + ')') +
-      '</a>' +
-      '</div>') +
-      '</div>' +
-      '<div class="flex flex-col flex-grow">' +
-      '<div class="flex justify-between items-start gap-4 mb-1.5">' +
-      '<h3 onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" class="font-serif text-lg font-medium text-[#4A3C31] hover:text-[#B87352] leading-tight cursor-pointer transition-colors">' + nombre + '</h3>' +
-      precioHtml +
-      '</div>' +
-      '<p class="text-sm text-[#8C7A6B] leading-relaxed whitespace-pre-line line-clamp-2">' + escapeHtml(p.descripcion || '') + '</p>' +
-      specsHtml +
-      '<div class="mt-3 grid grid-cols-2 gap-2">' +
-      '<button type="button" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" class="py-2 px-3 rounded-xl border border-[#D5C9BD] bg-white hover:bg-[#F9F6F0] text-[#4A3C31] text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-[#B87352]"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Ver Detalles' +
-      '</button>' +
-      (agotado ? '<span class="py-2 px-3 rounded-xl bg-red-50 text-red-700 text-xs font-bold text-center">Agotado</span>' :
-      '<button type="button" onclick="window.ArtesanitasCart.addItem({slug:\'' + slugJs + '\',nombre:\'' + nombreJs + '\',precio:' + precioEfectivo.toFixed(2) + ',reserva:' + reservaUnit.toFixed(2) + ',modalidad:\'' + modalidadStr + '\',imagen:\'' + imgJs + '\'}, this)" class="py-2 px-3 rounded-xl border border-[#B87352]/40 bg-[#B87352]/10 hover:bg-[#B87352] text-[#B87352] hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer">' +
-      '<span>' + (isRes ? '+ Reservar' : '+ Al Carrito') + '</span>' +
-      '</button>') +
-      '</div>' +
-      '</div>' +
+      buildFalabellaCardBodyHtml(prodObj) +
       '</div>';
   }
 
@@ -383,7 +461,6 @@ initSlider('slider-taza-navidad');
     return politica === 'preventa';
   }
 
-  // Diccionario global de productos para Vista Rápida (Shopify Quick-View)
   var PRODUCTOS_STORE_MAP = {};
 
   function registerProductInStore(data) {
@@ -394,19 +471,21 @@ initSlider('slider-taza-navidad');
       sku: data.sku || existing.sku || '1001',
       nombre: data.nombre || existing.nombre || data.slug,
       precio: Number(data.precio || existing.precio || 59.90),
+      precio_regular: Number(data.precio_regular || data.precio || existing.precio || 59.90),
       reserva: Number(data.reserva || existing.reserva || 59.90),
       modalidad: data.modalidad || existing.modalidad || (esProductoReserva(data.slug) ? 'reserva' : 'compra_directa'),
+      categoria: data.categoria || existing.categoria || classifyCategoryBySlug(data.slug, data.nombre),
       stock_actual: data.stock_actual !== undefined ? Number(data.stock_actual) : (existing.stock_actual !== undefined ? existing.stock_actual : 5),
       agotado: Boolean(data.agotado),
       imagenes: (Array.isArray(data.imagenes) && data.imagenes.length > 0) ? data.imagenes : (existing.imagenes || ['/imagenes/Artesanitas/logo_artesanitas.peru.jpg']),
       descripcion: data.descripcion || existing.descripcion || 'Pieza artesanal modelada y esmaltada a mano en cerámica de alta temperatura.',
       tamano_dimensiones: data.tamano_dimensiones || existing.tamano_dimensiones || '12 oz (350 ml) · Medida estándar artesanal',
       color: data.color || existing.color || 'Esmaltado artesanal pintado a mano',
-      caracteristicas: data.caracteristicas || existing.caracteristicas || 'Apto para bebidas calientes · Envío seguro a todo el Perú'
+      caracteristicas: data.caracteristicas || existing.caracteristicas || 'Apto para bebidas calientes y microondas · Envío seguro a todo el Perú'
     };
   }
 
-  // ── Modal Vista Rápida (Shopify Quick-View) ──
+  // ── Modal Vista Rápida (Shopify Quick-View PDP) ──
   var qvCurrentSlug = null;
   var qvCurrentQty = 1;
 
@@ -440,15 +519,15 @@ initSlider('slider-taza-navidad');
         modeBadge.className = 'bg-[#B87352] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow';
         stockBadge.textContent = 'Reserva hoy con S/ 20.00';
         payHint.textContent = 'Reserva con S/ 20.00 · Saldo al entregar';
-        btnAddTxt.textContent = 'Agregar a Mi Reserva';
+        btnAddTxt.textContent = 'Agregar a Reserva';
         btnBuyTxt.textContent = 'Reservar Ahora (S/ 20)';
       } else {
-        modeBadge.textContent = 'Compra Directa Online';
-        modeBadge.className = 'bg-[#007A78] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow';
-        stockBadge.textContent = prod.stock_actual > 0 ? ('En Stock (' + prod.stock_actual + ' disp.) · Envío Inmediato') : 'Disponible para Despacho';
+        modeBadge.textContent = 'Venta Directa Online';
+        modeBadge.className = 'bg-[#137333] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow';
+        stockBadge.textContent = prod.stock_actual > 0 ? ('En Stock (' + prod.stock_actual + ' disp.) · Despacho Inmediato') : 'Disponible para Despacho Inmediato';
         payHint.textContent = 'Pago 100% Online · Descarga Automática de Stock';
-        btnAddTxt.textContent = 'Agregar al Carrito';
-        btnBuyTxt.textContent = 'Comprar Ahora (S/ ' + Number(prod.precio).toFixed(2) + ')';
+        btnAddTxt.textContent = 'Agregar al Carro';
+        btnBuyTxt.textContent = 'Ir a Pagar (S/ ' + Number(prod.precio).toFixed(2) + ')';
       }
 
       var specsEl = document.getElementById('qv-specs');
@@ -458,7 +537,7 @@ initSlider('slider-taza-navidad');
           '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Medidas / Capacidad:</span><span class="font-semibold">' + escapeHtml(prod.tamano_dimensiones) + '</span></div>' +
           '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Acabado / Color:</span><span class="font-semibold">' + escapeHtml(prod.color) + '</span></div>' +
           '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Detalle:</span><span class="font-semibold">' + escapeHtml(prod.caracteristicas) + '</span></div>' +
-          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Logística:</span><span class="font-semibold">Envío Shalom (S/ 10) o Recojo en Trujillo</span></div>';
+          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Logística:</span><span class="font-semibold">Envío Shalom (S/ 10) o Retiro en Taller Trujillo</span></div>';
       }
 
       var mainImg = document.getElementById('qv-main-img');
@@ -510,7 +589,7 @@ initSlider('slider-taza-navidad');
             imagen: imgs[0]
           });
         }
-        window.location.href = '/pedido?producto=' + encodeURIComponent(prod.slug) + (isRes ? '' : '&modo=compra');
+        window.location.href = isRes ? ('/pedido?producto=' + encodeURIComponent(prod.slug)) : '/checkout';
       };
 
       modal.classList.remove('hidden');
@@ -528,7 +607,7 @@ initSlider('slider-taza-navidad');
     }
   };
 
-  // ── Sprint 1: Carrito Persistente Dual (Compra Directa 100% + Reserva Preventa S/ 20) ──
+  // ── Carrito Persistente E-Commerce 2026 (Sincronizado con Header, Tarjetas y Drawer) ──
   var CART_STORAGE_KEY = 'artesanitas_cart_v1';
 
   function loadCartFromStorage() {
@@ -550,9 +629,21 @@ initSlider('slider-taza-navidad');
 
   var cartItems = loadCartFromStorage();
 
+  function refreshCardActionSlots() {
+    var slots = document.querySelectorAll('[data-cart-action-slot]');
+    slots.forEach(function (slot) {
+      var slug = slot.getAttribute('data-cart-action-slot');
+      var prod = PRODUCTOS_STORE_MAP[slug];
+      var isRes = prod ? (prod.modalidad === 'reserva') : esProductoReserva(slug);
+      var agotado = prod ? Boolean(prod.agotado) : false;
+      slot.innerHTML = renderFalabellaActionHtml(slug, isRes, agotado);
+    });
+  }
+
   function updateCartUI() {
     var floatingBar = document.getElementById('cart-floating-bar');
     var bubbleBadge = document.getElementById('cart-bubble-badge');
+    var navBadge = document.getElementById('nav-cart-badge');
     var bubbleText = document.getElementById('cart-bubble-text');
     var drawerItemsEl = document.getElementById('cart-drawer-items');
     var drawerSubtotalEl = document.getElementById('cart-drawer-subtotal');
@@ -560,6 +651,7 @@ initSlider('slider-taza-navidad');
     var drawerSubtitleEl = document.getElementById('cart-drawer-subtitle');
     var drawerPayLabel = document.getElementById('cart-drawer-pay-label');
     var drawerCtaLabel = document.getElementById('cart-drawer-cta-label');
+    var drawerCheckoutBtn = document.getElementById('cart-drawer-checkout-btn');
 
     var totalPiezas = cartItems.reduce(function (acc, item) { return acc + (Number(item.cantidad) || 0); }, 0);
     var totalPrecio = cartItems.reduce(function (acc, item) { return acc + ((Number(item.precio) || 0) * (Number(item.cantidad) || 0)); }, 0);
@@ -582,32 +674,38 @@ initSlider('slider-taza-navidad');
     }
 
     if (bubbleBadge) bubbleBadge.textContent = String(totalPiezas);
+    if (navBadge) navBadge.textContent = String(totalPiezas);
     if (bubbleText) {
-      bubbleText.textContent = 'Mi Carrito (' + totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza' : 'piezas') + ' · S/ ' + totalPrecio.toFixed(2) + ')';
+      bubbleText.textContent = 'Carro (' + totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza' : 'piezas') + ' · S/ ' + totalPrecio.toFixed(2) + ')';
     }
     if (drawerSubtotalEl) drawerSubtotalEl.textContent = 'S/ ' + totalPrecio.toFixed(2);
     if (drawerReservaEl) drawerReservaEl.textContent = 'S/ ' + totalPagarHoy.toFixed(2);
     if (drawerPayLabel) {
       drawerPayLabel.textContent = (totalPagarHoy >= totalPrecio)
-        ? 'Total a pagar hoy (Compra 100%):'
-        : 'Monto a abonar hoy (Compra + Reserva):';
+        ? 'Total a pagar (Venta Directa 100%):'
+        : 'Monto a pagar hoy:';
+    }
+    if (drawerCheckoutBtn) {
+      drawerCheckoutBtn.href = tieneCompraDirecta ? '/checkout' : '/pedido';
     }
     if (drawerCtaLabel) {
-      drawerCtaLabel.textContent = tieneCompraDirecta ? 'Proceder al Pago / Checkout' : 'Completar mi Reserva Ahora';
+      drawerCtaLabel.textContent = tieneCompraDirecta ? 'Ir a Pagar (Checkout Venta Directa)' : 'Completar Reserva de Preventa';
     }
     if (drawerSubtitleEl) {
       drawerSubtitleEl.textContent = totalPiezas > 0
-        ? totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza en tu carrito' : 'piezas en tu carrito') + ' · Descarga de stock automática'
-        : 'Tu carrito está vacío';
+        ? totalPiezas + ' ' + (totalPiezas === 1 ? 'pieza en tu carro' : 'piezas en tu carro') + ' · Puedes sumar (+) o quitar (−)'
+        : 'Tu carro de compras está vacío';
     }
+
+    refreshCardActionSlots();
 
     if (drawerItemsEl) {
       if (cartItems.length === 0) {
         drawerItemsEl.innerHTML =
           '<div class="text-center py-12 px-4 space-y-3">' +
           '<div class="w-14 h-14 rounded-full bg-[#EBE5DE] text-[#8C7A6B] flex items-center justify-center mx-auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-7 h-7"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div>' +
-          '<p class="text-sm font-bold text-[#4A3C31]">Tu carrito está vacío</p>' +
-          '<p class="text-xs text-[#8C7A6B]">Agrega piezas de Compra Directa o de Preventa para finalizar tu pedido online.</p>' +
+          '<p class="text-sm font-bold text-[#4A3C31]">Tu carro de compras está vacío</p>' +
+          '<p class="text-xs text-[#8C7A6B]">Haz clic en "Agregar al Carro" en cualquier pieza del catálogo para comprar online.</p>' +
           '</div>';
       } else {
         drawerItemsEl.innerHTML = cartItems.map(function (item) {
@@ -622,17 +720,22 @@ initSlider('slider-taza-navidad');
             '<div class="min-w-0">' +
             '<h4 class="text-xs sm:text-sm font-bold text-[#4A3C31] truncate">' + escapeHtml(item.nombre) + '</h4>' +
             '<span class="text-[11px] text-[#8C7A6B] block">S/ ' + Number(item.precio).toFixed(2) + ' c/u</span>' +
-            '<span class="text-[10px] font-semibold ' + (esRes ? 'text-[#B87352]' : 'text-[#007A78]') + ' block">' +
-            (esRes ? ('Preventa · Adelanto: S/ ' + hoyItem.toFixed(2)) : ('Compra Directa · Pago: S/ ' + hoyItem.toFixed(2))) +
+            '<span class="text-[10px] font-semibold ' + (esRes ? 'text-[#B87352]' : 'text-[#137333]') + ' block">' +
+            (esRes ? ('Preventa · Adelanto: S/ ' + hoyItem.toFixed(2)) : ('Venta Directa · S/ ' + hoyItem.toFixed(2))) +
             '</span>' +
             '</div>' +
             '</div>' +
             '<div class="flex flex-col items-end gap-1.5 shrink-0">' +
-            '<span class="text-xs font-bold text-[#4A3C31]">S/ ' + subItem.toFixed(2) + '</span>' +
-            '<div class="flex items-center gap-1 bg-[#F9F6F0] rounded-xl border border-[#D5C9BD] p-0.5">' +
-            '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', -1)" class="w-6 h-6 rounded-lg bg-white hover:bg-[#B87352] hover:text-white text-[#4A3C31] font-bold text-xs flex items-center justify-center transition-colors cursor-pointer">−</button>' +
+            '<div class="flex items-center gap-2">' +
+            '<span class="text-xs font-bold text-[#333c48]">S/ ' + subItem.toFixed(2) + '</span>' +
+            '<button type="button" onclick="window.ArtesanitasCart.removeItem(\'' + slugAttr + '\')" class="text-[#8C7A6B] hover:text-red-600 p-1 cursor-pointer" title="Quitar del carro">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+            '</button>' +
+            '</div>' +
+            '<div class="flex items-center gap-1 bg-[#F9F6F0] rounded-full border border-[#D5C9BD] p-0.5">' +
+            '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', -1)" class="w-6 h-6 rounded-full bg-white hover:bg-[#333c48] hover:text-white text-[#4A3C31] font-bold text-xs flex items-center justify-center transition-colors cursor-pointer">−</button>' +
             '<span class="w-6 text-center font-bold text-xs text-[#4A3C31]">' + Number(item.cantidad) + '</span>' +
-            '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', 1)" class="w-6 h-6 rounded-lg bg-white hover:bg-[#B87352] hover:text-white text-[#4A3C31] font-bold text-xs flex items-center justify-center transition-colors cursor-pointer">+</button>' +
+            '<button type="button" onclick="window.ArtesanitasCart.changeQty(\'' + slugAttr + '\', 1)" class="w-6 h-6 rounded-full bg-white hover:bg-[#333c48] hover:text-white text-[#4A3C31] font-bold text-xs flex items-center justify-center transition-colors cursor-pointer">+</button>' +
             '</div>' +
             '</div>' +
             '</div>';
@@ -642,6 +745,20 @@ initSlider('slider-taza-navidad');
   }
 
   window.ArtesanitasCart = {
+    addBySlug: function (slug, btnEl) {
+      var prod = PRODUCTOS_STORE_MAP[slug];
+      if (!prod) return;
+      var imgs = prod.imagenes || ['/imagenes/Artesanitas/logo_artesanitas.peru.jpg'];
+      this.addItem({
+        slug: prod.slug,
+        sku: prod.sku,
+        nombre: prod.nombre,
+        precio: prod.precio,
+        reserva: prod.modalidad === 'reserva' ? 20.00 : prod.precio,
+        modalidad: prod.modalidad,
+        imagen: imgs[0]
+      }, btnEl);
+    },
     addItem: function (prod, btnEl) {
       if (!prod || !prod.slug) return;
       var esRes = prod.modalidad ? (prod.modalidad === 'reserva') : esProductoReserva(prod.slug);
@@ -683,17 +800,12 @@ initSlider('slider-taza-navidad');
           });
         } catch (e) {}
       }
-
-      if (btnEl) {
-        var prevHtml = btnEl.innerHTML;
-        btnEl.innerHTML = '<span class="flex items-center justify-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg> ¡Agregado!</span>';
-        btnEl.classList.add('bg-[#007A78]', 'text-white', 'border-[#007A78]');
-        setTimeout(function () {
-          btnEl.innerHTML = prevHtml;
-          btnEl.classList.remove('bg-[#007A78]', 'border-[#007A78]');
-        }, 1200);
-      }
-      showShareToast(esRes ? 'Pieza agregada a Mi Reserva' : 'Pieza agregada al Carrito de Compra');
+      showShareToast('Agregado a tu Carro de Compras');
+    },
+    removeItem: function (slug) {
+      cartItems = cartItems.filter(function (i) { return i.slug !== slug; });
+      saveCartToStorage(cartItems);
+      updateCartUI();
     },
     changeQty: function (slug, delta) {
       for (var i = 0; i < cartItems.length; i++) {
@@ -728,7 +840,9 @@ initSlider('slider-taza-navidad');
     }
   };
 
-  // Inyecta Vista Rápida (Quick-View), SKU Numérico y Compra Directa / Reserva en todas las tarjetas del catálogo
+  // Transforma todas las tarjetas del catálogo al diseño limpio Saga Falabella 2026:
+  // 1. Limpia por completo la imagen (quita botones de WhatsApp o íconos superpuestos) y activa el click para abrir la Ficha Quick-View.
+  // 2. Renderiza debajo de la imagen el bloque comercial estilo Falabella con "Agregar al Carro" y stepper interactivo (- 1 +).
   function injectCartButtonsOnStaticCards() {
     var cards = document.querySelectorAll('#coleccion-navidad .group, #catalogo [data-slug], #coleccion-van-gogh .group');
     var seqCounter = 1;
@@ -757,7 +871,7 @@ initSlider('slider-taza-navidad');
 
       var isRes = esProductoReserva(slug);
       var prefixNum = (slug.indexOf('adorno') !== -1 || slug.indexOf('elefant') !== -1 || slug.indexOf('jarron') !== -1) ? '24' : (slug.indexOf('plato') !== -1 ? '12' : (slug.indexOf('tetera') !== -1 || slug.indexOf('azucar') !== -1 ? '13' : '10'));
-      var autoSku = prefixNum + String(seqCounter++).padStart(2, '0');
+      var autoSku = (slug === 'taza-formula-1') ? '1028' : (prefixNum + String(seqCounter++).padStart(2, '0'));
 
       var titleEl = card.querySelector('h3, h4');
       var nombre = titleEl ? titleEl.textContent.trim() : slug;
@@ -782,93 +896,172 @@ initSlider('slider-taza-navidad');
 
       var descEl = card.querySelector('p');
       var descripcion = descEl ? descEl.textContent.trim().replace(/\s+/g, ' ') : '';
+      var cat = classifyCategoryBySlug(slug, nombre);
 
-      registerProductInStore({
+      var prodObj = {
         slug: slug,
         sku: autoSku,
         nombre: nombre,
         precio: precio,
+        precio_regular: precio,
         reserva: isRes ? 20.00 : precio,
         modalidad: isRes ? 'reserva' : 'compra_directa',
+        categoria: cat,
+        agotado: false,
         imagenes: allImgs,
         descripcion: descripcion
-      });
+      };
+      registerProductInStore(prodObj);
 
-      // Hacer que el título abra el modal Vista Rápida
-      if (titleEl) {
-        titleEl.classList.add('cursor-pointer', 'hover:text-[#B87352]', 'transition-colors');
-        titleEl.title = 'Ver ficha completa y detalles del producto';
-        titleEl.addEventListener('click', function () {
+      card.setAttribute('data-cat', cat);
+      card.setAttribute('data-price', String(precio));
+      card.setAttribute('data-name', nombre.toLowerCase());
+      card.setAttribute('data-sku', autoSku);
+      card.classList.add('bg-white', 'rounded-3xl', 'p-3.5', 'border', 'border-[#EBE5DE]', 'shadow-2xs', 'hover:shadow-md', 'transition-all');
+
+      // 1. Limpiar por completo el contenedor de la imagen y habilitar click directo a la Ficha Quick-View
+      var imgBox = card.querySelector('.relative.aspect-\[4\/5\]');
+      if (imgBox) {
+        imgBox.classList.add('cursor-pointer');
+        // Eliminar botones flotantes de WhatsApp, reserva o íconos superpuestos sobre la foto
+        imgBox.querySelectorAll('a, .absolute.top-3.right-3, .absolute.bottom-3, .absolute.bottom-4').forEach(function (el) {
+          el.remove();
+        });
+        // Asegurar que la capa de brillo hover no bloquee el click en la foto
+        imgBox.querySelectorAll('.absolute.inset-0').forEach(function (ov) {
+          ov.classList.add('pointer-events-none');
+        });
+
+        var downX = 0;
+        var downY = 0;
+        imgBox.addEventListener('pointerdown', function (e) {
+          downX = e.clientX;
+          downY = e.clientY;
+        });
+        imgBox.addEventListener('click', function (e) {
+          if (Math.abs((e.clientX || 0) - downX) > 12 || Math.abs((e.clientY || 0) - downY) > 12) return;
           window.ArtesanitasQuickView.open(slug);
         });
       }
 
-      // Estándar E-Commerce 2026: Unificar la esquina superior derecha en 1 solo botón limpio de Compartir / Copiar enlace
-      var topRightBar = card.querySelector('.absolute.top-3.right-3');
-      if (topRightBar) {
-        topRightBar.innerHTML =
-          '<button type="button" class="btn-unified-share w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-white hover:scale-105 transition-all cursor-pointer" title="Compartir o copiar enlace del producto" aria-label="Compartir producto">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#4A3C31]"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
-          '</button>';
-        var shareBtn = topRightBar.querySelector('.btn-unified-share');
-        if (shareBtn) {
-          shareBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            shareProducto('/producto/' + slug, nombre);
-          });
-        }
-      }
-
+      // 2. Reemplazar el cuerpo inferior por la estructura limpia estilo Saga Falabella
       var infoContainer = card.querySelector('.flex.flex-col.flex-grow');
       if (infoContainer) {
-        // Mostrar badge de SKU numérico y modalidad
-        var metaRow = document.createElement('div');
-        metaRow.className = 'flex items-center justify-between gap-2 mt-2 pt-2 border-t border-[#EBE5DE]/70 text-[11px]';
-        metaRow.innerHTML =
-          '<span class="font-mono font-bold text-[#8C7A6B] bg-[#F9F6F0] px-2 py-0.5 rounded border border-[#EBE5DE]" data-card-sku="' + slug + '">SKU: ' + autoSku + '</span>' +
-          '<button type="button" class="btn-card-ver-ficha font-bold text-[#B87352] hover:underline flex items-center gap-1 cursor-pointer">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>' +
-          '<span>Ver Ficha y Detalles</span>' +
-          '</button>';
-        metaRow.querySelector('.btn-card-ver-ficha').addEventListener('click', function () {
-          window.ArtesanitasQuickView.open(slug);
-        });
-        infoContainer.appendChild(metaRow);
-
-        var actionGrid = document.createElement('div');
-        actionGrid.className = 'mt-2.5 grid grid-cols-2 gap-2';
-
-        var btnAdd = document.createElement('button');
-        btnAdd.type = 'button';
-        btnAdd.className = 'py-2.5 px-3 rounded-xl border border-[#4A3C31] bg-[#4A3C31] hover:bg-[#322821] text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs';
-        btnAdd.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>' + (isRes ? '+ Mi Reserva' : '+ Al Carrito') + '</span>';
-        btnAdd.addEventListener('click', function () {
-          var currentData = PRODUCTOS_STORE_MAP[slug] || {};
-          window.ArtesanitasCart.addItem({
-            slug: slug,
-            sku: currentData.sku || autoSku,
-            nombre: currentData.nombre || nombre,
-            precio: currentData.precio || precio,
-            reserva: isRes ? 20.00 : (currentData.precio || precio),
-            modalidad: isRes ? 'reserva' : 'compra_directa',
-            imagen: imagen
-          }, btnAdd);
-        });
-
-        var btnBuyNow = document.createElement('a');
-        btnBuyNow.href = '/pedido?producto=' + encodeURIComponent(slug) + (isRes ? '' : '&modo=compra');
-        btnBuyNow.className = 'py-2.5 px-3 rounded-xl bg-[#B87352] hover:bg-[#A36244] text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-2xs text-center';
-        btnBuyNow.innerHTML = '<span>' + (isRes ? 'Reservar (S/ 20)' : 'Comprar Ahora') + '</span>';
-
-        actionGrid.appendChild(btnAdd);
-        actionGrid.appendChild(btnBuyNow);
-        infoContainer.appendChild(actionGrid);
+        infoContainer.outerHTML = buildFalabellaCardBodyHtml(prodObj);
       }
     });
   }
 
+  // ── Buscador en Vivo, Filtros por Categoría y Ordenamiento ──
+  var activeCategory = 'todos';
+
+  function applyCatalogFilters() {
+    var searchInput = document.getElementById('catalog-search-input');
+    var clearBtn = document.getElementById('catalog-search-clear');
+    var sortSelect = document.getElementById('catalog-sort-select');
+    var countLabel = document.getElementById('catalog-count-label');
+
+    var q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    if (clearBtn) clearBtn.classList.toggle('hidden', !q);
+
+    var sortMode = sortSelect ? sortSelect.value : 'default';
+    var catalogSection = document.getElementById('catalogo');
+    if (!catalogSection) return;
+
+    var grid = catalogSection.querySelector('.grid');
+    var cards = Array.prototype.slice.call(catalogSection.querySelectorAll('[data-slug]'));
+    var visibleCount = 0;
+
+    cards.forEach(function (card) {
+      if (card.dataset.paused === 'true') {
+        card.style.display = 'none';
+        return;
+      }
+      var slug = card.getAttribute('data-slug') || '';
+      var cat = card.getAttribute('data-cat') || 'tazas';
+      var name = card.getAttribute('data-name') || '';
+      var sku = (card.getAttribute('data-sku') || '').toLowerCase();
+      var prod = PRODUCTOS_STORE_MAP[slug] || {};
+      var desc = (prod.descripcion || '').toLowerCase();
+
+      var matchCat = (activeCategory === 'todos') || (cat === activeCategory);
+      var matchQuery = !q || name.indexOf(q) !== -1 || slug.indexOf(q) !== -1 || sku.indexOf(q) !== -1 || desc.indexOf(q) !== -1;
+
+      if (matchCat && matchQuery) {
+        card.style.display = '';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (grid && sortMode !== 'default') {
+      var sorted = cards.slice().sort(function (a, b) {
+        var pa = parseFloat(a.getAttribute('data-price') || '0');
+        var pb = parseFloat(b.getAttribute('data-price') || '0');
+        var na = a.getAttribute('data-name') || '';
+        var nb = b.getAttribute('data-name') || '';
+        if (sortMode === 'price-asc') return pa - pb;
+        if (sortMode === 'price-desc') return pb - pa;
+        if (sortMode === 'name-asc') return na.localeCompare(nb);
+        return 0;
+      });
+      var dynBox = document.getElementById('productos-dinamicos');
+      sorted.forEach(function (c) {
+        if (dynBox && c.parentElement === dynBox) return;
+        grid.insertBefore(c, dynBox || null);
+      });
+    }
+
+    if (countLabel) {
+      countLabel.textContent = 'Mostrando ' + visibleCount + ' ' + (visibleCount === 1 ? 'pieza artesanal' : 'piezas artesanales');
+    }
+  }
+
+  function initStoreToolbar() {
+    var searchInput = document.getElementById('catalog-search-input');
+    var clearBtn = document.getElementById('catalog-search-clear');
+    var sortSelect = document.getElementById('catalog-sort-select');
+    var pills = document.querySelectorAll('.cat-filter-pill');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyCatalogFilters);
+    }
+    if (clearBtn && searchInput) {
+      clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        applyCatalogFilters();
+        searchInput.focus();
+      });
+    }
+    if (sortSelect) {
+      sortSelect.addEventListener('change', applyCatalogFilters);
+    }
+    pills.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activeCategory = btn.getAttribute('data-cat') || 'todos';
+        pills.forEach(function (p) {
+          p.className = 'cat-filter-pill bg-[#F9F6F0] hover:bg-[#EBE5DE] text-[#4A3C31] border border-[#D5C9BD] text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all cursor-pointer';
+        });
+        btn.className = 'cat-filter-pill bg-[#333c48] text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition-all cursor-pointer';
+        applyCatalogFilters();
+      });
+    });
+  }
+
+  window.ArtesanitasStore = {
+    focusSearch: function () {
+      var toolbar = document.getElementById('catalog-toolbar');
+      var searchInput = document.getElementById('catalog-search-input');
+      if (toolbar) toolbar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (searchInput) setTimeout(function () { searchInput.focus(); }, 350);
+    }
+  };
+
   injectCartButtonsOnStaticCards();
+  initStoreToolbar();
   updateCartUI();
+  applyCatalogFilters();
 
   function cargarProductosDinamicos() {
     var contenedor = document.getElementById('productos-dinamicos');
@@ -878,19 +1071,20 @@ initSlider('slider-taza-navidad');
         var productos = (data && data.productos) || [];
         var nuevosDinamicos = [];
         productos.forEach(function (p) {
-          // Si el producto ya existe como tarjeta estática en el DOM, sincronizar su SKU numérico, stock y ficha
           var staticCard = document.querySelector('[data-slug="' + p.slug + '"]');
           var precioEf = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio)) ? Number(p.precio_oferta) : Number(p.precio);
           var isRes = esProductoReserva(p.slug, p.politica_sin_stock);
+          var agotado = Number(p.stock_actual || 0) <= 0 && p.politica_sin_stock === 'agotado';
           registerProductInStore({
             slug: p.slug,
             sku: p.sku,
             nombre: p.nombre,
             precio: precioEf,
+            precio_regular: Number(p.precio),
             reserva: isRes ? 20.00 : precioEf,
             modalidad: isRes ? 'reserva' : 'compra_directa',
             stock_actual: Number(p.stock_actual || 0),
-            agotado: Number(p.stock_actual || 0) <= 0 && p.politica_sin_stock === 'agotado',
+            agotado: agotado,
             imagenes: Array.isArray(p.imagenes) && p.imagenes.length > 0 ? p.imagenes : undefined,
             descripcion: p.descripcion,
             tamano_dimensiones: p.tamano_dimensiones,
@@ -898,8 +1092,11 @@ initSlider('slider-taza-navidad');
             caracteristicas: p.caracteristicas
           });
           if (staticCard) {
-            var skuBadge = staticCard.querySelector('[data-card-sku="' + p.slug + '"]');
-            if (skuBadge && p.sku) skuBadge.textContent = 'SKU: ' + p.sku;
+            if (p.sku) {
+              staticCard.setAttribute('data-sku', p.sku);
+              var skuBadge = staticCard.querySelector('[data-card-sku="' + p.slug + '"]');
+              if (skuBadge) skuBadge.textContent = 'SKU ' + p.sku;
+            }
           } else {
             nuevosDinamicos.push(p);
           }
@@ -907,6 +1104,8 @@ initSlider('slider-taza-navidad');
         if (contenedor) {
           contenedor.innerHTML = nuevosDinamicos.map(cardHtml).join('');
         }
+        refreshCardActionSlots();
+        applyCatalogFilters();
       })
       .catch(function () { });
   }
@@ -917,9 +1116,14 @@ initSlider('slider-taza-navidad');
       .then(function (data) {
         var slugs = (data && data.slugs) || [];
         slugs.forEach(function (slug) {
+          if (slug === 'taza-formula-1') return;
           var el = document.querySelector('[data-slug="' + slug + '"]');
-          if (el) el.style.display = 'none';
+          if (el) {
+            el.dataset.paused = 'true';
+            el.style.display = 'none';
+          }
         });
+        applyCatalogFilters();
       })
       .catch(function () { });
   }

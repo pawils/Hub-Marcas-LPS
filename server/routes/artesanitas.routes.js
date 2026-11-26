@@ -224,8 +224,8 @@ router.get('/producto/:slug', async (req, res) => {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><polyline points="15 18 9 12 15 6"/></svg>
         Ver catálogo completo
       </a>
-      <a href="/pedido" class="text-xs font-bold text-[#B87352] bg-[#B87352]/10 px-3 py-1.5 rounded-full">
-        ${esReserva ? 'Ir a Mi Reserva' : 'Ir a Mi Carrito'}
+      <a href="${esReserva ? '/pedido' : '/checkout'}" class="text-xs font-bold text-white bg-[#333c48] hover:bg-[#1e242b] px-3.5 py-1.5 rounded-full transition-colors">
+        ${esReserva ? 'Ir a Mi Reserva' : 'Ver Carro / Checkout'}
       </a>
     </div>
 
@@ -261,17 +261,17 @@ router.get('/producto/:slug', async (req, res) => {
     <div class="mt-8 space-y-3">
       ${agotado ? '' : `
       <button type="button" id="btn-pdp-add-cart"
-        class="w-full bg-[#4A3C31] hover:bg-[#322821] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all shadow-md cursor-pointer">
-        <span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> ${esReserva ? '+ Agregar a mi reserva' : '+ Agregar al Carrito'}</span>
+        class="w-full bg-[#333c48] hover:bg-[#1e242b] text-white py-3.5 rounded-full flex items-center justify-center gap-2 font-bold transition-all shadow-md cursor-pointer">
+        <span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> ${esReserva ? '+ Agregar a mi reserva' : 'Agregar al Carro'}</span>
       </button>
-      <a href="/pedido?producto=${encodeURIComponent(producto.slug)}${esReserva ? '' : '&modo=compra'}"
-        class="w-full bg-[#B87352] text-white py-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:bg-[#A36244] transition-all shadow-md">
+      <a href="${esReserva ? `/pedido?producto=${encodeURIComponent(producto.slug)}` : `/checkout?producto=${encodeURIComponent(producto.slug)}`}"
+        class="w-full bg-[#B87352] text-white py-3.5 rounded-full flex items-center justify-center gap-2 font-semibold hover:bg-[#A36244] transition-all shadow-md">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
           <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <path d="M16 10a4 4 0 0 1-8 0"></path>
         </svg>
-        ${esReserva ? 'Reservar Ahora (S/ 20 por Plin)' : `Comprar Ahora (${precioTexto})`}
+        ${esReserva ? 'Reservar Ahora (S/ 20 por Plin)' : `Ir a Pagar (${precioTexto})`}
       </a>
       `}
       <a href="${urlWhatsapp(producto)}" target="_blank" rel="noreferrer"
@@ -310,11 +310,11 @@ router.get('/producto/:slug', async (req, res) => {
               });
             }
             localStorage.setItem(key, JSON.stringify(cart));
-            btnAdd.innerHTML = '<span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><polyline points="20 6 9 17 4 12"/></svg> ¡Agregado! Redirigiendo al Checkout...</span>';
-            btnAdd.classList.replace('bg-[#4A3C31]', 'bg-[#007A78]');
-            setTimeout(function () { window.location.href = '/pedido'; }, 700);
+            btnAdd.innerHTML = '<span class="flex items-center justify-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><polyline points="20 6 9 17 4 12"/></svg> ¡Agregado a tu Carro!</span>';
+            btnAdd.classList.replace('bg-[#333c48]', 'bg-[#137333]');
+            setTimeout(function () { window.location.href = esRes ? '/pedido' : '/checkout'; }, 600);
           } catch (e) {
-            window.location.href = '/pedido?producto=' + encodeURIComponent(prod.slug) + (esRes ? '' : '&modo=compra');
+            window.location.href = (esRes ? '/pedido?producto=' : '/checkout?producto=') + encodeURIComponent(prod.slug);
           }
         });
       }

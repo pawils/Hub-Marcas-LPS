@@ -50,6 +50,10 @@ app.get(['/artesanitas-pedido', '/artesanitas-pedido.html', '/artesanitas/pedido
   const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
   res.redirect(301, '/pedido' + q);
 });
+app.get(['/artesanitas-checkout', '/artesanitas-checkout.html', '/artesanitas/checkout'], (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/checkout' + q);
+});
 app.get(['/artesanitas-seguimiento', '/artesanitas-seguimiento.html', '/artesanitas/seguimiento'], (req, res) => {
   const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
   res.redirect(301, '/seguimiento' + q);
