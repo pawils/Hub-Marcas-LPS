@@ -666,35 +666,6 @@
         </div>
       </div>
 
-      <!-- 5 KPIs de Almacén y Valorización -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-[11px] font-bold text-[#8C7A6B] uppercase tracking-wider">SKUs Matriculados</p>
-          <p id="inv-kpi-skus" class="text-2xl font-extrabold text-[#4A3C31] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">Con SKU interno y EAN-13</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-[11px] font-bold text-[#007A78] uppercase tracking-wider">Unidades Físicas en Stock</p>
-          <p id="inv-kpi-unidades" class="text-2xl font-extrabold text-[#007A78] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">Disponibles para entrega inmediata</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-[11px] font-bold text-[#742284] uppercase tracking-wider">Valorización a Costo</p>
-          <p id="inv-kpi-valor-costo" class="text-2xl font-extrabold text-[#742284] mt-1">S/ 0.00</p>
-          <span class="text-[11px] text-[#8C7A6B]">Stock × Costo</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-[11px] font-bold text-[#008f6b] uppercase tracking-wider">Valorización Retail (PVP)</p>
-          <p id="inv-kpi-valor-retail" class="text-2xl font-extrabold text-[#008f6b] mt-1">S/ 0.00</p>
-          <span class="text-[11px] text-[#8C7A6B]">Stock × Precio Venta</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-[11px] font-bold text-[#B87352] uppercase tracking-wider">Stock Bajo / Preventa</p>
-          <p id="inv-kpi-alertas" class="text-2xl font-extrabold text-[#B87352] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">SKUs por reponer o a pedido</span>
-        </div>
-      </div>
-
       <!-- Formulario Rápido: Matrícula de Mercadería Nueva con Generador Automático SKU + EAN-13 y Vista Previa de Código de Barras -->
       <form id="form-matricula-mercaderia" class="hidden bg-white rounded-3xl border-2 border-[#B87352]/40 p-5 sm:p-6 space-y-4 shadow-sm">
         <div class="flex items-center justify-between border-b border-[#EBE5DE] pb-3">
@@ -808,21 +779,30 @@
       </form>
 
       <!-- Barra de Filtros, Lector de Código de Barras EAN-13 y Botón Guardar Conteo Físico Masivo -->
-      <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] flex flex-wrap items-end justify-between gap-3 shadow-2xs">
-        <div class="flex flex-wrap items-end gap-3">
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-medium text-[#8C7A6B] flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg> Escanear EAN-13 / Buscar SKU o Producto</label>
-              <button type="button" id="btn-camara-scanner-wms" class="text-[11px] font-bold text-[#007A78] hover:text-[#005e5c] flex items-center gap-1 cursor-pointer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg> Escanear con Cámara
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE5DE] space-y-3.5 shadow-2xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+          <div class="lg:col-span-5">
+            <div class="flex items-center justify-between gap-3 mb-1.5">
+              <label for="filtro-inv-search" class="text-xs font-semibold text-[#4A3C31] flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-[#8C7A6B]"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Buscar Producto, SKU o EAN-13
+              </label>
+              <button type="button" id="btn-camara-scanner-wms" class="text-[11px] font-bold text-[#007A78] hover:text-[#005e5c] flex items-center gap-1 cursor-pointer shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                Escanear con Cámara
               </button>
             </div>
-            <input type="text" id="filtro-inv-search" placeholder="Escanea EAN-13 (775...) o escribe SKU / Nombre"
-              class="px-3.5 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#B87352] w-72">
+            <div class="relative">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#8C7A6B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="search" id="filtro-inv-search" placeholder="Nombre, SKU (1019) o código de barras EAN-13..."
+                class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#B87352] transition-colors">
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Línea Retail</label>
-            <select id="filtro-inv-linea" class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          <div class="lg:col-span-2">
+            <label for="filtro-inv-linea" class="block text-xs font-semibold text-[#8C7A6B] mb-1.5">Línea Retail</label>
+            <select id="filtro-inv-linea" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
               <option value="">Todas las líneas</option>
               <option value="Vajilla Artesanal">Vajilla Artesanal</option>
               <option value="Decoración & Maceteros">Decoración & Maceteros</option>
@@ -830,29 +810,36 @@
               <option value="Sets de Regalo">Sets de Regalo</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Colección</label>
-            <select id="filtro-inv-coleccion" class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+          <div class="lg:col-span-2">
+            <label for="filtro-inv-coleccion" class="block text-xs font-semibold text-[#8C7A6B] mb-1.5">Colección</label>
+            <select id="filtro-inv-coleccion" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
               <option value="">Todas las colecciones</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado de Stock</label>
-            <select id="filtro-inv-stock" class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
-              <option value="">Todos</option>
+          <div class="lg:col-span-3">
+            <label for="filtro-inv-stock" class="block text-xs font-semibold text-[#8C7A6B] mb-1.5">Estado de Stock</label>
+            <select id="filtro-inv-stock" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos los estados</option>
               <option value="con_stock">Con Stock Físico (&gt; 0)</option>
               <option value="bajo_stock">Stock Bajo / Crítico (&le; mín.)</option>
               <option value="sin_stock">Stock 0 (En Preventa / Agotado)</option>
             </select>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <input type="text" id="inv-motivo-masivo" placeholder="Nota conteo (ej. Inventario Mensual)"
-            class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs w-48 focus:outline-none focus:border-[#B87352]">
-          <button type="button" id="btn-inv-guardar-conteo-masivo"
-            class="bg-[#007A78] hover:bg-[#00635D] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
-            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg> Guardar Conteo Físico</span>
-          </button>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#F1EDE7]">
+          <div class="flex items-center gap-3">
+            <span id="inv-filtro-count" class="text-xs font-semibold text-[#8C7A6B]">Mostrando todos los productos</span>
+            <button type="button" id="btn-inv-limpiar-filtros" class="text-xs font-bold text-[#B87352] hover:underline cursor-pointer">Limpiar filtros</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="inv-motivo-masivo" placeholder="Nota conteo (ej. Inventario Mensual)"
+              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs w-52 focus:bg-white focus:outline-none focus:border-[#B87352]">
+            <button type="button" id="btn-inv-guardar-conteo-masivo"
+              class="bg-[#007A78] hover:bg-[#00635D] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer">
+              <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg> Guardar Conteo Físico</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -875,6 +862,35 @@
         <p id="inventario-empty" class="hidden text-center text-[#8C7A6B] py-10">
           No hay productos matriculados con este filtro. Haz clic en "Auto-Matricular Todo el Catálogo" para incorporar todas las piezas.
         </p>
+      </div>
+
+      <!-- 5 KPIs de Almacén y Valorización (parte inferior) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#8C7A6B] uppercase tracking-wider">SKUs Matriculados</p>
+          <p id="inv-kpi-skus" class="text-2xl font-extrabold text-[#4A3C31] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Con SKU interno y EAN-13</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#007A78] uppercase tracking-wider">Unidades Físicas en Stock</p>
+          <p id="inv-kpi-unidades" class="text-2xl font-extrabold text-[#007A78] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Disponibles para entrega inmediata</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#742284] uppercase tracking-wider">Valorización a Costo</p>
+          <p id="inv-kpi-valor-costo" class="text-2xl font-extrabold text-[#742284] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Stock × Costo</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#008f6b] uppercase tracking-wider">Valorización Retail (PVP)</p>
+          <p id="inv-kpi-valor-retail" class="text-2xl font-extrabold text-[#008f6b] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Stock × Precio Venta</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
+          <p class="text-[11px] font-bold text-[#B87352] uppercase tracking-wider">Stock Bajo / Preventa</p>
+          <p id="inv-kpi-alertas" class="text-2xl font-extrabold text-[#B87352] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">SKUs por reponer o a pedido</span>
+        </div>
       </div>
 
       <!-- Kardex Auditable de Movimientos de Mercadería (oculto temporalmente; el Kardex por producto está en Ficha 360°) -->
@@ -1677,7 +1693,7 @@
 
   <!-- Script modular externo al final del DOM para inicializar todos los modales -->
   <script src="/js/lps-modal.js?v=20261126_s2"></script>
-  <script src="/js/registros.js?v=20261126_s14"></script>
+  <script src="/js/registros.js?v=20261126_s15"></script>
 </body>
 
 </html>

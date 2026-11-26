@@ -2129,6 +2129,10 @@
 
     const lista = inventarioFiltrado();
     if (empty) empty.classList.toggle('hidden', lista.length > 0);
+    const countEl = document.getElementById('inv-filtro-count');
+    if (countEl) {
+      countEl.textContent = `Mostrando ${lista.length} de ${inventarioCache.length} productos`;
+    }
 
     tbody.innerHTML = lista.map(p => {
       const foto = (Array.isArray(p.imagenes) && p.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
@@ -2407,6 +2411,17 @@
       el.addEventListener('change', renderInventarioTable);
     }
   });
+
+  const btnInvLimpiar = document.getElementById('btn-inv-limpiar-filtros');
+  if (btnInvLimpiar) {
+    btnInvLimpiar.addEventListener('click', () => {
+      ['filtro-inv-search', 'filtro-inv-linea', 'filtro-inv-coleccion', 'filtro-inv-stock'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      renderInventarioTable();
+    });
+  }
 
   // Botón Auto-Matricular Todo el Catálogo con SKU + EAN-13
   const btnInvMatricularMasivo = document.getElementById('btn-inv-matricular-masivo');
