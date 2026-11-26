@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
-    "migrate": "node server/migrate.js"
+    "migrate": "node server/migrate.js",
+    "lint": "eslint server public/js public/sw.js"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -24,5 +25,9 @@
     "mercadopago": "^2.12.0",
     "multer": "^2.0.2",
     "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0"
   }
 }

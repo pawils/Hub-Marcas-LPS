@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "usernamehw.errorlens",
+    "bradlc.vscode-tailwindcss",
+    "donjayamanne.githistory"
+  ],
+  "unwantedRecommendations": [
+    "eamodio.gitlens",
+    "ms-edgedevtools.vscode-edge-devtools",
+    "firefox-devtools.vscode-firefox-debug",
+    "christian-kohler.npm-intellisense",
+    "davidanson.vscode-markdownlint"
+  ]
+}

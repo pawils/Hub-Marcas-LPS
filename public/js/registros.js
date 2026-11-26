@@ -441,9 +441,6 @@
             </td>
             <td data-label="Inscrito el" class="px-4 py-3 text-[#8C7A6B]">${inscritoEl}</td>
             <td data-label="Acciones" class="px-4 py-3 text-right">
-            <button type="button" data-imprimir-guia="${p.id}" class="btn-imprimir-guia-despacho text-xs font-bold text-[#007A78] hover:underline flex items-center gap-1 cursor-pointer justify-end mb-1">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg> Packing Slip
-            </button>
               <button data-id="${r.id}" data-nombre="${escapeHtml(r.nombre)}" class="btn-eliminar-inscripcion text-xs font-medium text-red-600 hover:underline cursor-pointer">
                 Eliminar
               </button>
@@ -1350,6 +1347,9 @@
             </a>
           </td>
           <td data-label="Acciones" class="px-4 py-3 text-right">
+            <button type="button" data-imprimir-guia="${p.id}" class="btn-imprimir-guia-despacho text-xs font-bold text-[#007A78] hover:underline flex items-center gap-1 cursor-pointer justify-end mb-1 ml-auto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg> Packing Slip
+            </button>
             <button data-id="${p.id}" data-nombre="${escapeHtml(p.nombre)}" class="btn-eliminar-pedido text-xs font-medium text-red-600 hover:underline cursor-pointer">
               Eliminar
             </button>
@@ -2323,195 +2323,392 @@
     });
   }
 
+  // ============================================================================
+  // Ficha Técnica Maestra 360° de Producto + Kardex Individual (Shopify Admin)
+  // ============================================================================
+  function calcularMargenFichaEnVivo() {
+    var costo = parseFloat(document.getElementById('ficha-costo')?.value) || 0;
+    var precio = parseFloat(document.getElementById('ficha-precio')?.value) || 0;
+    var oferta = parseFloat(document.getElementById('ficha-oferta')?.value) || 0;
+    var pvp = (oferta > 0 && oferta < precio) ? oferta : precio;
+    var ganancia = pvp - costo;
+    var pct = pvp > 0 ? Math.round((ganancia / pvp) * 100) : 0;
+    var pill = document.getElementById('ficha-margen-pill');
+    if (pill) {
+      pill.textContent = 'Ganancia: S/ ' + ganancia.toFixed(2) + ' (' + pct + '% margen)';
+      pill.className = 'text-xs font-extrabold px-3 py-1 rounded-full border ' +
+        (pct >= 40 ? 'bg-green-100 text-green-800 border-green-200' : (pct >= 20 ? 'bg-amber-100 text-amber-900 border-amber-200' : 'bg-red-100 text-red-800 border-red-200'));
+    }
+  }
+
+  function poblarCamposFicha360(p, kardexList, resumen) {
+    document.getElementById('ficha-prod-id').value = p.id;
+    var foto = (Array.isArray(p.imagenes) && p.imagenes[0]) ? p.imagenes[0] : '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
+    var imgEl = document.getElementById('ficha-img-preview');
+    if (imgEl) imgEl.src = foto;
+
+    document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + (p.sku || '----');
+    document.getElementById('ficha-badge-ean').textContent = 'EAN: ' + (p.ean || '-------------');
+    document.getElementById('ficha-titulo-header').textContent = p.nombre || 'Producto';
+    document.getElementById('ficha-slug-header').textContent = '/producto/' + (p.slug || '');
+
+    document.getElementById('ficha-nombre').value = p.nombre || '';
+    document.getElementById('ficha-sku').value = p.sku || '';
+    document.getElementById('ficha-ean').value = p.ean || '';
+    document.getElementById('ficha-linea').value = p.linea || 'Vajilla Artesanal';
+    document.getElementById('ficha-sublinea').value = p.sublinea || 'Tazas & Mugs';
+    document.getElementById('ficha-coleccion').value = p.coleccion || 'Catálogo General';
+    document.getElementById('ficha-ubicacion').value = p.ubicacion_almacen || 'Almacén Principal Trujillo';
+
+    document.getElementById('ficha-dimensiones').value = p.tamano_dimensiones || '';
+    document.getElementById('ficha-color').value = p.color || '';
+    document.getElementById('ficha-caracteristicas').value = p.caracteristicas || '';
+    document.getElementById('ficha-descripcion').value = p.descripcion || '';
+
+    document.getElementById('ficha-costo').value = p.costo_artesano !== null && p.costo_artesano !== undefined ? Number(p.costo_artesano).toFixed(2) : '';
+    document.getElementById('ficha-precio').value = Number(p.precio || 0).toFixed(2);
+    document.getElementById('ficha-oferta').value = (p.precio_oferta && Number(p.precio_oferta) > 0) ? Number(p.precio_oferta).toFixed(2) : '';
+    document.getElementById('ficha-politica').value = p.politica_sin_stock || 'compra_directa';
+    document.getElementById('ficha-activo').value = p.activo !== false ? 'true' : 'false';
+
+    calcularMargenFichaEnVivo();
+
+    document.getElementById('ficha-kardex-stock').textContent = Number(p.stock_actual || 0) + ' und.';
+    document.getElementById('ficha-kardex-entradas').textContent = (resumen && resumen.total_entradas !== undefined ? resumen.total_entradas : 0) + ' und.';
+    document.getElementById('ficha-kardex-salidas').textContent = (resumen && resumen.total_salidas_venta !== undefined ? resumen.total_salidas_venta : 0) + ' und.';
+
+    var tbody = document.getElementById('ficha-kardex-tbody');
+    if (!tbody) return;
+    if (!kardexList || kardexList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-[#8C7A6B]">Sin movimientos históricos registrados para este SKU.</td></tr>';
+      return;
+    }
+    var labels = {
+      matricula_inicial: 'Matrícula SKU/EAN',
+      entrada_mercaderia: 'Entrada Mercadería',
+      recepcion_artesano: 'Recepción Artesano',
+      conteo_fisico: 'Conteo Físico',
+      salida_venta: 'Salida por Venta',
+      ajuste_merma: 'Ajuste / Merma'
+    };
+    tbody.innerHTML = kardexList.map(function (m) {
+      var f = new Date(m.created_at).toLocaleString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      var d = Number(m.delta || 0);
+      var dStr = d > 0 ? '+' + d : String(d);
+      var cls = d > 0 ? 'text-green-700 bg-green-50' : (d < 0 ? 'text-red-700 bg-red-50' : 'text-[#8C7A6B] bg-[#F1EDE7]');
+      return '<tr>' +
+        '<td class="p-2.5 text-[#8C7A6B] whitespace-nowrap">' + f + '</td>' +
+        '<td class="p-2.5 font-semibold text-[#4A3C31]">' + escapeHtml(labels[m.tipo_movimiento] || m.tipo_movimiento) + '</td>' +
+        '<td class="p-2.5 text-center font-mono">' + m.cantidad_anterior + ' <span class="px-1.5 py-0.5 rounded font-bold ' + cls + '">' + dStr + '</span> → <strong>' + m.cantidad_nueva + '</strong></td>' +
+        '<td class="p-2.5 text-[#8C7A6B]">' + escapeHtml(m.ubicacion || 'Almacén Trujillo') + '</td>' +
+        '<td class="p-2.5 text-[#4A3C31]">' + escapeHtml(m.motivo_referencia || '—') + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  async function abrirModalFichaProducto360(prodId) {
+    var modal = document.getElementById('modal-ficha-producto');
+    if (!modal || !prodId) return;
+
+    var prodLocal = (inventarioCache || []).find(function (x) { return String(x.id) === String(prodId); });
+    if (prodLocal) {
+      poblarCamposFicha360(prodLocal, []);
+    }
+    modal.classList.remove('hidden');
+
+    try {
+      var res = await apiFetch('/inventario/producto/' + encodeURIComponent(prodId) + '/ficha');
+      var data = await res.json();
+      if (res.ok && data.success && data.producto) {
+        poblarCamposFicha360(data.producto, data.kardex || [], data.resumen || {});
+      }
+    } catch (e) {
+      console.warn('Error cargando ficha 360:', e);
+    }
+  }
+
+  function initFichaProducto360() {
+    var modal = document.getElementById('modal-ficha-producto');
+    var btnCerrar = document.getElementById('btn-cerrar-ficha-producto');
+    var form = document.getElementById('form-ficha-producto');
+    var btnRegenSku = document.getElementById('btn-ficha-regenerar-sku');
+    var btnEtiqueta = document.getElementById('btn-ficha-abrir-etiqueta');
+
+    if (btnCerrar && modal) {
+      btnCerrar.addEventListener('click', function () { modal.classList.add('hidden'); });
+    }
+
+    ['ficha-costo', 'ficha-precio', 'ficha-oferta'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', calcularMargenFichaEnVivo);
+    });
+
+    if (btnRegenSku) {
+      btnRegenSku.addEventListener('click', async function () {
+        var linea = document.getElementById('ficha-linea')?.value || 'Vajilla Artesanal';
+        var sublinea = document.getElementById('ficha-sublinea')?.value || 'Tazas & Mugs';
+        var res = await apiFetch('/inventario/generar-codigos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ linea: linea, sublinea: sublinea })
+        });
+        var data = await res.json();
+        if (data && data.success) {
+          document.getElementById('ficha-sku').value = data.sku;
+          if (!document.getElementById('ficha-ean').value) {
+            document.getElementById('ficha-ean').value = data.ean;
+          }
+          document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + data.sku;
+        }
+      });
+    }
+
+    if (btnEtiqueta) {
+      btnEtiqueta.addEventListener('click', function () {
+        var prodId = document.getElementById('ficha-prod-id')?.value;
+        var prod = (inventarioCache || []).find(function (x) { return String(x.id) === String(prodId); });
+        if (prod) abrirModalEtiquetaEan(prod);
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var prodId = document.getElementById('ficha-prod-id')?.value;
+        if (!prodId) return;
+        var btnSave = document.getElementById('btn-ficha-guardar');
+        var msgEl = document.getElementById('ficha-save-msg');
+        var orig = btnSave.textContent;
+        btnSave.disabled = true;
+        btnSave.textContent = 'Guardando...';
+
+        try {
+          var fd = new FormData();
+          fd.append('nombre', document.getElementById('ficha-nombre').value.trim());
+          fd.append('sku', document.getElementById('ficha-sku').value.trim());
+          fd.append('ean', document.getElementById('ficha-ean').value.trim());
+          fd.append('linea', document.getElementById('ficha-linea').value);
+          fd.append('sublinea', document.getElementById('ficha-sublinea').value.trim());
+          fd.append('coleccion', document.getElementById('ficha-coleccion').value.trim());
+          fd.append('ubicacion_almacen', document.getElementById('ficha-ubicacion').value.trim());
+          fd.append('tamano_dimensiones', document.getElementById('ficha-dimensiones').value.trim());
+          fd.append('color', document.getElementById('ficha-color').value.trim());
+          fd.append('caracteristicas', document.getElementById('ficha-caracteristicas').value.trim());
+          fd.append('descripcion', document.getElementById('ficha-descripcion').value.trim());
+          fd.append('costo_artesano', document.getElementById('ficha-costo').value);
+          fd.append('precio', document.getElementById('ficha-precio').value);
+          fd.append('precio_oferta', document.getElementById('ficha-oferta').value);
+          fd.append('politica_sin_stock', document.getElementById('ficha-politica').value);
+          fd.append('activo', document.getElementById('ficha-activo').value);
+
+          var res = await apiFetch('/productos/' + encodeURIComponent(prodId), {
+            method: 'PATCH',
+            body: fd
+          });
+          var data = await res.json();
+          if (res.ok && data.success) {
+            if (msgEl) {
+              msgEl.classList.remove('hidden');
+              setTimeout(function () { msgEl.classList.add('hidden'); }, 2500);
+            }
+            document.getElementById('ficha-badge-sku').textContent = 'SKU: ' + (data.producto.sku || '');
+            document.getElementById('ficha-badge-ean').textContent = 'EAN: ' + (data.producto.ean || '');
+            await loadInventario();
+            await loadProductos();
+          } else {
+            alert(data.message || 'Error al actualizar la ficha del producto.');
+          }
+        } finally {
+          btnSave.disabled = false;
+          btnSave.textContent = orig;
+        }
+      });
+    }
+  }
+
+  // ============================================================================
+  // Lector de Código de Barras EAN-13 con Cámara (Shopify Mobile WMS)
+  // ============================================================================
+  var mediaStreamGlobal = null;
+
+  function initCamaraScannerWMS() {
+    var btnAbrir = document.getElementById('btn-camara-scanner-wms');
+    var modal = document.getElementById('modal-camara-scanner');
+    var btnCerrar = document.getElementById('btn-cerrar-camara-scanner');
+    var video = document.getElementById('video-camara-scanner');
+    var statusEl = document.getElementById('camara-scanner-status');
+    var manualInput = document.getElementById('camara-manual-barcode');
+    var manualBtn = document.getElementById('btn-camara-manual-submit');
+
+    if (!btnAbrir || !modal) return;
+
+    function cerrarScanner() {
+      if (mediaStreamGlobal) {
+        mediaStreamGlobal.getTracks().forEach(function (t) { t.stop(); });
+        mediaStreamGlobal = null;
+      }
+      modal.classList.add('hidden');
+    }
+
+    btnCerrar && btnCerrar.addEventListener('click', cerrarScanner);
+
+    btnAbrir.addEventListener('click', function () {
+      modal.classList.remove('hidden');
+      statusEl.textContent = 'Activando cámara trasera...';
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        statusEl.textContent = 'Cámara no soportada en este navegador. Usa el campo manual.';
+        return;
+      }
+
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      }).then(function (stream) {
+        mediaStreamGlobal = stream;
+        video.srcObject = stream;
+        statusEl.textContent = 'Cámara activa. Escaneando código...';
+
+        if ('BarcodeDetector' in window) {
+          var detector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'qr_code'] });
+          var intervalId = setInterval(function () {
+            if (!mediaStreamGlobal || modal.classList.contains('hidden')) {
+              clearInterval(intervalId);
+              return;
+            }
+            detector.detect(video).then(function (barcodes) {
+              if (barcodes.length > 0) {
+                var code = barcodes[0].rawValue;
+                clearInterval(intervalId);
+                cerrarScanner();
+                aplicarFiltroBarcode(code);
+              }
+            }).catch(function () {});
+          }, 500);
+        }
+      }).catch(function (err) {
+        console.warn('Error accediendo a cámara:', err);
+        statusEl.textContent = 'No se pudo acceder a la cámara. Usa el ingreso manual abajo.';
+      });
+    });
+
+    function aplicarFiltroBarcode(code) {
+      var searchInput = document.getElementById('filtro-inv-search');
+      if (searchInput) {
+        searchInput.value = code;
+        searchInput.dispatchEvent(new Event('input'));
+      }
+    }
+
+    manualBtn && manualBtn.addEventListener('click', function () {
+      var val = (manualInput.value || '').trim();
+      if (val) {
+        cerrarScanner();
+        aplicarFiltroBarcode(val);
+      }
+    });
+
+    manualInput && manualInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        manualBtn.click();
+      }
+    });
+  }
+
+  // ============================================================================
+  // Modal Packing Slip / Guía de Despacho & Embalaje Artesanitas (Shopify WMS)
+  // ============================================================================
+  function initGuiaDespachoLogic() {
+    var modal = document.getElementById('modal-guia-despacho');
+    var btnCerrar = document.getElementById('btn-cerrar-guia-despacho');
+    var btnPrint = document.getElementById('btn-imprimir-guia-doc');
+
+    if (!modal) return;
+
+    btnCerrar && btnCerrar.addEventListener('click', function () {
+      modal.classList.add('hidden');
+    });
+
+    btnPrint && btnPrint.addEventListener('click', function () {
+      var printable = document.getElementById('guia-despacho-printable');
+      if (!printable) return;
+      var printWin = window.open('', '_blank', 'width=800,height=900');
+      printWin.document.write('<html><head><title>Packing Slip Artesanitas</title>');
+      printWin.document.write('<style>');
+      printWin.document.write('body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #4A3C31; }');
+      printWin.document.write('table { width: 100%; border-collapse: collapse; margin-top: 12px; }');
+      printWin.document.write('th, td { border: 1px solid #D5C9BD; padding: 8px; text-align: left; font-size: 12px; }');
+      printWin.document.write('th { background-color: #F1EDE7; font-weight: bold; }');
+      printWin.document.write('.text-right { text-align: right; }');
+      printWin.document.write('.font-mono { font-family: monospace; }');
+      printWin.document.write('@media print { body { padding: 0; } }');
+      printWin.document.write('</style></head><body>');
+      printWin.document.write(printable.innerHTML);
+      printWin.document.write('</body></html>');
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(function () {
+        printWin.print();
+        printWin.close();
+      }, 350);
+    });
+  }
+
+  function abrirPackingSlipPedido(pedidoId) {
+    var p = (pedidosCache || []).find(function (item) { return String(item.id) === String(pedidoId); });
+    if (!p) return;
+
+    var modal = document.getElementById('modal-guia-despacho');
+    if (!modal) return;
+
+    document.getElementById('guia-codigo-pedido').textContent = p.codigo_pedido || ('ART-' + p.id);
+    document.getElementById('guia-fecha-emision').textContent = 'Emisión: ' + new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    document.getElementById('guia-destinatario-nombre').textContent = p.nombre || '--';
+    document.getElementById('guia-destinatario-dni').textContent = 'DNI: ' + (p.dni || 'No registrado');
+    document.getElementById('guia-destinatario-tel').textContent = 'WhatsApp: ' + (p.whatsapp || p.telefono || '--');
+    document.getElementById('guia-courier-empresa').textContent = 'Courier: ' + (p.empresa_envio || 'Shalom (Agencia)');
+    document.getElementById('guia-courier-ciudad').textContent = 'Ciudad Destino: ' + (p.ciudad_destino || (p.tipo_entrega === 'provincia' ? (p.sede_shalom || 'Por definir') : 'Recojo en Taller Trujillo'));
+    document.getElementById('guia-courier-nro-guia').textContent = 'N° Guía: ' + (p.guia_envio || 'Pendiente de emisión');
+
+    var tbody = document.getElementById('guia-items-tbody');
+    tbody.innerHTML = '';
+
+    var items = [];
+    try {
+      if (p.items) {
+        items = typeof p.items === 'string' ? JSON.parse(p.items) : p.items;
+      } else if (p.items_json) {
+        items = typeof p.items_json === 'string' ? JSON.parse(p.items_json) : p.items_json;
+      }
+    } catch (e) {}
+
+    if (!items || items.length === 0) {
+      items = [{
+        nombre: p.producto_nombre || 'Pieza Artesanal',
+        cantidad: Number(p.cantidad || 1),
+        sku: '1001',
+        ean: '7752601000018'
+      }];
+    }
+
+    items.forEach(function (item) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td class="p-2 font-medium">' + escapeHtml(item.nombre || item.producto_nombre || 'Pieza Artesanal') + '</td>' +
+        '<td class="p-2 font-mono text-[11px] text-[#8C7A6B]">' + escapeHtml(item.sku || '1001') + ' / ' + escapeHtml(item.ean || '775...') + '</td>' +
+        '<td class="p-2 font-bold text-center">' + (item.cantidad || 1) + ' und.</td>' +
+        '<td class="p-2 text-right font-mono font-bold text-[#007A78]">[ ✓ OK ]</td>';
+      tbody.appendChild(tr);
+    });
+
+    modal.classList.remove('hidden');
+  }
+
+  initFichaProducto360();
+  initCamaraScannerWMS();
+  initGuiaDespachoLogic();
+
   // Auto-entrada si ya hay una sesión guardada
   if (localStorage.getItem(STORAGE_KEY)) {
     mostrarPanel();
   }
 })();
-
-
-// ============================================================================
-// Lector de Código de Barras EAN-13 con Cámara (Shopify Mobile WMS)
-// ============================================================================
-var mediaStreamGlobal = null;
-
-function initCamaraScannerWMS() {
-  var btnAbrir = document.getElementById('btn-camara-scanner-wms');
-  var modal = document.getElementById('modal-camara-scanner');
-  var btnCerrar = document.getElementById('btn-cerrar-camara-scanner');
-  var video = document.getElementById('video-camara-scanner');
-  var statusEl = document.getElementById('camara-scanner-status');
-  var manualInput = document.getElementById('camara-manual-barcode');
-  var manualBtn = document.getElementById('btn-camara-manual-submit');
-
-  if (!btnAbrir || !modal) return;
-
-  function cerrarScanner() {
-    if (mediaStreamGlobal) {
-      mediaStreamGlobal.getTracks().forEach(function(t) { t.stop(); });
-      mediaStreamGlobal = null;
-    }
-    modal.classList.add('hidden');
-  }
-
-  btnCerrar && btnCerrar.addEventListener('click', cerrarScanner);
-
-  btnAbrir.addEventListener('click', function() {
-    modal.classList.remove('hidden');
-    statusEl.textContent = 'Activando cámara trasera...';
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      statusEl.textContent = 'Cámara no soportada en este navegador. Usa el campo manual.';
-      return;
-    }
-
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    }).then(function(stream) {
-      mediaStreamGlobal = stream;
-      video.srcObject = stream;
-      statusEl.textContent = 'Cámara activa. Escaneando código...';
-
-      if ('BarcodeDetector' in window) {
-        var detector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'qr_code'] });
-        var intervalId = setInterval(function() {
-          if (!mediaStreamGlobal || modal.classList.contains('hidden')) {
-            clearInterval(intervalId);
-            return;
-          }
-          detector.detect(video).then(function(barcodes) {
-            if (barcodes.length > 0) {
-              var code = barcodes[0].rawValue;
-              clearInterval(intervalId);
-              cerrarScanner();
-              aplicarFiltroBarcode(code);
-            }
-          }).catch(function() {});
-        }, 500);
-      }
-    }).catch(function(err) {
-      console.warn('Error accediendo a cámara:', err);
-      statusEl.textContent = 'No se pudo acceder a la cámara. Usa el ingreso manual abajo.';
-    });
-  });
-
-  function aplicarFiltroBarcode(code) {
-    var searchInput = document.getElementById('filtro-inv-search');
-    if (searchInput) {
-      searchInput.value = code;
-      searchInput.dispatchEvent(new Event('input'));
-    }
-  }
-
-  manualBtn && manualBtn.addEventListener('click', function() {
-    var val = (manualInput.value || '').trim();
-    if (val) {
-      cerrarScanner();
-      aplicarFiltroBarcode(val);
-    }
-  });
-
-  manualInput && manualInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      manualBtn.click();
-    }
-  });
-}
-
-// Iniciar al cargar registros
-document.addEventListener('DOMContentLoaded', function() {
-  initCamaraScannerWMS();
-});
-
-
-// ============================================================================
-// Modal Packing Slip / Guía de Despacho & Embalaje Artesanitas (Shopify WMS)
-// ============================================================================
-function initGuiaDespachoLogic() {
-  var modal = document.getElementById('modal-guia-despacho');
-  var btnCerrar = document.getElementById('btn-cerrar-guia-despacho');
-  var btnPrint = document.getElementById('btn-imprimir-guia-doc');
-
-  if (!modal) return;
-
-  btnCerrar && btnCerrar.addEventListener('click', function() {
-    modal.classList.add('hidden');
-  });
-
-  btnPrint && btnPrint.addEventListener('click', function() {
-    var printable = document.getElementById('guia-despacho-printable');
-    if (!printable) return;
-    var printWin = window.open('', '_blank', 'width=800,height=900');
-    printWin.document.write('<html><head><title>Packing Slip Artesanitas</title>');
-    printWin.document.write('<style>');
-    printWin.document.write('body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #4A3C31; }');
-    printWin.document.write('table { width: 100%; border-collapse: collapse; margin-top: 12px; }');
-    printWin.document.write('th, td { border: 1px solid #D5C9BD; padding: 8px; text-align: left; font-size: 12px; }');
-    printWin.document.write('th { background-color: #F1EDE7; font-weight: bold; }');
-    printWin.document.write('.text-right { text-align: right; }');
-    printWin.document.write('.font-mono { font-family: monospace; }');
-    printWin.document.write('@media print { body { padding: 0; } }');
-    printWin.document.write('</style></head><body>');
-    printWin.document.write(printable.innerHTML);
-    printWin.document.write('</body></html>');
-    printWin.document.close();
-    printWin.focus();
-    setTimeout(function() {
-      printWin.print();
-      printWin.close();
-    }, 350);
-  });
-}
-
-function abrirPackingSlipPedido(pedidoId) {
-  var p = (pedidosCache || []).find(function(item) { return String(item.id) === String(pedidoId); });
-  if (!p) return;
-
-  var modal = document.getElementById('modal-guia-despacho');
-  if (!modal) return;
-
-  document.getElementById('guia-codigo-pedido').textContent = p.codigo_pedido || ('ART-' + p.id);
-  document.getElementById('guia-fecha-emision').textContent = 'Emisión: ' + new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
-  document.getElementById('guia-destinatario-nombre').textContent = p.nombre || '--';
-  document.getElementById('guia-destinatario-dni').textContent = 'DNI: ' + (p.dni || 'No registrado');
-  document.getElementById('guia-destinatario-tel').textContent = 'WhatsApp: ' + (p.telefono || '--');
-  document.getElementById('guia-courier-empresa').textContent = 'Courier: ' + (p.empresa_envio || 'Shalom (Agencia)');
-  document.getElementById('guia-courier-ciudad').textContent = 'Ciudad Destino: ' + (p.ciudad_destino || (p.tipo_entrega === 'envio_shalom' ? 'Por definir' : 'Recojo en Taller Trujillo'));
-  document.getElementById('guia-courier-nro-guia').textContent = 'N° Guía: ' + (p.guia_envio || 'Pendiente de emisión');
-
-  var tbody = document.getElementById('guia-items-tbody');
-  tbody.innerHTML = '';
-
-  var items = [];
-  try {
-    if (p.items_json) {
-      items = typeof p.items_json === 'string' ? JSON.parse(p.items_json) : p.items_json;
-    }
-  } catch (e) {}
-
-  if (!items || items.length === 0) {
-    items = [{
-      nombre: p.producto_nombre || 'Pieza Artesanal',
-      cantidad: Number(p.cantidad || 1),
-      sku: 'ART-VAJ-CER',
-      ean: '7759999000010'
-    }];
-  }
-
-  items.forEach(function(item) {
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td class="p-2 font-medium">' + escapeHtml(item.nombre || item.producto_nombre || 'Pieza Artesanal') + '</td>' +
-      '<td class="p-2 font-mono text-[11px] text-[#8C7A6B]">' + escapeHtml(item.sku || 'ART-SKU') + ' / ' + escapeHtml(item.ean || '775...') + '</td>' +
-      '<td class="p-2 font-bold text-center">' + (item.cantidad || 1) + ' und.</td>' +
-      '<td class="p-2 text-right font-mono font-bold text-[#007A78]">[ ✓ OK ]</td>';
-    tbody.appendChild(tr);
-  });
-
-  modal.classList.remove('hidden');
-}
-
-// Iniciar al cargar registros
-document.addEventListener('DOMContentLoaded', function() {
-  initGuiaDespachoLogic();
-});

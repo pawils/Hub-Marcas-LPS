@@ -459,10 +459,8 @@
     'arbolito-rosa': 'taza-arbolito-rosa',
     
     
-    'taza-navidad-papa-noel': 'taza-navidad-papa-noel',
     'taza-navidad': 'taza-navidad-papa-noel',
     'navidad-papa-noel': 'taza-navidad-papa-noel',
-    'papa-noel': 'taza-navidad-papa-noel',
     'navidad': 'taza-navidad-papa-noel',
 
     'taza-rapunzel': 'taza-rapunzel-morada-sin-plato',
@@ -1280,6 +1278,65 @@
       if (dropzoneFileState) dropzoneFileState.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
+  }
+
+  // ── Generador y Descarga Automática de Comprobante / Orden de Compra (PDF / Imprimible) ──
+  let ultimoPedidoRegistrado = null;
+
+  function generarComprobanteCompraPDF(pedido, autoPrint) {
+    if (!pedido) return;
+    const win = window.open('', '_blank', 'width=820,height=920');
+    if (!win) return;
+
+    const items = Array.isArray(pedido.items) ? pedido.items : [];
+    const esPagoCompleto = pedido.estado_pago === 'completo' || Number(pedido.monto_pagado) >= Number(pedido.precio_total);
+    const fechaEmision = new Date(pedido.created_at || Date.now()).toLocaleString('es-PE', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    const subtotal = Number(pedido.precio_total || 0);
+    const envio = Number(pedido.costo_envio || 0);
+    const pagadoHoy = Number(pedido.monto_pagado || 0);
+    const saldo = Math.max(0, (subtotal + (esPagoCompleto ? envio : 0)) - pagadoHoy);
+
+    const rowsHtml = items.map(it => {
+      const sub = (Number(it.precio || 0) * Number(it.cantidad || 1)).toFixed(2);
+      const mod = (it.modalidad === 'compra_directa' || Number(it.reserva) >= Number(it.precio)) ? 'Compra Directa (100%)' : 'Preventa (Reserva S/ 20)';
+      return '<tr>' +
+        '<td style="padding:10px;border-bottom:1px solid #EBE5DE;"><strong>' + escapeHtml(it.nombre || '') + '</strong><br><span style="font-size:11px;color:#8C7A6B;font-family:monospace;">' + (it.sku ? 'SKU: ' + escapeHtml(it.sku) + ' · ' : '') + mod + '</span></td>' +
+        '<td style="padding:10px;border-bottom:1px solid #EBE5DE;text-align:center;font-weight:bold;">' + Number(it.cantidad || 1) + '</td>' +
+        '<td style="padding:10px;border-bottom:1px solid #EBE5DE;text-align:right;">S/ ' + Number(it.precio || 0).toFixed(2) + '</td>' +
+        '<td style="padding:10px;border-bottom:1px solid #EBE5DE;text-align:right;font-weight:bold;">S/ ' + sub + '</td>' +
+        '</tr>';
+    }).join('');
+
+    win.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Comprobante ' + escapeHtml(pedido.codigo_pedido) + ' - Artesanitas Perú</title>');
+    win.document.write('<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#4A3C31;background:#F9F6F0;margin:0;padding:24px;}.card{max-width:680px;margin:0 auto;background:#fff;border:1px solid #D5C9BD;border-radius:20px;padding:32px;box-shadow:0 10px 25px rgba(74,60,49,0.06);}.badge{display:inline-block;background:#007A78;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:0.05em;}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}th{background:#F1EDE7;color:#8C7A6B;text-transform:uppercase;font-size:11px;padding:10px;text-align:left;}@media print{body{background:#fff;padding:0;}.card{box-shadow:none;border:none;}.no-print{display:none!important;}}</style></head><body>');
+    win.document.write('<div class="card">');
+    win.document.write('<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #EBE5DE;padding-bottom:18px;">');
+    win.document.write('<div><h1 style="margin:0;font-size:24px;color:#4A3C31;">Artesanitas Perú</h1><p style="margin:4px 0 0;font-size:12px;color:#8C7A6B;">Cerámica Artesanal Hecha a Mano · Trujillo, Perú</p><p style="margin:2px 0 0;font-size:11px;color:#8C7A6B;">Web: artesanitas.lospilares.pe · WhatsApp: +51 929 938 466</p></div>');
+    win.document.write('<div style="text-align:right;"><span class="badge">' + (esPagoCompleto ? 'Comprobante Compra Directa' : 'Comprobante de Reserva') + '</span><p style="margin:8px 0 2px;font-family:monospace;font-size:18px;font-weight:900;color:#B87352;">' + escapeHtml(pedido.codigo_pedido) + '</p><p style="margin:0;font-size:11px;color:#8C7A6B;">' + escapeHtml(fechaEmision) + '</p></div>');
+    win.document.write('</div>');
+    win.document.write('<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;background:#F9F6F0;padding:16px;border-radius:14px;margin-top:18px;font-size:12px;">');
+    win.document.write('<div><strong style="color:#8C7A6B;text-transform:uppercase;font-size:10px;">Datos del Cliente:</strong><p style="margin:4px 0 2px;font-weight:bold;font-size:14px;">' + escapeHtml(pedido.nombre || '') + '</p><p style="margin:0;color:#8C7A6B;">DNI: ' + escapeHtml(pedido.dni || '') + ' · Tel: ' + escapeHtml(pedido.whatsapp || '') + '</p></div>');
+    win.document.write('<div><strong style="color:#8C7A6B;text-transform:uppercase;font-size:10px;">Modalidad de Entrega:</strong><p style="margin:4px 0 2px;font-weight:bold;">' + (pedido.tipo_entrega === 'provincia' ? 'Envío Nacional por Agencia Shalom' : 'Recojo en Taller Trujillo') + '</p><p style="margin:0;color:#8C7A6B;">Destino: ' + escapeHtml(pedido.sede_shalom || 'Taller Trujillo') + '</p></div>');
+    win.document.write('</div>');
+    win.document.write('<table><thead><tr><th>Descripción de Pieza / SKU</th><th style="text-align:center;">Cant.</th><th style="text-align:right;">P. Unit</th><th style="text-align:right;">Subtotal</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>');
+    win.document.write('<div style="margin-top:20px;border-top:2px solid #EBE5DE;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-start;">');
+    win.document.write('<div style="font-size:11px;color:#007A78;background:#007A7812;padding:10px 14px;border-radius:12px;max-width:320px;"><strong>✓ Descarga de Inventario Automática:</strong><br>Las unidades de tu pedido han sido descontadas y asignadas automáticamente en nuestro almacén con el código <strong>' + escapeHtml(pedido.codigo_pedido) + '</strong>.</div>');
+    win.document.write('<div style="text-align:right;font-size:13px;min-width:220px;">');
+    win.document.write('<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#8C7A6B;">Valor de las piezas:</span><strong>S/ ' + subtotal.toFixed(2) + '</strong></div>');
+    if (envio > 0) {
+      win.document.write('<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#8C7A6B;">Envío Agencia Shalom:</span><strong>S/ ' + envio.toFixed(2) + '</strong></div>');
+    }
+    win.document.write('<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#007A78;font-size:15px;"><span><strong>Abonado Hoy:</strong></span><strong>S/ ' + pagadoHoy.toFixed(2) + '</strong></div>');
+    win.document.write('<div style="display:flex;justify-content:space-between;color:#B87352;"><span>Saldo pendiente:</span><strong>S/ ' + saldo.toFixed(2) + '</strong></div>');
+    win.document.write('</div></div>');
+    win.document.write('<div class="no-print" style="margin-top:24px;text-align:center;"><button onclick="window.print()" style="background:#4A3C31;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:bold;cursor:pointer;">Guardar como PDF / Imprimir Comprobante</button></div>');
+    win.document.write('</div></body></html>');
+    win.document.close();
+    if (autoPrint) {
+      setTimeout(function () { win.focus(); win.print(); }, 450);
+    }
   }
 
   // ── Envío del Formulario ──

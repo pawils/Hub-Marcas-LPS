@@ -1,3 +1,4 @@
+/* exported copyProductoLink, shareProducto, toggleMenu */
 // public/artesanitas/js/catalogo.js
 // Lógica modular del catálogo, sliders y render dinámico de Artesanitas
 
@@ -1064,15 +1065,27 @@ initSlider('slider-taza-navidad');
 
   function initHeaderSearch() {
     var main = document.getElementById('catalog-search-input');
-    var ids = ['nav-search-input', 'nav-search-input-m'];
+    var clearMainBtn = document.getElementById('catalog-search-clear');
+    var heroClearBtn = document.getElementById('hero-search-clear');
+    var ids = ['hero-search-input', 'nav-search-input-m', 'nav-search-input'];
+
+    function toggleHeroClear(value) {
+      if (!heroClearBtn) return;
+      var hasVal = Boolean(value && String(value).trim().length > 0);
+      heroClearBtn.classList.toggle('hidden', !hasVal);
+      heroClearBtn.classList.toggle('flex', hasVal);
+    }
+
     function sync(value, origin) {
       ids.forEach(function (id) {
         var el = document.getElementById(id);
         if (el && el !== origin) el.value = value;
       });
       if (main && main !== origin) main.value = value;
+      toggleHeroClear(value);
       applyCatalogFilters();
     }
+
     ids.forEach(function (id) {
       var input = document.getElementById(id);
       if (!input) return;
@@ -1081,18 +1094,48 @@ initSlider('slider-taza-navidad');
         if (e.key === 'Enter') { e.preventDefault(); sync(input.value, input); goToCatalogResults(); input.blur(); }
       });
     });
-    ['nav-search-btn', 'nav-search-btn-m'].forEach(function (id) {
-      var b = document.getElementById(id);
+
+    if (heroClearBtn) {
+      heroClearBtn.addEventListener('click', function () {
+        sync('', null);
+        var heroInput = document.getElementById('hero-search-input');
+        if (heroInput) heroInput.focus();
+      });
+    }
+
+    var btnMap = {
+      'hero-search-btn': 'hero-search-input',
+      'nav-search-btn-m': 'nav-search-input-m',
+      'nav-search-btn': 'nav-search-input'
+    };
+    Object.keys(btnMap).forEach(function (btnId) {
+      var b = document.getElementById(btnId);
       if (!b) return;
       b.addEventListener('click', function () {
-        var src = document.getElementById(id === 'nav-search-btn' ? 'nav-search-input' : 'nav-search-input-m');
+        var src = document.getElementById(btnMap[btnId]);
         if (src) sync(src.value, src);
         goToCatalogResults();
       });
     });
+
+    document.querySelectorAll('.hero-search-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var q = chip.getAttribute('data-query') || '';
+        sync(q, null);
+        goToCatalogResults();
+      });
+    });
+
     if (main) {
       main.addEventListener('input', function () {
         ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.value = main.value; });
+        toggleHeroClear(main.value);
+      });
+    }
+    if (clearMainBtn) {
+      clearMainBtn.addEventListener('click', function () {
+        ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
+        toggleHeroClear('');
       });
     }
   }
@@ -1100,8 +1143,20 @@ initSlider('slider-taza-navidad');
   window.ArtesanitasStore = {
     focusSearch: function () {
       var isMobile = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
-      var el = document.getElementById(isMobile ? 'nav-search-input-m' : 'nav-search-input') || document.getElementById('catalog-search-input');
-      if (el) { el.focus(); }
+      if (isMobile) {
+        var mobEl = document.getElementById('nav-search-input-m') || document.getElementById('hero-search-input') || document.getElementById('catalog-search-input');
+        if (mobEl) mobEl.focus();
+        return;
+      }
+      var sec = document.getElementById('hero-search-bar');
+      var heroEl = document.getElementById('hero-search-input') || document.getElementById('catalog-search-input');
+      if (sec) {
+        var y = sec.getBoundingClientRect().top + window.pageYOffset - 100;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      }
+      if (heroEl) {
+        setTimeout(function () { heroEl.focus(); }, 260);
+      }
     }
   };
 

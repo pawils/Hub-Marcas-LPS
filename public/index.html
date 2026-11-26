@@ -104,18 +104,16 @@
         <a href="#cumpleanos" class="hover:text-[#B87352] transition-colors">Cumpleaños</a>
         <a href="/seguimiento" class="text-[#4A3C31] font-semibold hover:text-[#B87352] transition-colors flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352] inline-block"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Rastrear Pedido</a>
       </div>
-            <!-- Buscador grande estilo Falabella (escritorio) + Carro siempre visible -->
-      <div class="hidden md:flex flex-1 max-w-md xl:max-w-lg mx-4">
-        <div class="relative w-full">
-          <input type="search" id="nav-search-input" autocomplete="off" placeholder="Buscar productos, personajes, colecciones o SKU..."
-            class="w-full h-12 pl-5 pr-14 rounded-full border-2 border-[#333c48] bg-white text-sm font-medium text-[#333c48] placeholder:text-[#8C7A6B] focus:outline-none focus:ring-2 focus:ring-[#B87352]/40">
-          <button type="button" id="nav-search-btn" aria-label="Buscar"
-            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#333c48] hover:bg-[#1e242b] text-white flex items-center justify-center cursor-pointer transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="w-4.5 h-4.5" style="width:18px;height:18px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
-        </div>
-      </div>
       <div class="flex items-center gap-2 sm:gap-3 ml-auto md:ml-0">
+        <button type="button" id="nav-quick-search-btn" onclick="window.ArtesanitasStore && window.ArtesanitasStore.focusSearch()"
+          class="hidden md:inline-flex items-center gap-2 bg-white hover:bg-[#EBE5DE] text-[#4A3C31] border border-[#D5C9BD] px-3.5 h-11 rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer"
+          title="Buscar productos en el catálogo" aria-label="Ir al buscador de productos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-4 h-4 text-[#B87352]">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Buscar</span>
+        </button>
         <button type="button" id="nav-cart-btn" onclick="window.ArtesanitasCart && window.ArtesanitasCart.openDrawer()"
           class="relative flex items-center gap-2 bg-[#333c48] hover:bg-[#1e242b] text-white px-4 h-11 rounded-full text-sm font-bold transition-all shadow-md cursor-pointer"
           title="Ver Carro de Compras">
@@ -440,6 +438,61 @@
       <div class="art-slider-dot active" data-slide="0"></div>
       <div class="art-slider-dot" data-slide="1"></div>
       <div class="art-slider-dot" data-slide="2"></div>
+    </div>
+  </section>
+
+  <!-- Buscador Principal del Catálogo (debajo del Hero Slider) -->
+  <section id="hero-search-bar" class="relative z-20 bg-[#F9F6F0] border-b border-[#EBE5DE] py-7 md:py-10">
+    <div class="max-w-4xl mx-auto px-5 sm:px-6">
+      <div class="text-center mb-4 md:mb-5">
+        <p class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#B87352] mb-1.5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-3.5 h-3.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Buscador de Piezas Artesanales
+        </p>
+        <h2 class="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-[#4A3C31]">¿Qué pieza de cerámica estás buscando hoy?</h2>
+      </div>
+
+      <div class="relative flex items-center bg-white rounded-full border-2 border-[#4A3C31]/80 focus-within:border-[#B87352] focus-within:ring-4 focus-within:ring-[#B87352]/15 shadow-md transition-all">
+        <!-- Icono SVG guía a la izquierda -->
+        <span class="pointer-events-none pl-5 pr-2 text-[#8C7A6B] flex items-center" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-5 h-5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        <input type="search" id="hero-search-input" autocomplete="off"
+          placeholder="Busca por nombre, colección, personaje o SKU (ej: Fórmula 1, Rapunzel, Navidad, 1028)..."
+          class="w-full h-12 sm:h-14 py-3 pr-2 bg-transparent text-sm sm:text-base font-medium text-[#333c48] placeholder:text-[#8C7A6B]/85 focus:outline-none">
+        <button type="button" id="hero-search-clear" aria-label="Limpiar búsqueda"
+          class="hidden w-8 h-8 mr-1 rounded-full text-[#8C7A6B] hover:text-[#4A3C31] hover:bg-[#EBE5DE] items-center justify-center transition-colors cursor-pointer shrink-0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-4 h-4">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <button type="button" id="hero-search-btn" aria-label="Buscar productos"
+          class="m-1.5 px-5 sm:px-7 h-10 sm:h-11 rounded-full bg-[#333c48] hover:bg-[#B87352] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer shrink-0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="w-4 h-4">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="hidden sm:inline">Buscar</span>
+        </button>
+      </div>
+
+      <!-- Accesos rápidos de búsqueda -->
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+        <span class="text-[#8C7A6B] font-medium mr-1">Populares:</span>
+        <button type="button" class="hero-search-chip px-3 py-1 rounded-full bg-white hover:bg-[#4A3C31] hover:text-white text-[#4A3C31] border border-[#D5C9BD] font-semibold transition-colors cursor-pointer" data-query="Fórmula 1">Taza Fórmula 1</button>
+        <button type="button" class="hero-search-chip px-3 py-1 rounded-full bg-white hover:bg-[#4A3C31] hover:text-white text-[#4A3C31] border border-[#D5C9BD] font-semibold transition-colors cursor-pointer" data-query="Navidad">Navidad</button>
+        <button type="button" class="hero-search-chip px-3 py-1 rounded-full bg-white hover:bg-[#4A3C31] hover:text-white text-[#4A3C31] border border-[#D5C9BD] font-semibold transition-colors cursor-pointer" data-query="Rapunzel">Rapunzel</button>
+        <button type="button" class="hero-search-chip px-3 py-1 rounded-full bg-white hover:bg-[#4A3C31] hover:text-white text-[#4A3C31] border border-[#D5C9BD] font-semibold transition-colors cursor-pointer" data-query="Van Gogh">Van Gogh</button>
+        <button type="button" class="hero-search-chip px-3 py-1 rounded-full bg-white hover:bg-[#4A3C31] hover:text-white text-[#4A3C31] border border-[#D5C9BD] font-semibold transition-colors cursor-pointer" data-query="Stich">Stitch</button>
+        <button type="button" class="hero-search-chip px-3 py-1 rounded-full bg-white hover:bg-[#4A3C31] hover:text-white text-[#4A3C31] border border-[#D5C9BD] font-semibold transition-colors cursor-pointer" data-query="Tetera">Teteras</button>
+      </div>
     </div>
   </section>
 
@@ -3357,7 +3410,7 @@
   <!-- Inicializar iconos -->
 
   <!-- Script modular externo con Cache-Buster -->
-  <script src="/js/catalogo.js?v=20261125_s4"></script>
+  <script src="/js/catalogo.js?v=20261126_s5"></script>
 </body>
 
 </html>
