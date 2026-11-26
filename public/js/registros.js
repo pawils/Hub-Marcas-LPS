@@ -163,6 +163,17 @@
   if (tabBtnInventario) tabBtnInventario.addEventListener('click', () => mostrarTab(tabInventario, tabBtnInventario));
   if (tabBtnProductos) tabBtnProductos.addEventListener('click', () => mostrarTab(tabProductos, tabBtnProductos));
 
+  if (window.LpsErp && typeof window.LpsErp.initErpRouter === 'function') {
+    window.LpsErp.initErpRouter({
+      pedidos: { btn: tabBtnPedidos, tab: tabPedidos },
+      inventario: { btn: tabBtnInventario, tab: tabInventario },
+      catalogo: { btn: tabBtnProductos, tab: tabProductos },
+      bi: { btn: tabBtnBi, tab: tabBi },
+      talleres: { btn: tabBtnTalleres, tab: tabTalleres },
+      registros: { btn: tabBtnRegistros, tab: tabRegistros }
+    });
+  }
+
   // ── Talleres ──
   let talleresAdminCache = [];
   let editingTallerId = null;
@@ -1681,144 +1692,15 @@
     });
   }
 
-  // ── Sprint 2: Dashboard BI & Rentabilidad por Línea y Artesano ──
+  // ── Módulo FIN: Dashboard BI & Rentabilidad (delegado a public/js/erp/fin-bi.module.js) ──
   const btnRefreshBi = document.getElementById('btn-refresh-bi');
   if (btnRefreshBi) {
     btnRefreshBi.addEventListener('click', () => loadBiResumen());
   }
 
   async function loadBiResumen() {
-    try {
-      const res = await apiFetch('/bi-resumen');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (!data || !data.success) return;
-
-      const f = data.finanzas || {};
-      const jerarquia = Array.isArray(data.jerarquia_retail) ? data.jerarquia_retail : [];
-      const artesanos = Array.isArray(data.artesanos) ? data.artesanos : [];
-
-      const ventasTotales = Number(f.ventas_totales || 0);
-      const totalAbonado = Number(f.total_abonado || 0);
-      const saldosCobrar = Number(f.saldos_por_cobrar || 0);
-      const costoArtesanos = Number(f.costo_total_artesanos || 0);
-      const margenSoles = Number(f.margen_bruto_soles || 0);
-      const margenPct = Number(f.margen_bruto_pct || 0);
-      const totalPedidos = Number(f.total_pedidos || 0);
-      const totalPiezas = Number(f.total_piezas || 0);
-
-      const elVentas = document.getElementById('bi-kpi-ventas');
-      if (elVentas) elVentas.textContent = `S/ ${ventasTotales.toFixed(2)}`;
-      const elPedSub = document.getElementById('bi-kpi-pedidos-sub');
-      if (elPedSub) elPedSub.textContent = `${totalPedidos} ${totalPedidos === 1 ? 'pedido activo' : 'pedidos activos'} · ${totalPiezas} ${totalPiezas === 1 ? 'pieza' : 'piezas'}`;
-
-      const elAbonado = document.getElementById('bi-kpi-abonado');
-      if (elAbonado) elAbonado.textContent = `S/ ${totalAbonado.toFixed(2)}`;
-      const pctCobrado = ventasTotales > 0 ? Math.round((totalAbonado / ventasTotales) * 100) : 0;
-      const elAbonadoSub = document.getElementById('bi-kpi-abonado-sub');
-      if (elAbonadoSub) elAbonadoSub.textContent = `${pctCobrado}% del valor total recaudado`;
-
-      const elSaldos = document.getElementById('bi-kpi-saldos');
-      if (elSaldos) elSaldos.textContent = `S/ ${saldosCobrar.toFixed(2)}`;
-
-      const elCostoArt = document.getElementById('bi-kpi-costo-art');
-      if (elCostoArt) elCostoArt.textContent = `S/ ${costoArtesanos.toFixed(2)}`;
-
-      const elMargenSoles = document.getElementById('bi-kpi-margen-soles');
-      if (elMargenSoles) elMargenSoles.textContent = `S/ ${margenSoles.toFixed(2)}`;
-
-      const elMargenPct = document.getElementById('bi-kpi-margen-pct');
-      if (elMargenPct) {
-        elMargenPct.textContent = `${margenPct.toFixed(1)}%`;
-        elMargenPct.className = margenPct >= 50
-          ? 'bg-[#008f6b] text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full'
-          : (margenPct >= 30 ? 'bg-[#B87352] text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full' : 'bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full');
-      }
-
-      // Renderizar barras de progreso por Jerarquía Retail (Línea -> Sub-línea -> Colección)
-      const barsContainer = document.getElementById('bi-colecciones-bars');
-      const barsEmpty = document.getElementById('bi-colecciones-empty');
-      if (barsEmpty) barsEmpty.classList.toggle('hidden', jerarquia.length > 0);
-      if (barsContainer) {
-        const totalVentasJerarquia = jerarquia.reduce((acc, r) => acc + Number(r.ventas_soles || 0), 0) || 1;
-        barsContainer.innerHTML = jerarquia.map(item => {
-          const vSoles = Number(item.ventas_soles || 0);
-          const cSoles = Number(item.costo_artesano_soles || 0);
-          const mSoles = Number(item.margen_soles || 0);
-          const sharePct = Math.min(100, Math.round((vSoles / totalVentasJerarquia) * 100));
-          const itemMargenPct = vSoles > 0 ? Math.round((mSoles / vSoles) * 100) : 0;
-
-          return `
-            <div class="p-3.5 rounded-2xl bg-[#F9F6F0] border border-[#EBE5DE] space-y-2">
-              <div class="flex items-start justify-between gap-2">
-                <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-[#8C7A6B] block">
-                    ${escapeHtml(item.linea)} → ${escapeHtml(item.sublinea)}
-                  </span>
-                  <h4 class="text-sm font-bold text-[#4A3C31]">${escapeHtml(item.coleccion)}</h4>
-                </div>
-                <div class="text-right shrink-0">
-                  <span class="text-sm font-extrabold text-[#4A3C31] block">S/ ${vSoles.toFixed(2)}</span>
-                  <span class="text-[11px] text-[#008f6b] font-semibold">Margen: S/ ${mSoles.toFixed(2)} (${itemMargenPct}%)</span>
-                </div>
-              </div>
-              <div class="w-full h-2.5 bg-[#EBE5DE] rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-[#B87352] to-[#4A3C31] rounded-full transition-all duration-500" style="width: ${Math.max(4, sharePct)}%"></div>
-              </div>
-              <div class="flex items-center justify-between text-[11px] text-[#8C7A6B]">
-                <span><strong>${Number(item.piezas || 0)}</strong> piezas en <strong>${Number(item.pedidos || 0)}</strong> pedidos</span>
-                <span>Costo art.: S/ ${cSoles.toFixed(2)} · <strong>${sharePct}%</strong> de ventas</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // Renderizar tabla de rendimiento y puntualidad de artesanos
-      const artTbody = document.getElementById('bi-artesanos-tbody');
-      const artEmpty = document.getElementById('bi-artesanos-empty');
-      if (artEmpty) artEmpty.classList.toggle('hidden', artesanos.length > 0);
-      if (artTbody) {
-        artTbody.innerHTML = artesanos.map(a => {
-          const aTiempo = Number(a.entregados_a_tiempo || 0);
-          const atrasados = Number(a.atrasados || 0);
-          const enProd = Number(a.en_produccion || 0);
-          const evaluados = aTiempo + atrasados;
-          const puntualidadPct = evaluados > 0 ? Math.round((aTiempo / evaluados) * 100) : 100;
-
-          return `
-            <tr class="hover:bg-[#F9F6F0]/60 transition-colors">
-              <td class="py-3 pr-3">
-                <div class="font-bold text-[#4A3C31]">${escapeHtml(a.artesano)}</div>
-                <span class="text-[11px] text-[#8C7A6B]">${enProd > 0 ? `${enProd} en taller/producción` : 'Al día'}</span>
-              </td>
-              <td class="py-3 px-2 text-center">
-                <span class="font-bold text-[#4A3C31]">${Number(a.pedidos_asignados || 0)}</span>
-                <span class="text-xs text-[#8C7A6B] block">${Number(a.piezas_asignadas || 0)} piezas</span>
-              </td>
-              <td class="py-3 px-2 text-center">
-                <div class="inline-flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-700 border border-green-200" title="Entregados a tiempo">
-                    ${aTiempo} a tiempo
-                  </span>
-                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${atrasados > 0 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#F1EDE7] text-[#8C7A6B]'}" title="Pedidos atrasados">
-                    ${atrasados} atrasados
-                  </span>
-                </div>
-                <span class="block text-[10px] font-semibold ${atrasados > 0 ? 'text-amber-700' : 'text-[#008f6b]'} mt-0.5">
-                  ${evaluados > 0 ? `${puntualidadPct}% puntualidad` : 'En plazo'}
-                </span>
-              </td>
-              <td class="py-3 pl-2 text-right">
-                <span class="font-bold text-[#742284] block">S/ ${Number(a.pago_acumulado || 0).toFixed(2)}</span>
-                <span class="text-[11px] text-[#8C7A6B]">Ventas: S/ ${Number(a.ventas_generadas || 0).toFixed(2)}</span>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
-    } catch (e) {
-      console.error('Error cargando resumen BI:', e);
+    if (window.LpsErp && window.LpsErp.bi) {
+      return window.LpsErp.bi.loadBiResumen(apiFetch);
     }
   }
 
@@ -2571,123 +2453,23 @@
   if (matLinea) matLinea.addEventListener('change', autollenarCodigosMatricula);
   if (matSublinea) matSublinea.addEventListener('change', autollenarCodigosMatricula);
 
-  const COLECCIONES_KEY = 'lps_custom_collections_v1';
-
-  function getColeccionesDisponibles() {
-    const base = ['Catálogo General', 'Colección Navidad', 'Colección Van Gogh', 'Colección Rapunzel', 'Regalos & Temporada'];
-    let custom = [];
-    try {
-      const raw = JSON.parse(localStorage.getItem(COLECCIONES_KEY) || '[]');
-      if (Array.isArray(raw)) custom = raw;
-    } catch {}
-    const fromDb = (inventarioCache || []).map(p => (p.coleccion || '').trim()).filter(Boolean);
-    const merged = [];
-    const seen = new Set();
-    [...base, ...custom, ...fromDb].forEach(c => {
-      const clean = String(c || '').trim();
-      const k = clean.toLowerCase();
-      if (clean && !seen.has(k)) {
-        seen.add(k);
-        merged.push(clean);
-      }
-    });
-    return merged;
-  }
-
+  // ── Módulo PIM: Colecciones Dinámicas y Copywriter Gemini IA (delegado a public/js/erp/pim-ai.module.js) ──
   function syncColeccionesDisponibles() {
-    const lista = getColeccionesDisponibles();
-    ['mat-coleccion', 'ficha-coleccion'].forEach(selId => {
-      const sel = document.getElementById(selId);
-      if (!sel) return;
-      const prev = sel.value;
-      sel.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-      if (prev && lista.includes(prev)) sel.value = prev;
-    });
-    const dl = document.getElementById('lps-colecciones-list');
-    if (dl) {
-      dl.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
-    }
-    const invColSel = document.getElementById('filtro-inv-coleccion');
-    if (invColSel) {
-      const prevInv = invColSel.value;
-      invColSel.innerHTML = `<option value="">Todas las colecciones</option>` +
-        lista.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-      if (prevInv && lista.includes(prevInv)) invColSel.value = prevInv;
+    if (window.LpsErp && window.LpsErp.pimAi) {
+      window.LpsErp.pimAi.syncColeccionesDisponibles(inventarioCache);
     }
   }
 
   syncColeccionesDisponibles();
-
-  document.querySelectorAll('.btn-crear-coleccion').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const targetId = btn.dataset.targetColeccion;
-      const val = await window.LpsModal.prompt({
-        title: 'Crear nueva colección',
-        message: 'Ingresa el nombre de la nueva colección (ej: Colección Invierno, Día de la Madre, Regalos Corporativos):',
-        placeholder: 'Ej: Colección Invierno',
-        confirmText: 'Crear Colección',
-        maxLength: 60
-      });
-      const nombreCol = String(val || '').trim();
-      if (!nombreCol) return;
-
-      let custom = [];
-      try {
-        const raw = JSON.parse(localStorage.getItem(COLECCIONES_KEY) || '[]');
-        if (Array.isArray(raw)) custom = raw;
-      } catch {}
-      if (!custom.some(c => c.toLowerCase() === nombreCol.toLowerCase())) {
-        custom.push(nombreCol);
-        localStorage.setItem(COLECCIONES_KEY, JSON.stringify(custom));
-      }
-      syncColeccionesDisponibles();
-
-      const targetEl = targetId ? document.getElementById(targetId) : null;
-      if (targetEl) {
-        targetEl.value = nombreCol;
-        targetEl.dispatchEvent(new Event('input'));
-      }
-      window.LpsModal.toast(`Colección "${nombreCol}" creada y seleccionada.`, 'success');
-    });
-  });
+  if (window.LpsErp && window.LpsErp.pimAi) {
+    window.LpsErp.pimAi.bindBotonesCrearColeccion(() => inventarioCache);
+  }
 
   let matIaMeta = { color: '', caracteristicas: '' };
 
-  async function solicitarDescripcionIa({ file, productoId, nombre, linea, sublinea, coleccion, btnEl, descEl, colorEl, carEl, onMeta }) {
-    if (!file && !productoId) {
-      await window.LpsModal.alert('Primero selecciona al menos una foto del producto para que la IA pueda analizarla.', 'warning');
-      return;
-    }
-    const origHtml = btnEl.innerHTML;
-    btnEl.disabled = true;
-    btnEl.textContent = 'Analizando imagen con IA...';
-    try {
-      const fd = new FormData();
-      if (productoId) fd.append('producto_id', productoId);
-      fd.append('nombre', nombre || '');
-      fd.append('linea', linea || '');
-      fd.append('sublinea', sublinea || '');
-      fd.append('coleccion', coleccion || '');
-      if (file) {
-        const optIaFile = await comprimirImagenWeb(file);
-        fd.append('imagenes', optIaFile);
-      }
-      const res = await apiFetch('/productos/ia-descripcion', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        if (descEl && data.descripcion) descEl.value = data.descripcion;
-        if (colorEl && !colorEl.value.trim() && data.color) colorEl.value = data.color;
-        if (carEl && !carEl.value.trim() && data.caracteristicas) carEl.value = data.caracteristicas;
-        if (typeof onMeta === 'function') onMeta(data);
-        window.LpsModal.toast('Descripción generada con IA según la imagen.', 'success');
-      } else {
-        await window.LpsModal.alert(data.message || 'No se pudo generar la descripción con IA.', 'error');
-      }
-    } catch {
-      await window.LpsModal.alert('Error de conexión al consultar la IA.', 'error');
-    } finally {
-      btnEl.disabled = false;
-      btnEl.innerHTML = origHtml;
+  async function solicitarDescripcionIa(opts) {
+    if (window.LpsErp && window.LpsErp.pimAi) {
+      return window.LpsErp.pimAi.solicitarDescripcionIa({ ...opts, apiFetch });
     }
   }
 
@@ -2791,40 +2573,15 @@
     });
   }
 
-  // Generador visual de Código de Barras EAN-13 en SVG e impresión de etiqueta
+  // Generador visual de Código de Barras EAN-13 en SVG e impresión de etiqueta (delegado a public/js/erp/wms-scanner.module.js)
   const modalEtiquetaEan = document.getElementById('modal-etiqueta-ean');
   const btnCerrarEtiqueta = document.getElementById('btn-cerrar-etiqueta-ean');
   const btnImprimirEtiqueta = document.getElementById('btn-imprimir-etiqueta-ean');
 
-  function generarBarrasSvg(codeStr) {
-    const clean = String(codeStr || '7752601000018').replace(/[^0-9A-Z]/gi, '') || '7752601000018';
-    const patterns = ['1010011', '1100101', '1001101', '1101001', '1011001', '1100110', '1001110', '1010110', '1101010', '1011010'];
-    let bits = '101';
-    for (let i = 0; i < clean.length; i++) {
-      const idx = clean.charCodeAt(i) % 10;
-      bits += patterns[idx];
-    }
-    bits += '101';
-    const barW = 2;
-    const width = bits.length * barW;
-    let rects = '';
-    for (let i = 0; i < bits.length; i++) {
-      if (bits[i] === '1') {
-        rects += `<rect x="${i * barW}" y="0" width="${barW}" height="48" fill="#4A3C31"/>`;
-      }
-    }
-    return `<svg width="${width}" height="50" viewBox="0 0 ${width} 50" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
-  }
-
   function abrirModalEtiquetaEan(prod) {
-    if (!modalEtiquetaEan) return;
-    const nom = document.getElementById('etiqueta-prod-nombre'); if (nom) nom.textContent = prod.nombre;
-    const sku = document.getElementById('etiqueta-prod-sku'); if (sku) sku.textContent = `SKU: ${prod.sku || '—'}`;
-    const ean = document.getElementById('etiqueta-prod-ean'); if (ean) ean.textContent = prod.ean || '7752601000018';
-    const pr = document.getElementById('etiqueta-prod-precio'); if (pr) pr.textContent = `S/ ${Number(prod.precio_oferta || prod.precio || 0).toFixed(2)}`;
-    const svgBox = document.getElementById('etiqueta-barcode-svg');
-    if (svgBox) svgBox.innerHTML = generarBarrasSvg(prod.ean || prod.sku);
-    modalEtiquetaEan.classList.remove('hidden');
+    if (window.LpsErp && window.LpsErp.wmsScanner) {
+      window.LpsErp.wmsScanner.abrirModalEtiquetaEan(prod);
+    }
   }
 
   if (btnCerrarEtiqueta && modalEtiquetaEan) {
@@ -3234,93 +2991,11 @@
     }
   }
 
-  // ============================================================================
-  // Lector de Código de Barras EAN-13 con Cámara (Shopify Mobile WMS)
-  // ============================================================================
-  var mediaStreamGlobal = null;
-
+  // Lector de Código de Barras EAN-13 con Cámara (delegado a public/js/erp/wms-scanner.module.js)
   function initCamaraScannerWMS() {
-    var btnAbrir = document.getElementById('btn-camara-scanner-wms');
-    var modal = document.getElementById('modal-camara-scanner');
-    var btnCerrar = document.getElementById('btn-cerrar-camara-scanner');
-    var video = document.getElementById('video-camara-scanner');
-    var statusEl = document.getElementById('camara-scanner-status');
-    var manualInput = document.getElementById('camara-manual-barcode');
-    var manualBtn = document.getElementById('btn-camara-manual-submit');
-
-    if (!btnAbrir || !modal) return;
-
-    function cerrarScanner() {
-      if (mediaStreamGlobal) {
-        mediaStreamGlobal.getTracks().forEach(function (t) { t.stop(); });
-        mediaStreamGlobal = null;
-      }
-      modal.classList.add('hidden');
+    if (window.LpsErp && window.LpsErp.wmsScanner) {
+      window.LpsErp.wmsScanner.initCamaraScannerWMS();
     }
-
-    btnCerrar && btnCerrar.addEventListener('click', cerrarScanner);
-
-    btnAbrir.addEventListener('click', function () {
-      modal.classList.remove('hidden');
-      statusEl.textContent = 'Activando cámara trasera...';
-
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        statusEl.textContent = 'Cámara no soportada en este navegador. Usa el campo manual.';
-        return;
-      }
-
-      navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-      }).then(function (stream) {
-        mediaStreamGlobal = stream;
-        video.srcObject = stream;
-        statusEl.textContent = 'Cámara activa. Escaneando código...';
-
-        if ('BarcodeDetector' in window) {
-          var detector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'qr_code'] });
-          var intervalId = setInterval(function () {
-            if (!mediaStreamGlobal || modal.classList.contains('hidden')) {
-              clearInterval(intervalId);
-              return;
-            }
-            detector.detect(video).then(function (barcodes) {
-              if (barcodes.length > 0) {
-                var code = barcodes[0].rawValue;
-                clearInterval(intervalId);
-                cerrarScanner();
-                aplicarFiltroBarcode(code);
-              }
-            }).catch(function () {});
-          }, 500);
-        }
-      }).catch(function (err) {
-        console.warn('Error accediendo a cámara:', err);
-        statusEl.textContent = 'No se pudo acceder a la cámara. Usa el ingreso manual abajo.';
-      });
-    });
-
-    function aplicarFiltroBarcode(code) {
-      var searchInput = document.getElementById('filtro-inv-search');
-      if (searchInput) {
-        searchInput.value = code;
-        searchInput.dispatchEvent(new Event('input'));
-      }
-    }
-
-    manualBtn && manualBtn.addEventListener('click', function () {
-      var val = (manualInput.value || '').trim();
-      if (val) {
-        cerrarScanner();
-        aplicarFiltroBarcode(val);
-      }
-    });
-
-    manualInput && manualInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        manualBtn.click();
-      }
-    });
   }
 
   // ============================================================================

@@ -12,6 +12,7 @@ const { isAllowedCorsOrigin } = require('./utils/security');
 const { runMigrations } = require('./migrate');
 const negocioTalleresRoutes = require('./routes/negocio-talleres.routes');
 const negocioProductosRoutes = require('./routes/negocio-productos.routes');
+const wmsInventarioRoutes = require('./routes/wms-inventario.routes');
 const negocioPedidosRoutes = require('./routes/negocio-pedidos.routes');
 const artesanitasRoutes = require('./routes/artesanitas.routes');
 
@@ -56,9 +57,10 @@ app.get(['/api/health', '/health'], (req, res) => {
   res.json({ status: 'ok', service: 'artesanitas-lps', timestamp: new Date().toISOString() });
 });
 
-// API (/api/negocios/artesanitas/...)
+// API (/api/negocios/artesanitas/...) — Arquitectura Modular ERP (OMS, WMS, PIM, EXP)
 app.use('/api/negocios', negocioTalleresRoutes);
 app.use('/api/negocios', negocioProductosRoutes);
+app.use('/api/negocios', wmsInventarioRoutes);
 app.use('/api/negocios', negocioPedidosRoutes);
 
 // Redirecciones 301 de URLs históricas hacia rutas limpias en la raíz
