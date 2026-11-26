@@ -2098,10 +2098,12 @@
   function inventarioFiltrado() {
     const q = (document.getElementById('filtro-inv-search')?.value || '').trim().toLowerCase();
     const lin = document.getElementById('filtro-inv-linea')?.value || '';
+    const colFiltro = (document.getElementById('filtro-inv-coleccion')?.value || '').trim().toLowerCase();
     const st = document.getElementById('filtro-inv-stock')?.value || '';
 
     return inventarioCache.filter(p => {
       if (lin && p.linea !== lin) return false;
+      if (colFiltro && (p.coleccion || 'Catálogo General').trim().toLowerCase() !== colFiltro) return false;
       const stockNum = Number(p.stock_actual || 0);
       const stockMin = Number(p.stock_minimo || 1);
       if (st === 'con_stock' && stockNum <= 0) return false;
@@ -2112,7 +2114,9 @@
         const matchEan = (p.ean || '').toLowerCase().includes(q);
         const matchNom = (p.nombre || '').toLowerCase().includes(q);
         const matchCol = (p.coleccion || '').toLowerCase().includes(q);
-        if (!matchSku && !matchEan && !matchNom && !matchCol) return false;
+        const matchLin = (p.linea || '').toLowerCase().includes(q);
+        const matchSub = (p.sublinea || '').toLowerCase().includes(q);
+        if (!matchSku && !matchEan && !matchNom && !matchCol && !matchLin && !matchSub) return false;
       }
       return true;
     });
@@ -2396,7 +2400,7 @@
   }
 
   // Filtros en vivo de inventario
-  ['filtro-inv-search', 'filtro-inv-linea', 'filtro-inv-stock'].forEach(id => {
+  ['filtro-inv-search', 'filtro-inv-linea', 'filtro-inv-coleccion', 'filtro-inv-stock'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener('input', renderInventarioTable);
@@ -2547,6 +2551,13 @@
     const dl = document.getElementById('lps-colecciones-list');
     if (dl) {
       dl.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+    }
+    const invColSel = document.getElementById('filtro-inv-coleccion');
+    if (invColSel) {
+      const prevInv = invColSel.value;
+      invColSel.innerHTML = `<option value="">Todas las colecciones</option>` +
+        lista.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if (prevInv && lista.includes(prevInv)) invColSel.value = prevInv;
     }
   }
 

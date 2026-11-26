@@ -903,72 +903,76 @@ router.post('/:negocioSlug/inventario/generar-codigos', requireNegocioAuth, asyn
     }
 });
 
+async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
+    let matriculadosNuevos = 0;
+    const { rows: existingRows } = await pool.query(
+        `SELECT slug FROM negocio_productos WHERE negocio_id = $1`,
+        [negocioId]
+    );
+    const existingSlugs = new Set(existingRows.map(r => r.slug));
+
+    const catalogoBase = [
+        ...(Array.isArray(PRODUCTOS_CATALOGO) ? PRODUCTOS_CATALOGO : []),
+        { slug: 'taza-navidad-papa-noel', nombre: 'Taza Navideña Papá Noel', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_navidad_papa_noel_1.jpeg'] },
+        { slug: 'taza-muneco-de-nieve', nombre: 'Taza Muñeco de Nieve', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_muneco_de_nieve_1.jpeg'] },
+        { slug: 'taza-arbolito-chocolatosa', nombre: 'Taza Arbolito Chocolatosa', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_arbolito_Chocolatosa.jpeg'] },
+        { slug: 'taza-arbolito-rosa', nombre: 'Taza Arbolito Rosa', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_arbolito_Rosa.jpeg'] },
+        { slug: 'taza-piston-cup', nombre: 'Taza Piston Cup', precio: 59.00, coleccion: 'Personajes & Licencias', imagenes: ['/imagenes/Artesanitas/Fotos/Taza_Piston_1.jpeg'] },
+        { slug: 'adorno-paltita', nombre: 'Adorno Paltita', precio: 35.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_Paltita_1.jpeg'] },
+        { slug: 'adorno-oso-sentado', nombre: 'Adorno Oso sentado', precio: 32.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_oso_sentado_1.jpeg'] },
+        { slug: 'adorno-munequitas', nombre: 'Adorno muñequitas', precio: 29.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_munequita_con_plantita_1.jpeg'] },
+        { slug: 'platos-uva', nombre: 'Platos uva', precio: 29.00, linea: 'Vajilla Artesanal', sublinea: 'Platos & Bowls', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Platos uva.jpeg'] },
+        { slug: 'plato-morado-full', nombre: 'Plato morado full', precio: 32.00, linea: 'Vajilla Artesanal', sublinea: 'Platos & Bowls', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Plato morado full.jpeg'] }
+    ];
+
+    for (const item of catalogoBase) {
+        if (!item || !item.slug || existingSlugs.has(item.slug)) continue;
+        existingSlugs.add(item.slug);
+        const lin = item.linea || (item.slug.includes('adorno') || item.slug.includes('elefantito') || item.slug.includes('jarron') ? 'Decoración & Maceteros' : 'Vajilla Artesanal');
+        const sub = item.sublinea || (item.slug.includes('plato') && !item.slug.includes('taza') ? 'Platos & Bowls' : (item.slug.includes('tetera') || item.slug.includes('azucarera') ? 'Teteras & Azucareras' : 'Tazas & Mugs'));
+        const col = item.coleccion || (item.slug.includes('navidad') || item.slug.includes('arbolito') ? 'Colección Navidad' : (item.slug.includes('van-gogh') ? 'Colección Van Gogh' : (item.slug.includes('rapunzel') ? 'Colección Rapunzel' : 'Catálogo General')));
+        const codes = await generarMatriculaUnica(negocioId, negocioSlug, lin, sub);
+
+        const { rows: ins } = await pool.query(
+            `INSERT INTO negocio_productos (
+                negocio_id, slug, nombre, precio, sku, ean, stock_actual, stock_minimo,
+                politica_sin_stock, linea, sublinea, sub_sublinea, coleccion,
+                tipo_producto, descripcion, imagenes, ubicacion_almacen, activo
+             ) VALUES ($1, $2, $3, $4, $5, $6, 0, 2, 'preventa', $7, $8, 'Cerámica Pintada a Mano', $9, 'Cerámica', $10, $11, 'Almacén Principal Trujillo', TRUE)
+             ON CONFLICT (negocio_id, slug) DO NOTHING
+             RETURNING id`,
+            [
+                negocioId,
+                item.slug,
+                cleanProductTitle(item.nombre),
+                Number(item.precio || 59.90),
+                codes.sku,
+                codes.ean,
+                lin,
+                sub,
+                col,
+                item.descripcion || '',
+                JSON.stringify(item.imagenes || [])
+            ]
+        );
+        if (ins.length > 0) {
+            matriculadosNuevos++;
+            await pool.query(
+                `INSERT INTO negocio_inventario_movimientos (negocio_id, producto_id, tipo_movimiento, cantidad_anterior, delta, cantidad_nueva, ubicacion, motivo_referencia, usuario)
+                 VALUES ($1, $2, 'matricula_inicial', 0, 0, 0, 'Almacén Principal Trujillo', $3, 'admin')`,
+                [negocioId, ins[0].id, `Auto-matrícula SKU ${codes.sku} · EAN ${codes.ean}`]
+            ).catch(() => {});
+        }
+    }
+    return matriculadosNuevos;
+}
+
 // 2. POST /api/negocios/:negocioSlug/inventario/matricular-masivo —
 // Matricula todos los productos del catálogo estático/preventa en negocio_productos y asigna SKU + EAN-13 a los que les falte
 router.post('/:negocioSlug/inventario/matricular-masivo', requireNegocioAuth, async (req, res) => {
     try {
-        let matriculadosNuevos = 0;
+        const matriculadosNuevos = await syncCatalogoBaseAInventario(req.negocio.id, req.negocio.slug);
         let codigosCompletados = 0;
-
-        // A. Traer productos del catálogo estático (PRODUCTOS_CATALOGO) que aún no estén en negocio_productos
-        const catalogoBase = [
-            ...(Array.isArray(PRODUCTOS_CATALOGO) ? PRODUCTOS_CATALOGO : []),
-            { slug: 'taza-navidad-papa-noel', nombre: 'Taza Navideña Papá Noel', precio: 59.90, coleccion: 'Colección Navidad 2026', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_navidad_papa_noel_1.jpeg'] },
-            { slug: 'taza-muneco-de-nieve', nombre: 'Taza Muñeco de Nieve', precio: 59.90, coleccion: 'Colección Navidad 2026', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_muneco_de_nieve_1.jpeg'] },
-            { slug: 'taza-arbolito-chocolatosa', nombre: 'Taza Arbolito Chocolatosa', precio: 59.90, coleccion: 'Colección Navidad 2026', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_arbolito_Chocolatosa.jpeg'] },
-            { slug: 'taza-arbolito-rosa', nombre: 'Taza Arbolito Rosa', precio: 59.90, coleccion: 'Colección Navidad 2026', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_arbolito_Rosa.jpeg'] },
-            { slug: 'taza-piston-cup', nombre: 'Taza Piston Cup', precio: 59.00, coleccion: 'Personajes & Licencias', imagenes: ['/imagenes/Artesanitas/Fotos/Taza_Piston_1.jpeg'] },
-            { slug: 'adorno-paltita', nombre: 'Adorno Paltita', precio: 35.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_Paltita_1.jpeg'] },
-            { slug: 'adorno-oso-sentado', nombre: 'Adorno Oso sentado', precio: 32.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_oso_sentado_1.jpeg'] },
-            { slug: 'adorno-munequitas', nombre: 'Adorno muñequitas', precio: 29.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_munequita_con_plantita_1.jpeg'] },
-            { slug: 'platos-uva', nombre: 'Platos uva', precio: 29.00, linea: 'Vajilla Artesanal', sublinea: 'Platos & Bowls', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Platos uva.jpeg'] },
-            { slug: 'plato-morado-full', nombre: 'Plato morado full', precio: 32.00, linea: 'Vajilla Artesanal', sublinea: 'Platos & Bowls', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Plato morado full.jpeg'] }
-        ];
-
-        for (const item of catalogoBase) {
-            if (!item || !item.slug) continue;
-            const { rows: exists } = await pool.query(
-                `SELECT id FROM negocio_productos WHERE negocio_id = $1 AND slug = $2 LIMIT 1`,
-                [req.negocio.id, item.slug]
-            );
-            if (exists.length === 0) {
-                const lin = item.linea || (item.slug.includes('adorno') || item.slug.includes('elefantito') || item.slug.includes('jarron') ? 'Decoración & Maceteros' : 'Vajilla Artesanal');
-                const sub = item.sublinea || (item.slug.includes('plato') && !item.slug.includes('taza') ? 'Platos & Bowls' : (item.slug.includes('tetera') || item.slug.includes('azucarera') ? 'Teteras & Azucareras' : 'Tazas & Mugs'));
-                const col = item.coleccion || (item.slug.includes('navidad') || item.slug.includes('arbolito') ? 'Colección Navidad 2026' : (item.slug.includes('van-gogh') ? 'Colección Van Gogh' : (item.slug.includes('rapunzel') ? 'Colección Rapunzel' : 'Catálogo General')));
-                const codes = await generarMatriculaUnica(req.negocio.id, req.negocio.slug, lin, sub);
-
-                const { rows: ins } = await pool.query(
-                    `INSERT INTO negocio_productos (
-                        negocio_id, slug, nombre, precio, sku, ean, stock_actual, stock_minimo,
-                        politica_sin_stock, linea, sublinea, sub_sublinea, coleccion,
-                        tipo_producto, descripcion, imagenes, ubicacion_almacen, activo
-                     ) VALUES ($1, $2, $3, $4, $5, $6, 0, 2, 'preventa', $7, $8, 'Cerámica Pintada a Mano', $9, 'Cerámica', $10, $11, 'Almacén Principal Trujillo', TRUE)
-                     ON CONFLICT (negocio_id, slug) DO NOTHING
-                     RETURNING id`,
-                    [
-                        req.negocio.id,
-                        item.slug,
-                        item.nombre,
-                        Number(item.precio || 59.90),
-                        codes.sku,
-                        codes.ean,
-                        lin,
-                        sub,
-                        col,
-                        item.descripcion || '',
-                        JSON.stringify(item.imagenes || [])
-                    ]
-                );
-                if (ins.length > 0) {
-                    matriculadosNuevos++;
-                    await pool.query(
-                        `INSERT INTO negocio_inventario_movimientos (negocio_id, producto_id, tipo_movimiento, cantidad_anterior, delta, cantidad_nueva, ubicacion, motivo_referencia, usuario)
-                         VALUES ($1, $2, 'matricula_inicial', 0, 0, 0, 'Almacén Principal Trujillo', $3, 'admin')`,
-                        [req.negocio.id, ins[0].id, `Auto-matrícula SKU ${codes.sku} · EAN ${codes.ean}`]
-                    ).catch(() => {});
-                }
-            }
-        }
 
         // B. Asignar SKU numérico estructurado o EAN-13 a cualquier producto existente con código vacío o formato alfanumérico antiguo
         const { rows: sinCodigo } = await pool.query(
@@ -1005,6 +1009,10 @@ router.post('/:negocioSlug/inventario/matricular-masivo', requireNegocioAuth, as
 // 3. GET /api/negocios/:negocioSlug/inventario/resumen — Resumen WMS Shopify + Lista de Stock + Kardex reciente
 router.get('/:negocioSlug/inventario/resumen', requireNegocioAuth, async (req, res) => {
     try {
+        if (req.negocio.slug === 'artesanitas') {
+            await syncCatalogoBaseAInventario(req.negocio.id, req.negocio.slug);
+        }
+
         // Completar códigos EAN-13 / SKU numérico corto faltantes o alfanuméricos antiguos de forma transparente
         const { rows: faltantes } = await pool.query(
             `SELECT id, linea, sublinea, sku, ean FROM negocio_productos
