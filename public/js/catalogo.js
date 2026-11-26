@@ -14,21 +14,22 @@ function copyProductoLink(path) {
   window.open(url, '_blank');
 }
 
-// Comparte el link de un producto: usa el share sheet nativo del dispositivo
-// (WhatsApp, Instagram, etc.) si está disponible; si no, copia el link al portapapeles.
+// Comparte o copia el link de un producto (Estándar E-Commerce 2026: 1 solo botón inteligente)
+// En móvil abre el share sheet nativo y en desktop copia el link limpio al portapapeles con confirmación visual.
 function shareProducto(path, nombre) {
   var url = window.location.origin + path;
-  if (navigator.share) {
-    navigator.share({ title: nombre, text: 'Mira esta pieza de Artesanitas: ' + nombre, url: url }).catch(function () { });
-    return;
-  }
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(showShareToast).catch(function () {
-      window.open(url, '_blank');
-    });
+    navigator.clipboard.writeText(url).then(function () {
+      showShareToast('Enlace del producto copiado al portapapeles');
+    }).catch(function () {});
+  }
+  if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent || '')) {
+    navigator.share({ title: nombre, text: 'Mira esta pieza de Artesanitas Perú: ' + nombre, url: url }).catch(function () { });
     return;
   }
-  window.open(url, '_blank');
+  if (!navigator.clipboard) {
+    window.open(url, '_blank');
+  }
 }
 
 function showShareToast(customText) {
@@ -327,15 +328,9 @@ initSlider('slider-taza-navidad');
       '<img src="' + escapeHtml(img) + '" alt="' + nombre + '" loading="lazy" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" onerror="this.onerror=null; this.src=\'/imagenes/Artesanitas/logo_artesanitas.peru.jpg\';" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer" />' +
       '<div class="absolute inset-0 bg-[#4A3C31]/0 group-hover:bg-[#4A3C31]/10 transition-colors duration-300 pointer-events-none"></div>' +
       '<div class="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start pointer-events-none">' + promoBadge + stockBadge + '</div>' +
-      '<div class="absolute top-3 right-3 z-10 flex flex-col gap-2">' +
-      '<button type="button" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.open(\'' + slugJs + '\')" class="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer" title="Ver Ficha y Detalles del Producto" aria-label="Ver Ficha">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>' +
-      '</button>' +
-      '<button type="button" onclick="copyProductoLink(\'' + path + '\')" class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer" title="Copiar link de este producto" aria-label="Copiar link de este producto">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
-      '</button>' +
-      '<button type="button" onclick="shareProducto(\'' + path + '\', \'' + nombreJs + '\')" class="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer" title="Compartir este producto" aria-label="Compartir este producto">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+      '<div class="absolute top-3 right-3 z-10">' +
+      '<button type="button" onclick="shareProducto(\'' + path + '\', \'' + nombreJs + '\')" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-white hover:scale-105 transition-all cursor-pointer" title="Compartir o copiar enlace" aria-label="Compartir producto">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#4A3C31]"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
       '</button>' +
       '</div>' +
       (agotado ? '' : '<div class="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-1.5 opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300">' +
@@ -808,19 +803,20 @@ initSlider('slider-taza-navidad');
         });
       }
 
-      // Agregar botón de Vista Rápida (ojo) junto a copiar/compartir
+      // Estándar E-Commerce 2026: Unificar la esquina superior derecha en 1 solo botón limpio de Compartir / Copiar enlace
       var topRightBar = card.querySelector('.absolute.top-3.right-3');
-      if (topRightBar && !topRightBar.querySelector('.btn-qv-eye')) {
-        var eyeBtn = document.createElement('button');
-        eyeBtn.type = 'button';
-        eyeBtn.className = 'btn-qv-eye w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow hover:bg-white transition-all cursor-pointer';
-        eyeBtn.title = 'Vista Rápida y Ficha Técnica';
-        eyeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-[#4A3C31]"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
-        eyeBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          window.ArtesanitasQuickView.open(slug);
-        });
-        topRightBar.insertBefore(eyeBtn, topRightBar.firstChild);
+      if (topRightBar) {
+        topRightBar.innerHTML =
+          '<button type="button" class="btn-unified-share w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-white hover:scale-105 transition-all cursor-pointer" title="Compartir o copiar enlace del producto" aria-label="Compartir producto">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#4A3C31]"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
+          '</button>';
+        var shareBtn = topRightBar.querySelector('.btn-unified-share');
+        if (shareBtn) {
+          shareBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            shareProducto('/producto/' + slug, nombre);
+          });
+        }
       }
 
       var infoContainer = card.querySelector('.flex.flex-col.flex-grow');

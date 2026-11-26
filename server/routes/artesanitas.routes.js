@@ -1,14 +1,8 @@
 // server/routes/artesanitas.routes.js
-// Páginas individuales de producto para Artesanitas Perú.
-// Objetivo: que cada producto tenga su propio link (ej. /producto/taza-stich)
-// con meta tags Open Graph propias, para que al compartirse en redes sociales / WhatsApp
-// se vea la foto y el nombre de ESE producto (no el preview genérico del catálogo).
-//
-// El catálogo (public/artesanitas-peru.html) se renderiza dinámico desde
-// negocio_productos (ver server/routes/negocio-productos.routes.js); esta
-// ruta primero busca ahí (productos nuevos, cargados desde el panel) y si no
-// encuentra cae al archivo estático (productos viejos, cargados a mano antes
-// de que existiera el panel) -- así los links ya compartidos no se rompen.
+// Páginas individuales de producto para Artesanitas Perú (/producto/:slug).
+// Incluye meta tags Open Graph, compra directa 100% online o reserva preventa,
+// y pantalla de respaldo con identidad de marca Artesanitas Perú · Los Pilares
+// cuando un producto está pausado o no existe (evitando pantallas de error genéricas).
 
 const express = require('express');
 const router = express.Router();
@@ -16,14 +10,93 @@ const pool = require('../db.config');
 const { getProductoPorSlug, urlWhatsapp } = require('../data/artesanitas-productos');
 
 function escapeHtml(str) {
-    return String(str)
+    return String(str == null ? '' : str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
 }
 
+const RESERVA_SLUGS_EXACT = new Set([
+    'taza-navidad-papa-noel',
+    'taza-muneco-de-nieve',
+    'taza-arbolito-chocolatosa',
+    'taza-arbolito-rosa',
+    'taza-rapunzel',
+    'taza-stich',
+    'taza-van-gogh',
+    'taza-piston-cup',
+    'azucarera-van-gogh',
+    'vasito-van-gogh'
+]);
+
+function esProductoReserva(slug, politica) {
+    if (!slug) return false;
+    const s = String(slug).toLowerCase();
+    if (RESERVA_SLUGS_EXACT.has(s)) return true;
+    if (s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad')) return true;
+    return politica === 'preventa';
+}
+
+function renderProductoFallbackPage(res, slugRequested = '', statusCode = 404) {
+    return res.status(statusCode).send(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artesanitas Perú · Hub Marcas Los Pilares</title>
+  <link rel="icon" type="image/jpeg" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="/js/vendor/tailwindcss.3.4.17.js"></script>
+</head>
+<body class="bg-[#F9F6F0] text-[#4A3C31] min-h-screen flex flex-col justify-between" style="font-family:'Inter',sans-serif;">
+  <main class="flex-1 flex items-center justify-center px-6 py-12">
+    <div class="max-w-md w-full bg-white rounded-3xl border border-[#EBE5DE] shadow-xl p-8 text-center space-y-6">
+      <div class="relative mx-auto w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#B87352] to-[#D5C9BD] shadow-md">
+        <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Artesanitas Perú"
+          class="w-full h-full object-cover rounded-full border-2 border-white" />
+      </div>
+
+      <div class="space-y-2">
+        <span class="inline-flex items-center gap-1.5 bg-[#B87352]/10 text-[#B87352] text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+          Artesanitas Perú · Cerámica Hecha a Mano
+        </span>
+        <h1 class="text-2xl font-bold text-[#4A3C31]" style="font-family:'Playfair Display',serif;">
+          Esta pieza artesanal está en actualización
+        </h1>
+        <p class="text-sm text-[#8C7A6B] leading-relaxed">
+          ${slugRequested ? `La pieza <span class="font-mono font-semibold text-[#4A3C31]">${escapeHtml(slugRequested)}</span> no se encuentra disponible temporalmente o cambió de colección.` : 'La página o pieza que buscas no está disponible en este momento.'}
+          Explora nuestro catálogo actualizado con todas las piezas disponibles.
+        </p>
+      </div>
+
+      <div class="space-y-2.5 pt-2">
+        <a href="/#catalogo"
+          class="w-full bg-[#4A3C31] hover:bg-[#322821] text-white font-bold py-3.5 px-6 rounded-2xl text-sm transition-all shadow-md flex items-center justify-center gap-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Ver Catálogo de Artesanitas</span>
+        </a>
+        <a href="https://wa.me/51929938466?text=${encodeURIComponent('Hola Artesanitas! Buscaba información sobre la pieza: ' + (slugRequested || 'Catálogo'))}"
+          target="_blank" rel="noreferrer"
+          class="w-full bg-[#F9F6F0] hover:bg-[#EBE5DE] text-[#4A3C31] border border-[#D5C9BD] font-semibold py-3 px-6 rounded-2xl text-xs transition-colors flex items-center justify-center gap-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span>Consultar con el Taller por WhatsApp</span>
+        </a>
+      </div>
+
+      <div class="pt-4 border-t border-[#EBE5DE] flex items-center justify-center gap-2 text-[11px] text-[#8C7A6B]">
+        <span>Respaldado por</span>
+        <strong class="text-[#4A3C31] font-semibold">Los Pilares · Hub de Marcas Aliadas</strong>
+      </div>
+    </div>
+  </main>
+</body>
+</html>`);
+}
+
 async function buscarProductoPorSlug(slug) {
+    const cleanSlug = String(slug || '').trim().toLowerCase();
     try {
         const { rows } = await pool.query(
             `SELECT p.slug, p.nombre, p.precio, p.precio_oferta, p.etiqueta_promo, p.sku, p.ean,
@@ -31,12 +104,16 @@ async function buscarProductoPorSlug(slug) {
                     p.tamano_dimensiones, p.color, p.caracteristicas, p.descripcion, p.imagenes
              FROM negocio_productos p
              JOIN negocios n ON n.id = p.negocio_id
-             WHERE n.slug = 'artesanitas' AND p.slug = $1 AND p.activo = TRUE`,
-            [slug]
+             WHERE n.slug = 'artesanitas' AND LOWER(p.slug) = $1 AND p.activo = TRUE`,
+            [cleanSlug]
         );
         if (rows.length > 0) {
             const p = rows[0];
             const hasPromo = p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio);
+            const fallbackStatic = getProductoPorSlug(cleanSlug);
+            const imgs = (Array.isArray(p.imagenes) && p.imagenes.length > 0)
+                ? p.imagenes
+                : ((fallbackStatic && fallbackStatic.imagenes) || ['/imagenes/Artesanitas/logo_artesanitas.peru.jpg']);
             return {
                 slug: p.slug,
                 nombre: p.nombre,
@@ -44,72 +121,77 @@ async function buscarProductoPorSlug(slug) {
                 precio_regular: Number(p.precio),
                 has_promo: hasPromo,
                 etiqueta_promo: p.etiqueta_promo || '',
-                sku: p.sku || '',
+                sku: p.sku || '1001',
                 ean: p.ean || '',
                 stock_actual: Number(p.stock_actual || 0),
-                politica_sin_stock: p.politica_sin_stock || 'preventa',
+                politica_sin_stock: p.politica_sin_stock || 'compra_directa',
                 coleccion: p.coleccion || 'Catálogo Artesanitas',
                 detalles: [
                     p.tamano_dimensiones ? `Medidas / Capacidad: ${p.tamano_dimensiones}` : null,
                     p.color ? `Color: ${p.color}` : null,
                     p.caracteristicas ? `${p.caracteristicas}` : null
                 ].filter(Boolean),
-                descripcion: p.descripcion || '',
-                imagenes: p.imagenes || []
+                descripcion: p.descripcion || (fallbackStatic && fallbackStatic.descripcion) || '',
+                imagenes: imgs
             };
         }
 
-        // Si es un producto "de código" (catálogo estático) pausado desde el
-        // panel, no debe verse aunque siga presente en el archivo estático.
         const { rows: pausado } = await pool.query(
             `SELECT e.activo FROM negocio_productos_estaticos e
              JOIN negocios n ON n.id = e.negocio_id
-             WHERE n.slug = 'artesanitas' AND e.slug = $1`,
-            [slug]
+             WHERE n.slug = 'artesanitas' AND LOWER(e.slug) = $1`,
+            [cleanSlug]
         );
-        if (pausado.length > 0 && !pausado[0].activo) {
+        if (pausado.length > 0 && !pausado[0].activo && cleanSlug !== 'taza-formula-1') {
             return null;
         }
     } catch (error) {
-        // Si la BD no responde, no debe tumbar la página -- solo cae al archivo estático.
+        // Si la BD demora o falla, cae de forma segura al catálogo en memoria
     }
-    return getProductoPorSlug(slug);
+    return getProductoPorSlug(cleanSlug);
 }
 
-// GET /producto/:slug (Shopify-Grade Product Detail Page con Carrito Persistente y Reserva Directa)
-router.get('/producto/:slug', async (req, res, next) => {
-    const producto = await buscarProductoPorSlug(req.params.slug);
-    if (!producto) return next();
+// GET /producto/:slug (Shopify-Grade Product Detail Page con Carrito Persistente y Compra Directa)
+router.get('/producto/:slug', async (req, res) => {
+    try {
+        const producto = await buscarProductoPorSlug(req.params.slug);
+        if (!producto) {
+            return renderProductoFallbackPage(res, req.params.slug, 404);
+        }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const pageUrl = `${baseUrl}/producto/${producto.slug}`;
-    const mainImage = (Array.isArray(producto.imagenes) && producto.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
-    const imageUrl = mainImage.startsWith('http') ? mainImage : `${baseUrl}${mainImage}`;
-    const precioTexto = `S/ ${Number(producto.precio).toFixed(2)}`;
-    const title = `${producto.nombre} - Artesanitas Perú`;
-    const agotado = producto.stock_actual !== undefined && Number(producto.stock_actual) <= 0 && producto.politica_sin_stock === 'agotado';
+        const esReserva = esProductoReserva(producto.slug, producto.politica_sin_stock);
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const pageUrl = `${baseUrl}/producto/${producto.slug}`;
+        const mainImage = (Array.isArray(producto.imagenes) && producto.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
+        const imageUrl = mainImage.startsWith('http') ? mainImage : `${baseUrl}${mainImage}`;
+        const precioTexto = `S/ ${Number(producto.precio).toFixed(2)}`;
+        const title = `${producto.nombre} - Artesanitas Perú`;
+        const agotado = producto.stock_actual !== undefined && Number(producto.stock_actual) <= 0 && producto.politica_sin_stock === 'agotado';
 
-    const galeria = (producto.imagenes && producto.imagenes.length ? producto.imagenes : [mainImage])
-        .map((src, i) => `
-          <img src="${escapeHtml(src)}" alt="${escapeHtml(producto.nombre)}"
-            class="w-full h-full object-cover ${i === 0 ? '' : 'hidden'} product-img" data-idx="${i}" />`)
-        .join('');
+        const galeria = (producto.imagenes && producto.imagenes.length ? producto.imagenes : [mainImage])
+            .map((src, i) => `
+              <img src="${escapeHtml(src)}" alt="${escapeHtml(producto.nombre)}"
+                onerror="this.onerror=null;this.src='/imagenes/Artesanitas/logo_artesanitas.peru.jpg';"
+                class="w-full h-full object-cover ${i === 0 ? '' : 'hidden'} product-img" data-idx="${i}" />`)
+            .join('');
 
-    const dots = (producto.imagenes && producto.imagenes.length > 1)
-        ? `<div class="flex justify-center gap-2 mt-4">${producto.imagenes
-            .map((_, i) => `<button class="w-2.5 h-2.5 rounded-full ${i === 0 ? 'bg-[#B87352]' : 'bg-[#D5C9BD]'} product-dot cursor-pointer" data-idx="${i}"></button>`)
-            .join('')}</div>`
-        : '';
+        const dots = (producto.imagenes && producto.imagenes.length > 1)
+            ? `<div class="flex justify-center gap-2 mt-4">${producto.imagenes
+                .map((_, i) => `<button class="w-2.5 h-2.5 rounded-full ${i === 0 ? 'bg-[#B87352]' : 'bg-[#D5C9BD]'} product-dot cursor-pointer" data-idx="${i}"></button>`)
+                .join('')}</div>`
+            : '';
 
-    const prodJsonSafe = JSON.stringify({
-        slug: producto.slug,
-        nombre: producto.nombre,
-        precio: Number(producto.precio),
-        reserva: 20.00,
-        imagen: mainImage
-    }).replace(/</g, '\\u003c');
+        const prodJsonSafe = JSON.stringify({
+            slug: producto.slug,
+            sku: producto.sku || '1001',
+            nombre: producto.nombre,
+            precio: Number(producto.precio),
+            reserva: esReserva ? 20.00 : Number(producto.precio),
+            modalidad: esReserva ? 'reserva' : 'compra_directa',
+            imagen: mainImage
+        }).replace(/</g, '\\u003c');
 
-    res.send(`<!DOCTYPE html>
+        return res.send(`<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -117,6 +199,7 @@ router.get('/producto/:slug', async (req, res, next) => {
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(producto.descripcion)}">
   <link rel="canonical" href="${pageUrl}">
+  <link rel="icon" type="image/jpeg" href="/imagenes/Artesanitas/logo_artesanitas.peru.jpg">
   <link rel="manifest" href="/manifest.json">
 
   <meta property="og:type" content="product">
@@ -162,7 +245,7 @@ router.get('/producto/:slug', async (req, res, next) => {
     <div class="mt-6 space-y-3">
       ${producto.sku ? `<div class="text-[11px] font-mono font-bold text-[#8C7A6B]">SKU: ${escapeHtml(producto.sku)}${producto.ean ? ' · EAN: ' + escapeHtml(producto.ean) : ''}</div>` : ''}
       <h1 class="text-2xl font-bold" style="font-family:'Playfair Display',serif;">${escapeHtml(producto.nombre)}</h1>
-      <div class="flex items-baseline gap-2">
+      <div class="flex flex-wrap items-baseline gap-2">
         <p class="text-2xl font-bold text-[#B87352]">${precioTexto}</p>
         ${producto.has_promo ? `<span class="text-sm line-through text-[#8C7A6B]">S/ ${Number(producto.precio_regular).toFixed(2)}</span>` : ''}
         ${esReserva
@@ -217,6 +300,7 @@ router.get('/producto/:slug', async (req, res, next) => {
             } else {
               cart.push({
                 slug: prod.slug,
+                sku: prod.sku || '1001',
                 nombre: prod.nombre,
                 precio: prod.precio,
                 reserva: esRes ? 20 : prod.precio,
@@ -248,6 +332,10 @@ router.get('/producto/:slug', async (req, res, next) => {
   </script>
 </body>
 </html>`);
+    } catch (err) {
+        return renderProductoFallbackPage(res, req.params.slug, 200);
+    }
 });
 
 module.exports = router;
+module.exports.renderProductoFallbackPage = renderProductoFallbackPage;

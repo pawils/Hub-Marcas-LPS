@@ -79,6 +79,38 @@ app.use(
   })
 );
 
+// Catch-all 404 con identidad de marca Artesanitas Perú · Los Pilares (evita pantallas genéricas)
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: 'Endpoint no encontrado.' });
+  }
+  if (typeof artesanitasRoutes.renderProductoFallbackPage === 'function') {
+    const cleanRef = req.path.replace(/^\/+(producto\/)?/, '');
+    return artesanitasRoutes.renderProductoFallbackPage(res, cleanRef, 404);
+  }
+  return res.redirect('/');
+});
+
+// Middleware global 500 anti-caídas para que nunca aparezca la pantalla de Railway al usuario
+app.use((err, req, res, _next) => {
+  console.error('[Server Error]', err && err.message ? err.message : err);
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({ success: false, message: 'Ocurrió un error procesando la solicitud.' });
+  }
+  if (typeof artesanitasRoutes.renderProductoFallbackPage === 'function') {
+    return artesanitasRoutes.renderProductoFallbackPage(res, '', 200);
+  }
+  return res.redirect('/');
+});
+
+// Protección de proceso Node 20+ para evitar que promesas rechazadas tumben el contenedor en Railway
+process.on('unhandledRejection', (reason) => {
+  console.error('[UnhandledRejection Intercepted]', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[UncaughtException Intercepted]', err && err.message ? err.message : err);
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Artesanitas LPS] Servidor activo en puerto ${PORT}`);
   runMigrations().catch((err) => console.error('[Migrate Error]', err.message));
