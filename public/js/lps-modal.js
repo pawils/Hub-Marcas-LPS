@@ -193,6 +193,17 @@
       body.className = 'lps-modal-body';
       body.textContent = message;
 
+      var promptInput = null;
+      if (opts.isPrompt) {
+        promptInput = document.createElement('input');
+        promptInput.type = 'text';
+        promptInput.value = opts.defaultValue || '';
+        promptInput.placeholder = opts.placeholder || '';
+        promptInput.maxLength = opts.maxLength || 80;
+        promptInput.style.cssText = 'display:block;width:100%;margin-top:0.75rem;padding:0.625rem 0.875rem;border-radius:0.75rem;border:1px solid rgba(74,60,49,0.25);font-size:0.9rem;color:' + brand.primaryColor + ';background:#FCF8F3;outline:none;box-sizing:border-box;';
+        body.appendChild(promptInput);
+      }
+
       var actions = document.createElement('div');
       actions.className = 'lps-modal-actions';
 
@@ -229,21 +240,25 @@
       function onKeyDown(ev) {
         if (ev.key === 'Escape') {
           ev.preventDefault();
-          finish(false);
+          finish(opts.isPrompt ? null : false);
+        } else if (ev.key === 'Enter' && opts.isPrompt && document.activeElement === promptInput) {
+          ev.preventDefault();
+          finish(promptInput.value);
         }
       }
 
       document.addEventListener('keydown', onKeyDown);
-      closeBtn.addEventListener('click', function () { finish(false); });
-      if (cancelBtn) cancelBtn.addEventListener('click', function () { finish(false); });
-      okBtn.addEventListener('click', function () { finish(true); });
+      closeBtn.addEventListener('click', function () { finish(opts.isPrompt ? null : false); });
+      if (cancelBtn) cancelBtn.addEventListener('click', function () { finish(opts.isPrompt ? null : false); });
+      okBtn.addEventListener('click', function () { finish(opts.isPrompt ? promptInput.value : true); });
       backdrop.addEventListener('click', function (ev) {
-        if (ev.target === backdrop) finish(false);
+        if (ev.target === backdrop) finish(opts.isPrompt ? null : false);
       });
 
       requestAnimationFrame(function () {
         backdrop.classList.add('lps-open');
-        okBtn.focus();
+        if (promptInput) promptInput.focus();
+        else okBtn.focus();
       });
     });
   }
@@ -298,9 +313,19 @@
     }, duration || 3500);
   }
 
+  function promptDialog(messageOrOpts) {
+    var opts = typeof messageOrOpts === 'string'
+      ? { message: messageOrOpts }
+      : Object.assign({}, messageOrOpts);
+    opts.isConfirm = true;
+    opts.isPrompt = true;
+    return openDialog(opts);
+  }
+
   global.LpsModal = {
     alert: alertDialog,
     confirm: confirmDialog,
+    prompt: promptDialog,
     toast: toast
   };
 })(window);

@@ -2073,6 +2073,7 @@
 
       const k = data.kpis || {};
       inventarioCache = Array.isArray(data.productos) ? data.productos : [];
+      syncColeccionesDisponibles();
       kardexCache = Array.isArray(data.kardex) ? data.kardex : [];
 
       const elSkus = document.getElementById('inv-kpi-skus'); if (elSkus) elSkus.textContent = Number(k.total_skus || 0);
@@ -2510,6 +2511,78 @@
   if (btnRegenerarCodigos) btnRegenerarCodigos.addEventListener('click', autollenarCodigosMatricula);
   if (matLinea) matLinea.addEventListener('change', autollenarCodigosMatricula);
   if (matSublinea) matSublinea.addEventListener('change', autollenarCodigosMatricula);
+
+  const COLECCIONES_KEY = 'lps_custom_collections_v1';
+
+  function getColeccionesDisponibles() {
+    const base = ['Catálogo General', 'Colección Navidad', 'Colección Van Gogh', 'Colección Rapunzel', 'Regalos & Temporada'];
+    let custom = [];
+    try {
+      const raw = JSON.parse(localStorage.getItem(COLECCIONES_KEY) || '[]');
+      if (Array.isArray(raw)) custom = raw;
+    } catch {}
+    const fromDb = (inventarioCache || []).map(p => (p.coleccion || '').trim()).filter(Boolean);
+    const merged = [];
+    const seen = new Set();
+    [...base, ...custom, ...fromDb].forEach(c => {
+      const clean = String(c || '').trim();
+      const k = clean.toLowerCase();
+      if (clean && !seen.has(k)) {
+        seen.add(k);
+        merged.push(clean);
+      }
+    });
+    return merged;
+  }
+
+  function syncColeccionesDisponibles() {
+    const lista = getColeccionesDisponibles();
+    const matSel = document.getElementById('mat-coleccion');
+    if (matSel) {
+      const prev = matSel.value;
+      matSel.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if (prev && lista.includes(prev)) matSel.value = prev;
+    }
+    const dl = document.getElementById('lps-colecciones-list');
+    if (dl) {
+      dl.innerHTML = lista.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+    }
+  }
+
+  syncColeccionesDisponibles();
+
+  document.querySelectorAll('.btn-crear-coleccion').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.dataset.targetColeccion;
+      const val = await window.LpsModal.prompt({
+        title: 'Crear nueva colección',
+        message: 'Ingresa el nombre de la nueva colección (ej: Colección Invierno, Día de la Madre, Regalos Corporativos):',
+        placeholder: 'Ej: Colección Invierno',
+        confirmText: 'Crear Colección',
+        maxLength: 60
+      });
+      const nombreCol = String(val || '').trim();
+      if (!nombreCol) return;
+
+      let custom = [];
+      try {
+        const raw = JSON.parse(localStorage.getItem(COLECCIONES_KEY) || '[]');
+        if (Array.isArray(raw)) custom = raw;
+      } catch {}
+      if (!custom.some(c => c.toLowerCase() === nombreCol.toLowerCase())) {
+        custom.push(nombreCol);
+        localStorage.setItem(COLECCIONES_KEY, JSON.stringify(custom));
+      }
+      syncColeccionesDisponibles();
+
+      const targetEl = targetId ? document.getElementById(targetId) : null;
+      if (targetEl) {
+        targetEl.value = nombreCol;
+        targetEl.dispatchEvent(new Event('input'));
+      }
+      window.LpsModal.toast(`Colección "${nombreCol}" creada y seleccionada.`, 'success');
+    });
+  });
 
   let matIaMeta = { color: '', caracteristicas: '' };
 

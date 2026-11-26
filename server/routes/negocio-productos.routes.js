@@ -648,13 +648,13 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
         const coleccion = String(req.body.coleccion || '').trim();
 
         const prompt = [
-            `Eres copywriter e-commerce experto para la tienda "${req.negocio.nombre || 'Artesanitas Perú'}".`,
-            'Analiza con precisión la imagen del producto y redacta una ficha comercial atractiva en español.',
+            `Eres copywriter e-commerce senior para la tienda "${req.negocio.nombre || 'Artesanitas Perú'}".`,
+            'Analiza con precisión la imagen del producto y redacta una ficha comercial limpia, aireada y escaneable (estándar e-commerce 2026) en español.',
             `Contexto del producto: Nombre="${nombre || 'Producto'}", Línea="${linea || 'General'}", Sublínea="${sublinea || 'General'}", Colección="${coleccion || 'Catálogo General'}".`,
             'Devuelve EXCLUSIVAMENTE un JSON válido (sin markdown ni bloques de código) con esta estructura:',
             '{',
-            '  "descripcion": "Descripción comercial cálida y persuasiva de 2 a 4 oraciones (máx 450 caracteres), destacando diseño, acabados visibles, usos ideales y por qué es un regalo o pieza especial. Puedes incluir 2 o 3 emojis sutiles y acordes al producto.",',
-            '  "color": "Color(es) y acabado principal visible en la foto (ej: Rojo y verde navideño con esmalte brillante), máx 60 caracteres",',
+            '  "descripcion": "Usa saltos de línea reales (\\n) para que NO se vea apretado. Estructura exacta:\\n1) Una frase gancho inicial cálida (1-2 líneas) con 1 emoji sutil.\\n\\n2) Tres viñetas breves y escaneables usando • (una por línea):\\n• Diseño y detalles visibles: ...\\n• Acabado y sensación de calidad: ...\\n• Uso ideal o regalo perfecto: ...\\n\\n3) Una línea de cierre breve y cercana con 1 emoji sutil (máx 650 caracteres en total).",',
+            '  "color": "Color(es) y acabado principal visible en la foto (ej: Blanco brillante con detalles navideños), máx 60 caracteres",',
             '  "caracteristicas": "2 a 3 atributos clave separados por · (ej: Acabado esmaltado · Diseño temático · Ideal para regalo), máx 120 caracteres"',
             '}'
         ].join('\n');
