@@ -125,8 +125,8 @@
   function activeTabClass(btn, active) {
     if (!btn) return;
     btn.className = active
-      ? 'px-3.5 py-2 rounded-lg text-sm font-medium bg-[#B87352] text-white shadow-xs flex items-center gap-1.5 cursor-pointer'
-      : 'px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] flex items-center gap-1.5 cursor-pointer';
+      ? 'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#4A3C31] text-white shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-all'
+      : 'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#8C7A6B] hover:text-[#4A3C31] hover:bg-[#F9F6F0] flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-all';
   }
 
   function mostrarTab(tab, btn) {
@@ -136,6 +136,18 @@
     [tabBtnTalleres, tabBtnRegistros, tabBtnPedidos, tabBtnBi, tabBtnInventario, tabBtnProductos].forEach(b => {
       if (b) activeTabClass(b, b === btn);
     });
+    const modBadge = document.getElementById('erp-active-module-badge');
+    if (modBadge) {
+      const mapLabel = new Map([
+        [tabPedidos, 'OMS · PEDIDOS & RESERVAS'],
+        [tabInventario, 'WMS · INVENTARIOS & SKU/EAN'],
+        [tabProductos, 'PIM · CATÁLOGO COMERCIAL'],
+        [tabBi, 'FIN · BI & RENTABILIDAD'],
+        [tabTalleres, 'EXP · TALLERES PRESENCIALES'],
+        [tabRegistros, 'CRM · INSCRIPCIONES']
+      ]);
+      modBadge.textContent = mapLabel.get(tab) || 'ERP SUITE';
+    }
     if (tab === tabBi) {
       loadBiResumen();
     }
@@ -1270,11 +1282,33 @@
               </div>
             ` : ''}
           </td>
-          <td data-label="Estado Pedido" class="px-4 py-3 space-y-1.5 min-w-[290px]">
-            <select data-id="${p.id}" class="select-pedido-estado text-xs font-semibold px-2.5 py-1 rounded-lg border-0 w-full ${ESTADO_PEDIDO_CLASSES[p.estado_pedido] || ''}">
+          <td data-label="Estado & OT" class="px-4 py-3 space-y-1.5 min-w-[260px]">
+            <select data-id="${p.id}" class="select-pedido-estado text-xs font-semibold px-2.5 py-1.5 rounded-xl border-0 w-full cursor-pointer ${ESTADO_PEDIDO_CLASSES[p.estado_pedido] || ''}">
               ${estadoOpts}
             </select>
-            <div class="bg-[#F9F6F0] p-2.5 rounded-xl border border-[#EBE5DE] space-y-1.5 mt-1 text-left">
+            <div class="flex flex-wrap items-center gap-1 pt-0.5">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#F9F6F0] text-[#4A3C31] border border-[#EBE5DE]">
+                Taller: <strong>${escapeHtml(p.artesano_nombre || 'Sin asignar')}</strong>
+              </span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${p.qa_estado === 'aprobado' ? 'bg-green-100 text-green-800' : (p.qa_estado === 'observado' ? 'bg-red-100 text-red-800' : 'bg-[#F1EDE7] text-[#8C7A6B]')}">
+                QA: ${p.qa_estado === 'aprobado' ? 'OK' : (p.qa_estado === 'observado' ? 'Obs.' : 'Pend.')}
+              </span>
+              ${p.guia_envio ? `<span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#742284]/10 text-[#742284]">Guía: ${escapeHtml(p.guia_envio)}</span>` : ''}
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+              <button type="button" data-toggle-ot="${p.id}"
+                class="btn-toggle-ot-pedido inline-flex items-center gap-1 text-[11px] font-bold text-[#4A3C31] bg-[#F9F6F0] hover:bg-[#EBE5DE] px-2.5 py-1 rounded-lg border border-[#D5C9BD] transition-colors cursor-pointer">
+                <span>Gestionar OT / Logística</span>
+                <span class="text-[10px]">▾</span>
+              </button>
+              <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.ciudad_destino ? ' con destino a ' + p.ciudad_destino : ''}${p.fecha_entrega ? ' (Entrega estimada: ' + String(p.fecha_entrega).slice(0, 10) + ')' : ''}${p.guia_envio ? '. Tu guía ' + (p.empresa_envio || 'Shalom') + ' es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
+                target="_blank" rel="noreferrer"
+                class="inline-flex items-center gap-1 text-[10px] font-bold text-[#008f6b] hover:underline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                <span>Tracking</span>
+              </a>
+            </div>
+            <div data-ot-panel="${p.id}" class="hidden bg-[#F9F6F0] p-3 rounded-xl border border-[#D5C9BD] space-y-2 mt-1.5 text-left shadow-inner">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-[#8C7A6B] uppercase">1. Encargo al Artesano</span>
                 <span class="text-[10px] font-bold text-[#B87352]">${escapeHtml(ETAPA_ARTESANO_LABELS[p.etapa_artesano] || '1. Recibido')}</span>
@@ -1309,7 +1343,7 @@
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] font-bold text-[#8C7A6B] uppercase">2. Validación QA Artesanitas</span>
                   <select data-qa-estado-id="${p.id}" class="input-pedido-qa-estado text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-[#D5C9BD] ${p.qa_estado === 'aprobado' ? 'bg-green-100 text-green-800' : (p.qa_estado === 'observado' ? 'bg-red-100 text-red-800' : 'bg-white text-[#4A3C31]')}">
-                    <option value="pendiente" ${(p.qa_estado || 'pendiente') === 'pendiente' ? 'selected' : ''}>⏳ QA Pendiente</option>
+                    <option value="pendiente" ${(p.qa_estado || 'pendiente') === 'pendiente' ? 'selected' : ''}>QA Pendiente</option>
                     <option value="aprobado" ${p.qa_estado === 'aprobado' ? 'selected' : ''}>QA Aprobado (OK)</option>
                     <option value="observado" ${p.qa_estado === 'observado' ? 'selected' : ''}>QA Observado</option>
                   </select>
@@ -1331,7 +1365,7 @@
 
               <!-- 3. Ciudad Destino, Fecha Entrega Cliente y Guía Courier -->
               <div class="pt-1.5 border-t border-[#EBE5DE] space-y-1">
-                <span class="text-[10px] font-bold text-[#8C7A6B] uppercase block">3. Destino, Fecha Cliente & Courier</span>
+                <span class="text-[10px] font-bold text-[#8C7A6B] uppercase block">3. Destino, Fecha Cliente &amp; Courier</span>
                 <div class="grid grid-cols-2 gap-1">
                   <input type="text" data-ciudad-id="${p.id}" value="${escapeHtml(p.ciudad_destino || '')}" placeholder="Ciudad destino"
                     class="input-pedido-ciudad px-2 py-1 text-[10px] rounded-lg border border-[#D5C9BD] bg-white">
@@ -1351,11 +1385,6 @@
                 </div>
               </div>
             </div>
-            <a href="https://wa.me/51${cleanPhone}?text=${encodeURIComponent(`Hola ${p.nombre}! Te escribimos de Artesanitas Perú. El estado de tu pedido (${p.codigo_pedido || ('ART-' + p.id)}) es: ${ESTADO_PEDIDO_LABELS[p.estado_pedido] || p.estado_pedido}${p.ciudad_destino ? ' con destino a ' + p.ciudad_destino : ''}${p.fecha_entrega ? ' (Entrega estimada: ' + String(p.fecha_entrega).slice(0, 10) + ')' : ''}${p.guia_envio ? '. Tu guía ' + (p.empresa_envio || 'Shalom') + ' es: ' + p.guia_envio : ''}. Puedes rastrearlo en vivo aquí: ${window.location.origin}/seguimiento?codigo=${p.codigo_pedido || ''}`)}"
-              target="_blank" rel="noreferrer"
-              class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#B87352] hover:underline pt-0.5">
-              <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Comunicar tracking al cliente</span>
-            </a>
           </td>
           <td data-label="Acciones" class="px-4 py-3 text-right">
             <button type="button" data-imprimir-guia="${p.id}" class="btn-imprimir-guia-despacho text-xs font-bold text-[#007A78] hover:underline flex items-center gap-1 cursor-pointer justify-end mb-1 ml-auto">
@@ -1368,6 +1397,17 @@
         </tr>
       `;
     }).join('');
+
+    // Eventos desplegar / colapsar panel OT / Logística por fila
+    tbody.querySelectorAll('.btn-toggle-ot-pedido').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.toggleOt;
+        const panelOt = tbody.querySelector(`[data-ot-panel="${id}"]`);
+        if (panelOt) {
+          panelOt.classList.toggle('hidden');
+        }
+      });
+    });
 
     // Eventos en selects de pago
     tbody.querySelectorAll('.select-pedido-pago').forEach(sel => {

@@ -95,36 +95,67 @@
     </div>
   </div>
 
-  <!-- Panel -->
-  <div id="panel" class="hidden max-w-7xl mx-auto px-5 py-8">
-    <div class="flex justify-end mb-1">
-      <button id="btn-cambiar-password" class="text-xs text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">Cambiar contraseña</button>
-    </div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-      <h1 class="text-xl sm:text-2xl font-serif">Panel de Control — <span id="panel-negocio-nombre">Artesanitas</span></h1>
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex flex-wrap gap-1 sm:gap-2 bg-white rounded-xl border border-[#EBE5DE] p-1 shadow-2xs">
-          <button id="tab-btn-talleres" class="px-3.5 py-2 rounded-lg text-sm font-medium bg-[#B87352] text-white transition-all cursor-pointer">Talleres</button>
-          <button id="tab-btn-registros" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Registros Talleres</button>
-          <button id="tab-btn-pedidos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
-            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Pedidos & Preventas</span>
-            <span id="badge-pedidos-count" class="hidden bg-[#B87352] text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
-          </button>
-          <button id="tab-btn-bi" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
-            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#007A78]"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> BI & Rentabilidad</span>
-          </button>
-          <button id="tab-btn-inventario" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 cursor-pointer">
-            <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Inventario & SKU/EAN</span>
-            <span id="badge-stock-alerta" class="hidden bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold" title="Productos sin stock o stock crítico">0</span>
-          </button>
-          <button id="tab-btn-productos" class="px-3.5 py-2 rounded-lg text-sm font-medium text-[#8C7A6B] hover:text-[#4A3C31] transition-all cursor-pointer">Catálogo</button>
+  <!-- Panel ERP Enterprise Shell -->
+  <div id="panel" class="hidden max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-5">
+    <!-- Barra Ejecutiva Superior (SAP Fiori / Enterprise ERP Shell) -->
+    <header class="bg-[#2C231D] text-white rounded-2xl px-4 sm:px-6 py-3.5 shadow-md border border-[#4A3C31] flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <img src="/imagenes/Artesanitas/logo_artesanitas.peru.jpg" alt="Logo" class="w-10 h-10 rounded-xl object-cover border border-white/20 shrink-0">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#E5B89B]">HUB MARCAS LPS · ERP SUITE</span>
+            <span id="erp-active-module-badge" class="bg-white/10 text-[#F9F6F0] text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-white/15">OMS / WMS</span>
+          </div>
+          <h1 class="text-base sm:text-lg font-serif font-bold tracking-tight text-white leading-snug">
+            <span id="panel-negocio-nombre">Artesanitas Perú</span> — Consola de Operaciones
+          </h1>
         </div>
-        <button id="btn-push-admin" type="button" class="text-xs font-semibold bg-[#4A3C31] text-white px-3 py-2 rounded-xl hover:bg-[#322821] transition-colors cursor-pointer">
-          <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Activar Push Admin</span>
-        </button>
-        <button id="btn-cerrar-sesion" class="text-sm text-[#8C7A6B] hover:text-[#B87352] hover:underline cursor-pointer">Salir</button>
       </div>
-    </div>
+
+      <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <a href="/" target="_blank" rel="noreferrer"
+          class="text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl border border-white/15 transition-colors inline-flex items-center gap-1.5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-[#E5B89B]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span>Ver Tienda</span>
+        </a>
+        <button id="btn-push-admin" type="button" class="text-xs font-semibold bg-[#B87352] hover:bg-[#A36244] text-white px-3 py-2 rounded-xl transition-colors cursor-pointer">
+          <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Alertas Push</span>
+        </button>
+        <button id="btn-cambiar-password" type="button" class="text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#F9F6F0] px-3 py-2 rounded-xl border border-white/15 transition-colors cursor-pointer">
+          Clave
+        </button>
+        <button id="btn-cerrar-sesion" type="button" class="text-xs font-bold bg-red-500/20 hover:bg-red-500/35 text-red-200 px-3 py-2 rounded-xl border border-red-400/30 transition-colors cursor-pointer">
+          Salir
+        </button>
+      </div>
+    </header>
+
+    <!-- Barra de Módulos ERP (Una sola fila horizontal limpia, sin saltos desordenados) -->
+    <nav aria-label="Módulos ERP" class="bg-white rounded-2xl border border-[#EBE5DE] p-1.5 shadow-2xs flex items-center gap-1.5 overflow-x-auto">
+      <button id="tab-btn-pedidos" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> Pedidos &amp; Reservas</span>
+        <span id="badge-pedidos-count" class="hidden bg-[#B87352] text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+      </button>
+      <button id="tab-btn-inventario" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Inventario &amp; WMS</span>
+        <span id="badge-stock-alerta" class="hidden bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold" title="Productos sin stock o stock crítico">0</span>
+      </button>
+      <button id="tab-btn-productos" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#8C7A6B]"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span>Catálogo PIM</span>
+      </button>
+      <button id="tab-btn-bi" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <span class="flex items-center gap-1.5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#007A78]"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> BI &amp; Rentabilidad</span>
+      </button>
+      <button id="tab-btn-talleres" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#B87352] text-white transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Talleres</span>
+      </button>
+      <button id="tab-btn-registros" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#8C7A6B] hover:text-[#4A3C31] transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Inscripciones Talleres</span>
+      </button>
+    </nav>
 
     <!-- Form cambiar contraseña -->
     <form id="form-cambiar-password" class="hidden bg-white rounded-2xl border border-[#EBE5DE] p-6 mb-6 space-y-4 max-w-sm">
@@ -400,97 +431,79 @@
       </div>
     </div>
 
-    <!-- Tab: Pedidos & Preventas -->
-    <div id="tab-pedidos" class="hidden space-y-6">
-      
-      <!-- Tarjetas Métricas KPI -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Total Órdenes</p>
-          <p id="kpi-pedidos-total" class="text-2xl font-bold text-[#4A3C31] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">Ventas Directas + Preventas</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Total Recaudado</p>
-          <p id="kpi-pedidos-recaudado" class="text-2xl font-bold text-[#008f6b] mt-1">S/ 0.00</p>
-          <span class="text-[11px] text-[#8C7A6B]">Plin / Yape / Mercado Pago</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Saldo por Cobrar</p>
-          <p id="kpi-pedidos-saldo" class="text-2xl font-bold text-[#B87352] mt-1">S/ 0.00</p>
-          <span class="text-[11px] text-[#8C7A6B]">Contra entrega / envío</span>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] shadow-2xs">
-          <p class="text-xs text-[#8C7A6B] font-medium uppercase tracking-wider">Logística &amp; Despacho</p>
-          <p id="kpi-pedidos-envios" class="text-2xl font-bold text-[#742284] mt-1">0</p>
-          <span class="text-[11px] text-[#8C7A6B]">Shalom / Retiro en Taller</span>
-        </div>
-      </div>
-
+    <!-- Tab: Pedidos & Preventas (OMS / Módulo de Reservas) -->
+    <div id="tab-pedidos" class="hidden space-y-4">
       <datalist id="lista-artesanos-datalist"></datalist>
 
-      <!-- Sprint 3: Directorio de Artesanos Aliados & Magic Links (Portal Proveedores) -->
-      <div class="bg-white rounded-2xl border border-[#EBE5DE] p-4 sm:p-5 shadow-2xs space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <!-- Barra de Búsqueda, Filtros OMS y Exportación Ejecutiva (Encapsulada estilo SAP / Shopify Orders) -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE5DE] shadow-2xs space-y-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#F1EDE7] pb-3">
           <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#B87352] block">Sprint 3 · Portal de Proveedores (Magic Link)</span>
-            <h3 class="text-sm sm:text-base font-serif font-bold text-[#4A3C31] flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#B87352]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Artesanos Tercerizados & Enlaces de Seguimiento de Taller</h3>
-            <p class="text-xs text-[#8C7A6B]">Cada artesano recibe su Magic Link privado donde ve sus solicitudes asignadas (con cotización, onzas, tamaños, colores y logos) sin ver precios de venta al cliente ni DNI.</p>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#B87352] block">OMS · Order Management System</span>
+            <h2 class="text-base sm:text-lg font-serif font-bold text-[#4A3C31]">Gestión de Pedidos, Reservas &amp; Despacho Nacional</h2>
           </div>
-          <form id="form-nuevo-artesano" class="flex flex-wrap items-center gap-2 shrink-0">
-            <input type="text" id="na-nombre" required maxlength="100" placeholder="Nombre del Artesano / Taller"
-              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:outline-none focus:border-[#B87352]">
-            <input type="tel" id="na-whatsapp" maxlength="20" placeholder="WhatsApp (ej. 987654321)"
-              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:outline-none focus:border-[#B87352] w-44">
-            <button type="submit"
-              class="bg-[#B87352] hover:bg-[#A36244] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
-              + Crear / Obtener Magic Link
+          <div class="flex items-center gap-2">
+            <button id="btn-exportar-pedidos-csv" type="button"
+              class="bg-[#F9F6F0] hover:bg-[#EBE5DE] text-[#4A3C31] border border-[#D5C9BD] px-3.5 py-2 rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Exportar CSV
             </button>
-          </form>
-        </div>
-        <div id="artesanos-magic-links-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
-          <!-- Renderizado dinámico por registros.js -->
-        </div>
-      </div>
-
-      <!-- Filtros y Exportación -->
-      <div class="flex flex-wrap justify-between items-end gap-3">
-        <div class="flex flex-wrap gap-3 items-end">
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Buscar (Código / Nombre / DNI / WhatsApp / Guía Shalom)</label>
-            <input type="text" id="filtro-pedido-search" placeholder="Ej: 72839401 / Trujillo"
-              class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352] w-64">
+            <button id="btn-exportar-pedidos-xlsx" type="button"
+              class="bg-[#1D6F42] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#155331] transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Excel OMS (.xlsx)
+            </button>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Tipo de Entrega</label>
-            <select id="filtro-pedido-entrega" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+          <div class="lg:col-span-4">
+            <label for="filtro-pedido-search" class="block text-xs font-semibold text-[#4A3C31] mb-1.5">Buscar Orden, Cliente, DNI o Guía</label>
+            <div class="relative">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-[#8C7A6B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="search" id="filtro-pedido-search" placeholder="Código ART-2026, DNI, nombre, celular..."
+                class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#B87352]">
+            </div>
+          </div>
+          <div class="lg:col-span-2">
+            <label for="filtro-pedido-entrega" class="block text-xs font-semibold text-[#8C7A6B] mb-1.5">Modalidad Entrega</label>
+            <select id="filtro-pedido-entrega" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
               <option value="">Todas las entregas</option>
               <option value="provincia">Envío Shalom</option>
               <option value="recojo_local">Recojo Taller Trujillo</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado de Pago</label>
-            <select id="filtro-pedido-pago" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
-              <option value="">Todos</option>
+          <div class="lg:col-span-2">
+            <label for="filtro-pedido-pago" class="block text-xs font-semibold text-[#8C7A6B] mb-1.5">Estado de Pago</label>
+            <select id="filtro-pedido-pago" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todos los pagos</option>
               <option value="parcial">Parcial (Reserva S/ 20)</option>
-              <option value="completo">Completo</option>
+              <option value="completo">Pagado 100%</option>
               <option value="pendiente">Pendiente</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Auditoría IA Voucher</label>
-            <select id="filtro-pedido-voucher" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
+          <div class="lg:col-span-2">
+            <label for="filtro-pedido-voucher" class="block text-xs font-semibold text-[#8C7A6B] mb-1.5">Auditoría IA Voucher</label>
+            <select id="filtro-pedido-voucher" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
               <option value="">Todos los vouchers</option>
               <option value="verificado">Verificado IA</option>
               <option value="alertas">Alertas (Duplicado / Difiere)</option>
               <option value="pendiente">Pendiente revisión</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-[#8C7A6B] mb-1">Estado del Pedido</label>
-            <select id="filtro-pedido-estado" class="px-3 py-2 rounded-lg border border-[#D5C9BD] bg-white text-sm focus:outline-none focus:border-[#B87352]">
-              <option value="">Todos</option>
+          <div class="lg:col-span-2">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="filtro-pedido-estado" class="block text-xs font-semibold text-[#8C7A6B]">Etapa Operativa</label>
+              <button id="btn-limpiar-filtros-pedidos" type="button" class="text-[11px] font-bold text-[#B87352] hover:underline cursor-pointer">Limpiar</button>
+            </div>
+            <select id="filtro-pedido-estado" class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-white text-xs sm:text-sm focus:outline-none focus:border-[#B87352]">
+              <option value="">Todas las etapas</option>
               <option value="cotizado">1. Cotizado / Solicitud</option>
               <option value="reservado">2. Reserva Confirmada</option>
               <option value="encargado_artesano">3. Encargado al Artesano</option>
@@ -502,46 +515,81 @@
               <option value="cancelado">Cancelado</option>
             </select>
           </div>
-          <button id="btn-limpiar-filtros-pedidos" class="px-3 py-2 rounded-lg text-sm font-medium text-[#B87352] hover:underline cursor-pointer">
-            Limpiar filtros
-          </button>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button id="btn-exportar-pedidos-csv" type="button"
-            class="bg-[#4A3C31] text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#322821] transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            CSV
-          </button>
-          <button id="btn-exportar-pedidos-xlsx" type="button"
-            class="bg-[#1D6F42] text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#155331] transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Excel (.xlsx)
-          </button>
         </div>
       </div>
 
-      <!-- Tabla de Pedidos -->
+      <!-- Directorio Colapsable de Artesanos Aliados & Magic Links -->
+      <details class="group bg-white rounded-2xl border border-[#EBE5DE] shadow-2xs overflow-hidden">
+        <summary class="px-5 py-3.5 cursor-pointer flex flex-wrap items-center justify-between gap-3 select-none hover:bg-[#F9F6F0]/60 transition-colors list-none">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-[#B87352]/15 text-[#B87352] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            </span>
+            <div>
+              <span class="text-xs sm:text-sm font-bold text-[#4A3C31] block">Portal de Artesanos Tercerizados &amp; Magic Links de Taller</span>
+              <span class="text-[11px] text-[#8C7A6B]">Despliega para crear enlaces de seguimiento privados para talleres aliados (sin exponer precios ni DNI de clientes).</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-[#B87352] bg-[#F9F6F0] px-3 py-1.5 rounded-xl border border-[#D5C9BD] group-open:bg-[#4A3C31] group-open:text-white transition-colors">
+            Gestionar Artesanos ▾
+          </span>
+        </summary>
+        <div class="p-4 sm:p-5 border-t border-[#EBE5DE] bg-[#F9F6F0]/40 space-y-3">
+          <form id="form-nuevo-artesano" class="flex flex-wrap items-center gap-2">
+            <input type="text" id="na-nombre" required maxlength="100" placeholder="Nombre del Artesano / Taller"
+              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-medium focus:outline-none focus:border-[#B87352] flex-1 min-w-[200px]">
+            <input type="tel" id="na-whatsapp" maxlength="20" placeholder="WhatsApp (ej. 987654321)"
+              class="px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-medium focus:outline-none focus:border-[#B87352] w-48">
+            <button type="submit"
+              class="bg-[#B87352] hover:bg-[#A36244] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+              + Crear / Obtener Magic Link
+            </button>
+          </form>
+          <div id="artesanos-magic-links-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1"></div>
+        </div>
+      </details>
+
+      <!-- Tabla de Pedidos & Reservas (Alta Densidad ERP) -->
       <div class="artesanitas-table-wrap bg-white rounded-2xl border border-[#EBE5DE] overflow-x-auto shadow-2xs">
         <table class="artesanitas-table w-full text-sm">
           <thead>
-            <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B]">
-              <th class="px-4 py-3 font-medium">Cliente / DNI</th>
-              <th class="px-4 py-3 font-medium">WhatsApp</th>
-              <th class="px-4 py-3 font-medium">Entrega / Sede</th>
-              <th class="px-4 py-3 font-medium">Producto / Fecha</th>
-              <th class="px-4 py-3 font-medium">Pago</th>
-              <th class="px-4 py-3 font-medium">Estado Pedido</th>
-              <th class="px-4 py-3 font-medium text-right">Acciones</th>
+            <tr class="border-b border-[#EBE5DE] bg-[#F9F6F0]/70 text-left text-[#8C7A6B] text-xs uppercase tracking-wider">
+              <th class="px-4 py-3 font-bold">Orden / Cliente</th>
+              <th class="px-3 py-3 font-bold">Contacto</th>
+              <th class="px-3 py-3 font-bold">Logística / Destino</th>
+              <th class="px-3 py-3 font-bold">Ítems / Entrega</th>
+              <th class="px-3 py-3 font-bold">Finanzas &amp; IA</th>
+              <th class="px-4 py-3 font-bold">Estado &amp; Orden de Trabajo (OT)</th>
+              <th class="px-4 py-3 font-bold text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody id="pedidos-tbody"></tbody>
+          <tbody id="pedidos-tbody" class="divide-y divide-[#F1EDE7]"></tbody>
         </table>
-        <p id="pedidos-empty" class="hidden text-center text-[#8C7A6B] py-12">No hay pedidos registrados.</p>
+        <p id="pedidos-empty" class="hidden text-center text-[#8C7A6B] py-12">No hay pedidos ni reservas que coincidan con el filtro.</p>
+      </div>
+
+      <!-- Tarjetas Métricas KPI (En la parte inferior para priorizar la operación diaria) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] border-l-4 border-l-[#4A3C31] shadow-2xs">
+          <p class="text-[11px] text-[#8C7A6B] font-bold uppercase tracking-wider">Total Órdenes</p>
+          <p id="kpi-pedidos-total" class="text-2xl font-extrabold text-[#4A3C31] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Ventas Directas + Preventas</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] border-l-4 border-l-[#008f6b] shadow-2xs">
+          <p class="text-[11px] text-[#008f6b] font-bold uppercase tracking-wider">Total Recaudado</p>
+          <p id="kpi-pedidos-recaudado" class="text-2xl font-extrabold text-[#008f6b] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Plin / Yape / Mercado Pago</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] border-l-4 border-l-[#B87352] shadow-2xs">
+          <p class="text-[11px] text-[#B87352] font-bold uppercase tracking-wider">Saldo por Cobrar</p>
+          <p id="kpi-pedidos-saldo" class="text-2xl font-extrabold text-[#B87352] mt-1">S/ 0.00</p>
+          <span class="text-[11px] text-[#8C7A6B]">Contra entrega / envío</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] border-l-4 border-l-[#742284] shadow-2xs">
+          <p class="text-[11px] text-[#742284] font-bold uppercase tracking-wider">Logística &amp; Despacho</p>
+          <p id="kpi-pedidos-envios" class="text-2xl font-extrabold text-[#742284] mt-1">0</p>
+          <span class="text-[11px] text-[#8C7A6B]">Shalom / Retiro en Taller</span>
+        </div>
       </div>
     </div>
 
@@ -1693,7 +1741,7 @@
 
   <!-- Script modular externo al final del DOM para inicializar todos los modales -->
   <script src="/js/lps-modal.js?v=20261126_s2"></script>
-  <script src="/js/registros.js?v=20261126_s15"></script>
+  <script src="/js/registros.js?v=20261126_s16"></script>
 </body>
 
 </html>
