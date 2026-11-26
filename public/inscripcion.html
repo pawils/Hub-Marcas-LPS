@@ -262,23 +262,25 @@
               </span>
             </div>
 
-            <div id="dropzone-file-state" class="hidden flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#00D09C]/40 text-left shadow-2xs">
-              <div class="flex items-center gap-3 min-w-0">
-                <img id="file-preview-img" src="" alt="Comprobante" class="w-12 h-12 rounded-lg object-cover border border-[#EBE5DE] shrink-0 bg-[#EBE5DE]">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1 text-xs font-bold text-[#008f6b]">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Comprobante listo</span>
+            <div id="dropzone-file-state" class="hidden bg-white p-3 rounded-xl border border-[#00D09C]/40 text-left shadow-2xs">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img id="file-preview-img" src="" alt="Comprobante" class="w-12 h-12 rounded-lg object-cover border border-[#EBE5DE] shrink-0 bg-[#EBE5DE]">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1 text-xs font-bold text-[#008f6b]">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Comprobante listo</span>
+                    </div>
+                    <p id="file-name-txt" class="text-xs font-medium text-[#4A3C31] truncate max-w-[180px] sm:max-w-[220px]">voucher.jpg</p>
+                    <p id="file-size-txt" class="text-[10px] text-[#8C7A6B]">-- KB</p>
                   </div>
-                  <p id="file-name-txt" class="text-xs font-medium text-[#4A3C31] truncate max-w-[180px] sm:max-w-[220px]">voucher.jpg</p>
-                  <p id="file-size-txt" class="text-[10px] text-[#8C7A6B]">-- KB</p>
                 </div>
+                <button type="button" id="btn-change-file" class="shrink-0 text-xs font-medium text-[#B87352] hover:underline px-2 py-1 cursor-pointer">
+                  Cambiar
+                </button>
               </div>
-              <button type="button" id="btn-change-file" class="shrink-0 text-xs font-medium text-[#B87352] hover:underline px-2 py-1 cursor-pointer">
-                Cambiar
-              </button>
             </div>
           </div>
         </div>

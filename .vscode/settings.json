@@ -3,15 +3,6 @@
   "eslint.validate": [
     "javascript"
   ],
-  "tailwindCSS.includeLanguages": {
-    "javascript": "html"
-  },
-  "tailwindCSS.experimental.classRegex": [
-    [
-      "class(?:Name)?\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]",
-      "([^\\s]+)"
-    ]
-  ],
   "errorLens.enabledDiagnosticLevels": [
     "error",
     "warning"

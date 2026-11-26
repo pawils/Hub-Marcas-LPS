@@ -33,7 +33,7 @@ module.exports = [
     }
   },
   {
-    files: ['server/**/*.js'],
+    files: ['server/**/*.js', '*.config.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
