@@ -659,7 +659,7 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
             '}'
         ].join('\n');
 
-        const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+        const models = ['gemini-3.8-flash', 'gemini-2.5-flash'];
         const payload = JSON.stringify({
             contents: [{
                 parts: [
@@ -677,27 +677,57 @@ router.post('/:negocioSlug/productos/ia-descripcion', requireNegocioAuth, upload
         let lastStatus = 502;
         let lastErrorMsg = '';
 
-        for (const model of models) {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        async function callGeminiModel(modelName) {
+            const cleanModel = String(modelName || '').replace(/^models\//, '');
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
             const aiRes = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload
             });
             if (aiRes.ok) {
-                aiData = await aiRes.json();
-                break;
+                return { ok: true, data: await aiRes.json() };
             }
-            lastStatus = aiRes.status;
+            const status = aiRes.status;
             const errTxt = await aiRes.text().catch(() => '');
+            let msg = errTxt.slice(0, 180);
             try {
                 const errJson = JSON.parse(errTxt);
-                lastErrorMsg = errJson?.error?.message || errTxt.slice(0, 180);
-            } catch {
-                lastErrorMsg = errTxt.slice(0, 180);
+                msg = errJson?.error?.message || msg;
+            } catch {}
+            logger.warn('IA Descripción: Gemini API respondió error', { model: cleanModel, status, error: msg });
+            return { ok: false, status, msg };
+        }
+
+        for (const model of models) {
+            const attempt = await callGeminiModel(model);
+            if (attempt.ok) {
+                aiData = attempt.data;
+                break;
             }
-            logger.warn('IA Descripción: Gemini API respondió error', { model, status: lastStatus, error: lastErrorMsg });
+            lastStatus = attempt.status;
+            lastErrorMsg = attempt.msg;
             if (lastStatus === 401 || lastStatus === 403) break;
+        }
+
+        if (!aiData && lastStatus === 404) {
+            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`).catch(() => null);
+            if (listRes && listRes.ok) {
+                const listJson = await listRes.json().catch(() => ({}));
+                const available = (listJson.models || []).filter(m =>
+                    Array.isArray(m.supportedGenerationMethods) &&
+                    m.supportedGenerationMethods.includes('generateContent') &&
+                    /gemini.*flash/i.test(m.name || '')
+                );
+                if (available.length > 0) {
+                    const retry = await callGeminiModel(available[available.length - 1].name);
+                    if (retry.ok) aiData = retry.data;
+                    else {
+                        lastStatus = retry.status;
+                        lastErrorMsg = retry.msg;
+                    }
+                }
+            }
         }
 
         if (!aiData) {
