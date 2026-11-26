@@ -368,13 +368,13 @@ const productos = [
     },
     {
         slug: 'taza-formula-1',
-        nombre: '🏎️🔥 Taza Fórmula 1 🏁',
+        nombre: 'Taza Fórmula 1',
         precio: 69,
         descripcion: 'Para los amantes de la velocidad y los detalles únicos. Nuestras tazas de Fórmula 1 son perfectas para disfrutar tu café, chocolate o bebida favorita.',
         detalles: [
-            '✨ Cerámica artesanal modelada y pintada a mano',
-            '🔥 Aptas para bebidas calientes y microondas',
-            '🏎️ Diseño artesanal y hecho con mucho detalle'
+            'Cerámica artesanal modelada y pintada a mano',
+            'Aptas para bebidas calientes y microondas',
+            'Diseño artesanal hecho con mucho detalle'
         ],
         imagenes: [
             '/imagenes/Artesanitas/Fotos/taza_formula1_1.jpg'

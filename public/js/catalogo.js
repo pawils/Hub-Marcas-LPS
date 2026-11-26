@@ -302,6 +302,7 @@ initSlider('slider-taza-navidad');
     var modalidadStr = isRes ? 'reserva' : 'compra_directa';
     var imgJs = escapeHtml(img).replace(/'/g, "\\'");
     var slugJs = escapeHtml(p.slug).replace(/'/g, "\\'");
+    var imgsList = (Array.isArray(p.imagenes) && p.imagenes.length > 0) ? p.imagenes : [img];
 
     // Registrar en el diccionario de Quick-View
     registerProductInStore({
@@ -313,7 +314,7 @@ initSlider('slider-taza-navidad');
       modalidad: modalidadStr,
       stock_actual: stockNum,
       agotado: agotado,
-      imagenes: imgs.length > 0 ? imgs : [img],
+      imagenes: imgsList,
       descripcion: p.descripcion || '',
       tamano_dimensiones: p.tamano_dimensiones || '',
       color: p.color || '',

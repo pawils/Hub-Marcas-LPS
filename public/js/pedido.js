@@ -208,6 +208,17 @@
       descripcion: 'Pieza artesanal inspirada en Rapunzel, en color morado entero (sin plato), modelada y pintada a mano.'
     },
     // ── Piezas del Catálogo General ──
+    'taza-formula-1': {
+      slug: 'taza-formula-1',
+      sku: '1028',
+      nombre: 'Taza Fórmula 1',
+      precio: 69.00,
+      reserva: 69.00,
+      modalidad: 'compra_directa',
+      fecha: 'Despacho Inmediato (24-48h)',
+      imagen: '/imagenes/Artesanitas/Fotos/taza_formula1_1.jpg',
+      descripcion: 'Para los amantes de la velocidad y los detalles únicos. Taza de cerámica artesanal de Fórmula 1 apta para bebidas calientes y microondas.'
+    },
     'taza-corazon-y-plato': {
       slug: 'taza-corazon-y-plato',
       nombre: 'Taza corazón y plato',

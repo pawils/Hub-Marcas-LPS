@@ -341,72 +341,74 @@ async function runMigrations() {
         );
       }
 
-      const { rows: prodCount } = await pool.query(`SELECT COUNT(*)::int AS c FROM negocio_productos WHERE negocio_id = $1`, [artId]);
-      if (prodCount[0].c === 0) {
-        const initialProducts = [
-          {
-            slug: 'taza-perry-el-ornitorrinco',
-            nombre: 'Taza Perry el Ornitorrinco',
-            precio: 65.00,
-            sku: 'ART-PRD-0001',
-            descripcion: '🦦 Taza Perry el Ornitorrinco 💙\n\nUna taza hecha a mano, inspirada en el divertido e icónico Perry el Ornitorrinco de Phineas y Ferb. ✨\n\n🎨 Elaborada artesanalmente con detalles cuidadosamente pintados.\n☕ Ideal para disfrutar tus bebidas favoritas o sorprender a un fan de Perry.\n🎁 ¡Un detalle original, divertido y hecho con mucho cariño!\n\nPrecio: S/ 65.00 💙\n\n✨ Hecho a mano por Artesanitas Perú.',
-            imagenes: ['/imagenes/Artesanitas/Fotos/taza_perry_el_ornitorrinco_1.jpg']
-          },
-          {
-            slug: 'tazas-caspianas',
-            nombre: 'Tazas Caspianas',
-            precio: 69.00,
-            sku: 'ART-PRD-0002',
-            descripcion: '🌸 Tazas Caspianas \n\nDelicadas, sutiles y llenas de encanto. ✨🌷\n\nNuestras tazas rosadas están inspiradas en esos pequeños detalles cute y delicados que hacen especial cada momento. Perfectas para acompañar tu café, té o bebida favorita y darle un toque dulce a tu día. ☕💗\n\n🎀 Diseño delicado y encantador\n🌸 Ideal para regalar o darte un gustito\n✨ Incluye platito en forma de margarita\n\nPrecio: S/ 69.00\n\n💕 Una taza bonita para hacer más bonitos tus momentos.',
-            imagenes: ['/imagenes/Artesanitas/Fotos/tazas_caspianas_1.jpeg']
-          },
-          {
-            slug: 'corazon-de-ceramica-para-pintar',
-            nombre: '🤍 Corazón de Cerámica para Pintar',
-            precio: 65.00,
-            sku: 'ART-PRD-0003',
-            descripcion: '🤍 Corazón de Cerámica para Pintar \n\nUn detalle lleno de amor para dejar volar tu creatividad. 🎨✨\n\nEste hermoso corazón de cerámica viene listo para que lo pintes y personalices a tu estilo. Perfecto para disfrutar un momento de relajación, crear algo bonito con tus manos o compartir una tarde creativa. 🌸🖌️\n\n🎨 Incluye kit de 5 pinturas\n🖌️ Incluye pinceles\n🤍 Corazón de cerámica listo para pintar\n✨ Ideal para regalar o disfrutar de una experiencia creativa en casa\n\nPrecio: S/ 65.00\n\n💕 Pinta, crea y convierte un corazón en una pieza única hecha por ti.',
-            imagenes: ['/imagenes/Artesanitas/Fotos/corazon_ceramica_para_pintar_1.jpeg']
-          },
-          {
-            slug: 'taza-artesanal-con-salpicado',
-            nombre: 'Taza artesanal con salpicado',
-            precio: 52.00,
-            sku: 'ART-PRD-0004',
-            descripcion: '🤎 Taza artesanal con salpicado\n\nUna taza con un estilo minimalista, cálido y único, perfecta para disfrutar tu café, té o bebida favorita. ☕✨\n\nSu acabado en tono crema con delicadas salpicaduras oscuras le da ese toque artesanal y moderno que combina con cualquier espacio. 🌿🤎\n\n✨ Hecha a mano\n☕ Ideal para el día a día\n🎁 Perfecta para regalar o darte un gustito\n\nPrecio: S/ 52.00 🤎\n\nUna taza sencilla, bonita y con personalidad.',
-            imagenes: ['/imagenes/Artesanitas/Fotos/taza_artesanal_con_salpicado_1.jpeg']
-          },
-          {
-            slug: 'set-de-2-tazas-personalizadas',
-            nombre: 'Set de 2 tazas personalizadas',
-            precio: 149.00,
-            sku: 'ART-PRD-0005',
-            descripcion: '✨ Set de 2 tazas personalizadas 💕\n\nUn detalle único para compartir con esa persona especial. ☕🤍\n\n✨ Incluye:\n☕ 2 tazas personalizadas\n🍽️ 2 platitos\n🎨 Puedes elegir el color\n💬 Personaliza cada taza con la frase que prefieras\n\n💰 Precio: S/149 el set\n\n📌 Elaborado especialmente a pedido.\n⏳ Plazo de producción: 35 días.\n\n☕ Aptas para bebidas calientes y microondas.\n\nUn set creado especialmente para ustedes, con ese toque único que lo hace especial. 💕',
-            imagenes: ['/imagenes/Artesanitas/Fotos/set_de_2_tazas_personalizadas_1.jpeg']
-          },
-          {
-            slug: 'taza-formula-1',
-            nombre: '🏎‍🔥 Taza Fórmula 1 🏁',
-            precio: 69.00,
-            sku: 'ART-PRD-0006',
-            descripcion: 'Para los amantes de la velocidad y los detalles únicos 🏎‍🟀✨\nNuestras tazas de Fórmula 1 son perfectas para disfrutar tu café, chocolate o bebida favorita ☕️❤️\n\n✨ Precio: S/ 69\n🔥 Aptas para bebidas calientes\n🔥 Aptas para microondas\n🎨 Diseño artesanal y hecho con mucho detalle\n\nUn detalle diferente para sorprender a ese fan de la F1',
-            imagenes: ['/imagenes/Artesanitas/Fotos/taza_formula1_1.jpg']
-          }
-        ];
-
-        for (const p of initialProducts) {
-          await pool.query(
-            `INSERT INTO negocio_productos (
-              negocio_id, slug, nombre, precio, sku, stock_actual, stock_minimo,
-              politica_sin_stock, linea, sublinea, sub_sublinea, coleccion,
-              tipo_producto, descripcion, imagenes, activo
-            ) VALUES ($1, $2, $3, $4, $5, 0, 1, 'preventa', 'Vajilla Artesanal', 'Tazas & Mugs', 'Cerámica Pintada a Mano', 'Catálogo General', 'Taza', $6, $7, TRUE)
-            ON CONFLICT (negocio_id, slug) DO NOTHING`,
-            [artId, p.slug, p.nombre, p.precio, p.sku, p.descripcion, JSON.stringify(p.imagenes)]
-          );
+      // Asegurar siempre que los 6 productos dinámicos principales (incluida Taza Fórmula 1) existan y estén activos
+      const initialProducts = [
+        {
+          slug: 'taza-perry-el-ornitorrinco',
+          nombre: 'Taza Perry el Ornitorrinco',
+          precio: 65.00,
+          sku: '1023',
+          descripcion: 'Una taza hecha a mano, inspirada en el divertido e icónico Perry el Ornitorrinco de Phineas y Ferb. Elaborada artesanalmente con detalles cuidadosamente pintados.',
+          imagenes: ['/imagenes/Artesanitas/Fotos/taza_perry_el_ornitorrinco_1.jpg']
+        },
+        {
+          slug: 'tazas-caspianas',
+          nombre: 'Tazas Caspianas',
+          precio: 69.00,
+          sku: '1124',
+          descripcion: 'Delicadas, sutiles y llenas de encanto. Nuestras tazas rosadas incluyen platito en forma de margarita, perfectas para acompañar tu café, té o bebida favorita.',
+          imagenes: ['/imagenes/Artesanitas/Fotos/tazas_caspianas_1.jpeg']
+        },
+        {
+          slug: 'corazon-de-ceramica-para-pintar',
+          nombre: 'Corazón de Cerámica para Pintar',
+          precio: 65.00,
+          sku: '3025',
+          descripcion: 'Corazón de cerámica listo para pintar y personalizar a tu estilo. Incluye kit de 5 pinturas y pinceles para disfrutar una tarde creativa.',
+          imagenes: ['/imagenes/Artesanitas/Fotos/corazon_ceramica_para_pintar_1.jpeg']
+        },
+        {
+          slug: 'taza-artesanal-con-salpicado',
+          nombre: 'Taza artesanal con salpicado',
+          precio: 52.00,
+          sku: '1026',
+          descripcion: 'Taza con estilo minimalista y cálido en tono crema con delicadas salpicaduras oscuras. Hecha a mano e ideal para el día a día.',
+          imagenes: ['/imagenes/Artesanitas/Fotos/taza_artesanal_con_salpicado_1.jpeg']
+        },
+        {
+          slug: 'set-de-2-tazas-personalizadas',
+          nombre: 'Set de 2 tazas personalizadas',
+          precio: 149.00,
+          sku: '4127',
+          descripcion: 'Un detalle único para compartir. Incluye 2 tazas personalizadas y 2 platitos a juego, aptas para bebidas calientes y microondas.',
+          imagenes: ['/imagenes/Artesanitas/Fotos/set_de_2_tazas_personalizadas_1.jpeg']
+        },
+        {
+          slug: 'taza-formula-1',
+          nombre: 'Taza Fórmula 1',
+          precio: 69.00,
+          sku: '1028',
+          descripcion: 'Para los amantes de la velocidad y los detalles únicos. Taza de cerámica artesanal de Fórmula 1 apta para bebidas calientes y microondas.',
+          imagenes: ['/imagenes/Artesanitas/Fotos/taza_formula1_1.jpg']
         }
-        logger.info('Seed inicial de 6 productos dinámicos de Artesanitas completado.');
+      ];
+
+      for (const p of initialProducts) {
+        await pool.query(
+          `INSERT INTO negocio_productos (
+            negocio_id, slug, nombre, precio, sku, stock_actual, stock_minimo,
+            politica_sin_stock, linea, sublinea, sub_sublinea, coleccion,
+            tipo_producto, descripcion, imagenes, activo
+          ) VALUES ($1, $2, $3, $4, $5, 5, 1, 'compra_directa', 'Vajilla Artesanal', 'Tazas & Mugs', 'Cerámica Pintada a Mano', 'Catálogo General', 'Taza', $6, $7, TRUE)
+          ON CONFLICT (negocio_id, slug) DO UPDATE SET activo = TRUE`,
+          [artId, p.slug, p.nombre, p.precio, p.sku, p.descripcion, JSON.stringify(p.imagenes)]
+        );
       }
+      // Reactivar también en negocio_productos_estaticos por si estuvo pausada
+      await pool.query(
+        `DELETE FROM negocio_productos_estaticos WHERE negocio_id = $1 AND slug IN ('taza-formula-1', 'formula-1') AND activo = FALSE`,
+        [artId]
+      ).catch(() => {});
     }
 
     await syncFromOldDatabase();
