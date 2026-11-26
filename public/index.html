@@ -3301,8 +3301,10 @@
   
   <!-- Modal Vista Rápida de Producto (Shopify Quick-View PDP) -->
   <div id="product-quickview-modal"
-    class="fixed inset-0 z-50 hidden bg-[#4A3C31]/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 transition-opacity duration-300"
+    class="fixed inset-0 z-50 hidden bg-[#4A3C31]/65 backdrop-blur-xs overflow-y-auto transition-opacity duration-300"
     onclick="if(event.target === this && window.ArtesanitasQuickView) window.ArtesanitasQuickView.close()">
+    <div class="min-h-full flex items-center justify-center p-3 sm:p-5"
+      onclick="if(event.target === this && window.ArtesanitasQuickView) window.ArtesanitasQuickView.close()">
     <div class="bg-[#F9F6F0] rounded-3xl shadow-2xl max-w-4xl w-full border border-[#EBE5DE] overflow-hidden max-h-[92vh] flex flex-col md:flex-row relative">
       <!-- Botón Cerrar -->
       <button type="button" onclick="window.ArtesanitasQuickView && window.ArtesanitasQuickView.close()"
@@ -3394,6 +3396,7 @@
           </a>
         </div>
       </div>
+    </div>
     </div>
   </div>
 

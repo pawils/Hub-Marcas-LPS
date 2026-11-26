@@ -487,14 +487,12 @@ initSlider('slider-taza-navidad');
   }
 
   // ── Modal Vista Rápida (Shopify Quick-View PDP) ──
-  var qvCurrentSlug = null;
   var qvCurrentQty = 1;
 
   window.ArtesanitasQuickView = {
     open: function (slug) {
       var prod = PRODUCTOS_STORE_MAP[slug];
       if (!prod) return;
-      qvCurrentSlug = slug;
       qvCurrentQty = 1;
 
       var modal = document.getElementById('product-quickview-modal');
@@ -760,7 +758,7 @@ initSlider('slider-taza-navidad');
         imagen: imgs[0]
       }, btnEl);
     },
-    addItem: function (prod, btnEl) {
+    addItem: function (prod, _btnEl) {
       if (!prod || !prod.slug) return;
       var esRes = prod.modalidad ? (prod.modalidad === 'reserva') : esProductoReserva(prod.slug);
       var precioNum = Number(prod.precio) || 59.90;
@@ -894,7 +892,6 @@ initSlider('slider-taza-navidad');
         var s = im.getAttribute('src');
         if (s && allImgs.indexOf(s) === -1) allImgs.push(s);
       });
-      var imagen = allImgs[0] || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';
 
       var descEl = card.querySelector('p');
       var descripcion = descEl ? descEl.textContent.trim().replace(/\s+/g, ' ') : '';

@@ -498,7 +498,6 @@
 
   const productoSelect = document.getElementById('producto-select');
   const rapunzelVariantsContainer = document.getElementById('rapunzel-variants-container');
-  const btnRapunzelVariants = document.querySelectorAll('.btn-rapunzel-variant');
   const productCardEmpty = document.getElementById('product-card-empty');
   const productCardSelected = document.getElementById('product-card-selected');
   const previewProductImg = document.getElementById('preview-product-img');
@@ -506,9 +505,6 @@
   const previewProductDesc = document.getElementById('preview-product-desc');
   const previewProductPrice = document.getElementById('preview-product-price');
 
-  const desgloseProductoNombre = document.getElementById('desglose-producto-nombre');
-  const desgloseProductoImg = document.getElementById('desglose-producto-img');
-  const desgloseProductoPrecio = document.getElementById('desglose-producto-precio');
   const desgloseEnvioTxt = document.getElementById('desglose-envio-txt');
   const desgloseSaldoTxt = document.getElementById('desglose-saldo-txt');
   const desgloseReservaTxt = document.getElementById('desglose-reserva-txt');
@@ -521,12 +517,8 @@
   const qrChevron = document.getElementById('qr-chevron');
 
   const dropzoneArea = document.getElementById('dropzone-area');
-  const dropzoneEmptyState = document.getElementById('dropzone-empty-state');
   const dropzoneFileState = document.getElementById('dropzone-file-state');
   const comprobanteInput = document.getElementById('comprobante-input');
-  const filePreviewImg = document.getElementById('file-preview-img');
-  const fileNameTxt = document.getElementById('file-name-txt');
-  const fileSizeTxt = document.getElementById('file-size-txt');
   const btnChangeFile = document.getElementById('btn-change-file');
 
   const radioEntregas = document.querySelectorAll('input[name="tipo_entrega"]');
