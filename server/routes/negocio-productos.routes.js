@@ -321,7 +321,7 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
                 req.negocio.id, slug, cleanNombre, precioNum,
                 Number.isFinite(ofertaNum) && ofertaNum > 0 ? ofertaNum : null,
                 etiqueta_promo ? String(etiqueta_promo).trim().slice(0, 40) : null,
-                Number.isFinite(costoNum) && costoNum >= 0 ? costoNum : null,
+                Number.isFinite(costoNum) && costoNum >= 0 ? costoNum : 0,
                 moneda || 'PEN',
                 cleanSku,
                 cleanEan,
@@ -373,9 +373,12 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
 
         res.status(201).json({ success: true, producto });
     } catch (error) {
-        logger.error('Negocios: error creando producto', { error: error.message, code: error.code, detail: error.detail });
+        logger.error('Negocios: error creando producto', { error: error.message, code: error.code, column: error.column, detail: error.detail });
         if (error.code === '23505') {
             return res.status(409).json({ success: false, message: 'Ya existe un producto registrado con ese nombre, SKU o código EAN.' });
+        }
+        if (error.code === '23502') {
+            return res.status(400).json({ success: false, message: `Falta un dato obligatorio en la base de datos (${error.column || 'campo requerido'}).` });
         }
         if (error.code === '22P02' || error.code === '22007') {
             return res.status(400).json({ success: false, message: 'Verifica que el precio, stock, costo y fechas tengan un formato válido.' });
