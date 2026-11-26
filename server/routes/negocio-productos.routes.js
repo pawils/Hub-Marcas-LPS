@@ -143,9 +143,17 @@ async function generarMatriculaUnica(negocioId, negocioSlug, linea, sublinea) {
     };
 }
 
+function cleanProductTitle(texto) {
+    return String(texto || '')
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 150);
+}
+
 const PRODUCT_COLUMNS = `
     id, slug, nombre, precio, precio_oferta, etiqueta_promo, costo_artesano, moneda,
-    sku, ean, stock_actual, stock_minimo, politica_sin_stock,
+    sku, ean, stock_actual, stock_minimo, politica_sin_stock, vender_sin_stock, fecha_entrega_estimada,
     linea, sublinea, sub_sublinea, coleccion,
     tipo_producto, modelo, color, tamano_dimensiones, caracteristicas,
     ubicacion_almacen, unidad_medida, ultimo_conteo_at,
@@ -232,7 +240,7 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
         descripcion
     } = req.body;
 
-    const cleanNombre = String(nombre || '').trim().slice(0, 150);
+    const cleanNombre = cleanProductTitle(nombre);
     const precioNum = parseFloat(precio);
 
     if (!cleanNombre || !Number.isFinite(precioNum) || precioNum < 0) {
@@ -243,6 +251,8 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
     const costoNum = (costo_artesano !== undefined && costo_artesano !== '') ? parseFloat(costo_artesano) : null;
     const stockNum = Number.isFinite(parseInt(stock_actual, 10)) ? Math.max(0, parseInt(stock_actual, 10)) : 0;
     const stockMinNum = Number.isFinite(parseInt(stock_minimo, 10)) ? Math.max(0, parseInt(stock_minimo, 10)) : 1;
+    const venderSinStock = req.body.vender_sin_stock === true || req.body.vender_sin_stock === 'true' || politica_sin_stock === 'preventa';
+    const fechaEntregaEst = req.body.fecha_entrega_estimada ? String(req.body.fecha_entrega_estimada).trim().slice(0, 10) : null;
     const cleanLinea = String(linea || 'Vajilla Artesanal').trim().slice(0, 80);
     const cleanSublinea = String(sublinea || 'Tazas & Mugs').trim().slice(0, 80);
     const cleanSubSublinea = String(sub_sublinea || 'Cerámica Pintada a Mano').trim().slice(0, 80);
@@ -260,17 +270,17 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
         const { rows } = await pool.query(
             `INSERT INTO negocio_productos (
                 negocio_id, slug, nombre, precio, precio_oferta, etiqueta_promo, costo_artesano, moneda,
-                sku, ean, stock_actual, stock_minimo, politica_sin_stock,
+                sku, ean, stock_actual, stock_minimo, politica_sin_stock, vender_sin_stock, fecha_entrega_estimada,
                 linea, sublinea, sub_sublinea, coleccion,
                 tipo_producto, modelo, color, tamano_dimensiones, caracteristicas,
                 ubicacion_almacen, descripcion, imagenes
              )
              VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8,
-                $9, $10, $11, $12, $13,
-                $14, $15, $16, $17,
-                $18, $19, $20, $21, $22,
-                $23, $24, $25
+                $9, $10, $11, $12, $13, $14, $15,
+                $16, $17, $18, $19,
+                $20, $21, $22, $23, $24,
+                $25, $26, $27
              )
              RETURNING ${PRODUCT_COLUMNS}`,
             [
@@ -283,7 +293,9 @@ router.post('/:negocioSlug/productos', requireNegocioAuth, uploadImagenes, async
                 cleanEan,
                 stockNum,
                 stockMinNum,
-                politica_sin_stock === 'agotado' ? 'agotado' : 'preventa',
+                venderSinStock ? 'preventa' : 'agotado',
+                venderSinStock,
+                venderSinStock ? fechaEntregaEst : null,
                 cleanLinea, cleanSublinea, cleanSubSublinea, cleanColeccion,
                 tipo_producto ? String(tipo_producto).trim().slice(0, 60) : 'Taza',
                 modelo ? String(modelo).trim().slice(0, 80) : null,
@@ -367,7 +379,7 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
         let i = 1;
         const set = (col, val) => { fields.push(`${col} = $${i++}`); values.push(val); };
 
-        if (b.nombre !== undefined) set('nombre', String(b.nombre).trim().slice(0, 150));
+        if (b.nombre !== undefined) set('nombre', cleanProductTitle(b.nombre));
         if (b.precio !== undefined && b.precio !== '') set('precio', parseFloat(b.precio));
         if (b.precio_oferta !== undefined) {
             const ofNum = b.precio_oferta === '' || b.precio_oferta === null ? null : parseFloat(b.precio_oferta);
@@ -387,9 +399,18 @@ router.patch('/:negocioSlug/productos/:id', requireNegocioAuth, uploadImagenes, 
             set('stock_actual', nuevoStockFicha);
         }
         if (b.stock_minimo !== undefined && b.stock_minimo !== '') set('stock_minimo', Math.max(0, parseInt(b.stock_minimo, 10) || 0));
-        if (b.politica_sin_stock !== undefined) {
+        if (b.vender_sin_stock !== undefined) {
+            const vss = b.vender_sin_stock === true || b.vender_sin_stock === 'true';
+            set('vender_sin_stock', vss);
+            set('politica_sin_stock', vss ? 'preventa' : 'agotado');
+        } else if (b.politica_sin_stock !== undefined) {
             const pol = ['agotado', 'preventa', 'compra_directa'].includes(b.politica_sin_stock) ? b.politica_sin_stock : 'compra_directa';
             set('politica_sin_stock', pol);
+            set('vender_sin_stock', pol === 'preventa');
+        }
+        if (b.fecha_entrega_estimada !== undefined) {
+            const fEst = b.fecha_entrega_estimada ? String(b.fecha_entrega_estimada).trim().slice(0, 10) : null;
+            set('fecha_entrega_estimada', fEst || null);
         }
         if (b.ubicacion_almacen !== undefined) set('ubicacion_almacen', String(b.ubicacion_almacen).trim().slice(0, 80) || 'Almacén Principal Trujillo');
         if (b.linea !== undefined) set('linea', String(b.linea).trim().slice(0, 80));

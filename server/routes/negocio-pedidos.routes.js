@@ -674,7 +674,7 @@ async function resolverItemsPedidoNegocio(negocioId, rawItemsInput, productoSlug
 
         let dbProd = null;
         const { rows: pRows } = await pool.query(
-            `SELECT id, slug, sku, ean, nombre, precio, precio_oferta, descripcion, imagenes, stock_actual, politica_sin_stock
+            `SELECT id, slug, sku, ean, nombre, precio, precio_oferta, descripcion, imagenes, stock_actual, politica_sin_stock, vender_sin_stock, fecha_entrega_estimada
              FROM negocio_productos WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) AND activo = TRUE LIMIT 1`,
             [negocioId, s]
         );
@@ -684,7 +684,8 @@ async function resolverItemsPedidoNegocio(negocioId, rawItemsInput, productoSlug
         const catProd = getProductoPorSlug ? getProductoPorSlug(s) : null;
         if (!dbProd && !prevProd && !catProd) return null;
 
-        const esPreventaOriginal = Boolean(prevProd) || s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad');
+        const permiteSinStock = dbProd ? (dbProd.vender_sin_stock === true || dbProd.politica_sin_stock === 'preventa') : Boolean(prevProd);
+        const esPreventaOriginal = Boolean(prevProd) || s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad') || (dbProd && dbProd.vender_sin_stock === true && Number(dbProd.stock_actual || 0) <= 0);
         const precioBase = dbProd
             ? ((dbProd.precio_oferta && Number(dbProd.precio_oferta) > 0 && Number(dbProd.precio_oferta) < Number(dbProd.precio))
                 ? Number(dbProd.precio_oferta)
@@ -693,6 +694,7 @@ async function resolverItemsPedidoNegocio(negocioId, rawItemsInput, productoSlug
 
         const esSoloReserva = esPreventaOriginal && modalidadPago !== 'completo';
         const montoAdelantoUnitario = esSoloReserva ? 20.00 : precioBase;
+        const fechaEstDb = dbProd && dbProd.fecha_entrega_estimada ? String(dbProd.fecha_entrega_estimada).slice(0, 10) : null;
 
         return {
             slug: (dbProd && dbProd.slug) || (prevProd && prevProd.slug) || (catProd && catProd.slug) || s,
@@ -702,13 +704,13 @@ async function resolverItemsPedidoNegocio(negocioId, rawItemsInput, productoSlug
             precio: precioBase,
             reserva: montoAdelantoUnitario,
             modalidad: esSoloReserva ? 'reserva' : 'compra_directa',
-            fecha_entrega: esPreventaOriginal ? FECHA_ENTREGA_OFICIAL : 'Despacho inmediato (24-48h)',
+            fecha_entrega: fechaEstDb || (esPreventaOriginal ? FECHA_ENTREGA_OFICIAL : 'Despacho inmediato (24-48h)'),
             imagen: (dbProd && Array.isArray(dbProd.imagenes) && dbProd.imagenes[0])
                 || (prevProd && prevProd.imagen)
                 || (catProd && Array.isArray(catProd.imagenes) && catProd.imagenes[0])
                 || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
             stock_actual: dbProd ? Number(dbProd.stock_actual || 0) : null,
-            politica_sin_stock: dbProd ? dbProd.politica_sin_stock : 'preventa'
+            politica_sin_stock: permiteSinStock ? 'preventa' : 'agotado'
         };
     }
 
@@ -757,14 +759,15 @@ async function resolverItemsPedidoNegocio(negocioId, rawItemsInput, productoSlug
 async function validarStockDisponible(negocioId, itemsValidados) {
     for (const item of itemsValidados) {
         const { rows } = await pool.query(
-            `SELECT nombre, stock_actual, politica_sin_stock
+            `SELECT nombre, stock_actual, politica_sin_stock, vender_sin_stock
              FROM negocio_productos
              WHERE negocio_id = $1 AND LOWER(slug) = LOWER($2) AND activo = TRUE LIMIT 1`,
             [negocioId, item.slug]
         );
         if (rows.length > 0) {
             const prod = rows[0];
-            if (prod.politica_sin_stock === 'agotado' && Number(prod.stock_actual || 0) < Number(item.cantidad || 1)) {
+            const permiteSinStock = prod.vender_sin_stock === true || prod.politica_sin_stock === 'preventa';
+            if (!permiteSinStock && Number(prod.stock_actual || 0) < Number(item.cantidad || 1)) {
                 return {
                     ok: false,
                     message: `Stock insuficiente para "${prod.nombre}" (disponibles: ${Math.max(0, Number(prod.stock_actual || 0))}).`

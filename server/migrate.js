@@ -108,6 +108,8 @@ async function runMigrations() {
       ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS ubicacion_almacen VARCHAR(80) DEFAULT 'Almacén Principal Trujillo';
       ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS unidad_medida VARCHAR(20) DEFAULT 'UND';
       ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS ultimo_conteo_at TIMESTAMPTZ;
+      ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS vender_sin_stock BOOLEAN NOT NULL DEFAULT FALSE;
+      ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS fecha_entrega_estimada DATE;
       CREATE INDEX IF NOT EXISTS idx_negocio_productos_sku ON negocio_productos (negocio_id, sku);
       CREATE INDEX IF NOT EXISTS idx_negocio_productos_ean ON negocio_productos (negocio_id, ean);
     `);
@@ -407,6 +409,25 @@ async function runMigrations() {
       // Reactivar también en negocio_productos_estaticos por si estuvo pausada
       await pool.query(
         `DELETE FROM negocio_productos_estaticos WHERE negocio_id = $1 AND slug IN ('taza-formula-1', 'formula-1') AND activo = FALSE`,
+        [artId]
+      ).catch(() => {});
+
+      // Limpiar emoticonos de títulos en almacén (solo permitidos en descripción)
+      const { rows: allProdNames } = await pool.query(`SELECT id, nombre FROM negocio_productos WHERE negocio_id = $1`, [artId]);
+      for (const pr of allProdNames) {
+        const cleanNom = String(pr.nombre || '')
+          .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (cleanNom && cleanNom !== pr.nombre) {
+          await pool.query(`UPDATE negocio_productos SET nombre = $1 WHERE id = $2`, [cleanNom, pr.id]);
+        }
+      }
+      await pool.query(
+        `UPDATE negocio_productos
+         SET vender_sin_stock = TRUE,
+             fecha_entrega_estimada = COALESCE(fecha_entrega_estimada, '2026-12-10')
+         WHERE negocio_id = $1 AND politica_sin_stock = 'preventa' AND vender_sin_stock = FALSE`,
         [artId]
       ).catch(() => {});
     }

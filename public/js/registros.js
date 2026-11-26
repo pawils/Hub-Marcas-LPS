@@ -2128,79 +2128,129 @@
       const costoNum = Number(p.costo_artesano || 0);
       const ultConteo = p.ultimo_conteo_at
         ? new Date(p.ultimo_conteo_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-        : 'Sin conteo reciente';
+        : 'Sin conteo';
+      const venderSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
+      const fechaEst = p.fecha_entrega_estimada ? String(p.fecha_entrega_estimada).slice(0, 10) : '';
+      const cleanNombre = String(p.nombre || '')
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 
       return `
         <tr class="hover:bg-[#F9F6F0]/60 transition-colors">
           <td data-label="Producto" class="px-4 py-3">
             <div class="flex items-center gap-3">
-              <img src="${escapeHtml(foto)}" alt="${escapeHtml(p.nombre)}" onerror="this.onerror=null;this.src='/imagenes/Artesanitas/logo_artesanitas.peru.jpg';"
+              <img src="${escapeHtml(foto)}" alt="${escapeHtml(cleanNombre)}" onerror="this.onerror=null;this.src='/imagenes/Artesanitas/logo_artesanitas.peru.jpg';"
                 class="w-11 h-11 rounded-xl object-cover border border-[#EBE5DE] shrink-0 bg-[#F9F6F0]">
-              <div>
-                <button type="button" data-ficha-id="${p.id}" class="btn-inv-ver-ficha font-bold text-[#4A3C31] hover:text-[#B87352] hover:underline text-xs sm:text-sm text-left cursor-pointer">${escapeHtml(p.nombre)}</button>
-                <span class="text-[11px] text-[#8C7A6B] block">${escapeHtml(p.linea || 'Vajilla')} → ${escapeHtml(p.sublinea || 'Tazas')}</span>
-                <span class="text-[10px] font-semibold text-[#B87352]">${escapeHtml(p.coleccion || 'Catálogo General')}</span>
+              <div class="min-w-0">
+                <button type="button" data-ficha-id="${p.id}" class="btn-inv-ver-ficha font-bold text-[#4A3C31] hover:text-[#B87352] hover:underline text-xs sm:text-sm text-left cursor-pointer block">${escapeHtml(cleanNombre)}</button>
+                <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                  <span class="font-mono font-bold text-[10px] text-[#4A3C31] bg-[#F9F6F0] px-1.5 py-0.5 rounded border border-[#EBE5DE]">SKU: ${escapeHtml(p.sku || '----')}</span>
+                  <span class="text-[10px] font-semibold text-[#B87352]">${escapeHtml(p.coleccion || 'Catálogo General')}</span>
+                </div>
               </div>
             </div>
           </td>
-          <td data-label="SKU & EAN-13" class="px-4 py-3">
-            <div class="font-mono font-bold text-xs text-[#4A3C31] bg-[#F9F6F0] px-2 py-0.5 rounded-md border border-[#EBE5DE] inline-block">
-              ${escapeHtml(p.sku || 'SIN-SKU')}
-            </div>
-            <div class="font-mono text-xs text-[#007A78] font-bold mt-1 flex items-center gap-1">
-              <span>║▌║█│</span>
-              <span>${escapeHtml(p.ean || 'SIN-EAN')}</span>
-            </div>
-            <span class="text-[10px] text-[#8C7A6B] block">${escapeHtml(p.ubicacion_almacen || 'Almacén Principal Trujillo')}</span>
-          </td>
-          <td data-label="Costo / PVP" class="px-4 py-3 text-xs">
-            <div class="font-bold text-[#4A3C31]">PVP: S/ ${precioFinal.toFixed(2)}</div>
-            <div class="text-[#742284] font-semibold">Costo: S/ ${costoNum.toFixed(2)}</div>
-          </td>
-          <td data-label="Stock Sistema" class="px-4 py-3 text-center">
-            <span class="inline-flex items-center justify-center min-w-[44px] px-2.5 py-1 rounded-xl text-sm font-extrabold ${stockNum > stockMin ? 'bg-green-100 text-green-800 border border-green-200' : (stockNum > 0 ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-[#F1EDE7] text-[#8C7A6B]')}">
+          <td data-label="Stock" class="px-3 py-3 text-center">
+            <span class="inline-flex items-center justify-center min-w-[42px] px-2.5 py-1 rounded-xl text-sm font-extrabold ${stockNum > stockMin ? 'bg-green-100 text-green-800 border border-green-200' : (stockNum > 0 ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-[#F1EDE7] text-[#8C7A6B]')}">
               ${stockNum}
             </span>
-            <span class="block text-[10px] text-[#8C7A6B] mt-1">Conteo: ${ultConteo}</span>
+            <span class="block text-[10px] text-[#8C7A6B] mt-1 whitespace-nowrap">${ultConteo}</span>
           </td>
-          <td data-label="Conteo / Ingreso" class="px-4 py-3">
-            <div class="flex flex-wrap items-center gap-1.5">
-              <div class="flex items-center bg-[#F9F6F0] rounded-xl border border-[#D5C9BD] p-0.5">
-                <span class="text-[10px] font-bold text-[#8C7A6B] px-2">Físico:</span>
+          <td data-label="Costo" class="px-3 py-3 text-right text-xs font-bold text-[#742284] whitespace-nowrap">
+            S/ ${costoNum.toFixed(2)}
+          </td>
+          <td data-label="PVP" class="px-3 py-3 text-right text-xs font-extrabold text-[#4A3C31] whitespace-nowrap">
+            S/ ${precioFinal.toFixed(2)}
+          </td>
+          <td data-label="Conteo / Ajuste" class="px-4 py-3">
+            <div class="flex items-center gap-1.5">
+              <div class="inline-flex items-center bg-[#F9F6F0] rounded-xl border border-[#D5C9BD] p-0.5">
+                <button type="button" data-quick-out="${p.id}"
+                  class="btn-inv-quick-out w-7 h-7 rounded-lg bg-white hover:bg-red-50 text-[#4A3C31] hover:text-red-700 font-extrabold text-sm flex items-center justify-center transition-colors cursor-pointer"
+                  title="Reducir 1 unidad (-)">-</button>
                 <input type="number" min="0" step="1" value="${stockNum}" data-conteo-prod-id="${p.id}" data-stock-orig="${stockNum}"
-                  class="input-inv-conteo-fisico w-16 px-2 py-1 text-xs font-extrabold text-center bg-white rounded-lg border border-[#EBE5DE] focus:outline-none focus:border-[#B87352]">
+                  class="input-inv-conteo-fisico w-14 px-1 py-1 text-xs font-extrabold text-center bg-transparent focus:outline-none">
+                <button type="button" data-quick-in="${p.id}"
+                  class="btn-inv-quick-in w-7 h-7 rounded-lg bg-white hover:bg-green-50 text-[#4A3C31] hover:text-green-700 font-extrabold text-sm flex items-center justify-center transition-colors cursor-pointer"
+                  title="Aumentar 1 unidad (+)">+</button>
               </div>
               <button type="button" data-apply-conteo="${p.id}"
                 class="btn-inv-apply-conteo bg-[#007A78] hover:bg-[#00635D] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
-                title="Guardar conteo físico exacto de este SKU">
-                Contar
-              </button>
-              <button type="button" data-quick-out="${p.id}"
-                class="btn-inv-quick-out bg-white hover:bg-red-50 text-red-700 border border-red-200 text-[11px] font-bold px-2 py-1.5 rounded-xl transition-colors cursor-pointer"
-                title="Restar -1 unidad por merma o ajuste">
-                -1 Ajuste
-              </button>
-              <button type="button" data-quick-in="${p.id}"
-                class="btn-inv-quick-in bg-[#4A3C31] hover:bg-[#B87352] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
-                title="Sumar +1 unidad por ingreso de mercadería">
-                +1 Ingreso
+                title="Guardar conteo físico exacto">
+                Guardar
               </button>
             </div>
           </td>
-          <td data-label="Ficha / Etiqueta" class="px-4 py-3 text-right whitespace-nowrap space-x-1.5">
+          <td data-label="Vender sin Stock" class="px-4 py-3">
+            <div class="space-y-1.5">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" data-vss-id="${p.id}" ${venderSinStock ? 'checked' : ''}
+                  class="chk-inv-vender-sin-stock w-4 h-4 accent-[#007A78] rounded cursor-pointer">
+                <span class="text-xs font-semibold text-[#4A3C31]">Vender sin stock</span>
+              </label>
+              <div class="${venderSinStock ? 'flex' : 'hidden'} items-center gap-1" data-vss-fecha-wrap="${p.id}">
+                <input type="date" data-vss-fecha-id="${p.id}" value="${escapeHtml(fechaEst)}"
+                  title="Fecha de entrega estimada al cliente"
+                  class="input-inv-fecha-entrega px-2 py-1 text-[11px] font-semibold rounded-lg border border-[#B87352]/50 bg-[#F9F6F0] text-[#4A3C31] focus:outline-none focus:border-[#B87352]">
+              </div>
+            </div>
+          </td>
+          <td data-label="Ficha 360°" class="px-4 py-3 text-right whitespace-nowrap">
             <button type="button" data-ficha-id="${p.id}"
-              class="btn-inv-ver-ficha bg-[#4A3C31] hover:bg-[#B87352] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1">
+              class="btn-inv-ver-ficha bg-[#4A3C31] hover:bg-[#B87352] text-white text-[11px] font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
               Ficha 360°
-            </button>
-            <button type="button" data-etiqueta-id="${p.id}"
-              class="btn-inv-ver-etiqueta text-xs font-bold text-[#B87352] hover:underline cursor-pointer">
-              Etiqueta EAN
             </button>
           </td>
         </tr>
       `;
     }).join('');
+
+    tbody.querySelectorAll('.chk-inv-vender-sin-stock').forEach(chk => {
+      chk.addEventListener('change', async () => {
+        const prodId = chk.dataset.vssId;
+        const wrap = tbody.querySelector(`[data-vss-fecha-wrap="${prodId}"]`);
+        const dateInp = tbody.querySelector(`.input-inv-fecha-entrega[data-vss-fecha-id="${prodId}"]`);
+        const checked = chk.checked;
+        if (wrap) {
+          wrap.classList.toggle('hidden', !checked);
+          wrap.classList.toggle('flex', checked);
+        }
+        if (checked && dateInp && !dateInp.value) {
+          dateInp.focus();
+          return;
+        }
+        await apiFetch(`/productos/${prodId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vender_sin_stock: checked,
+            fecha_entrega_estimada: checked && dateInp ? dateInp.value : null
+          })
+        });
+        loadInventario();
+        loadProductos();
+      });
+    });
+
+    tbody.querySelectorAll('.input-inv-fecha-entrega').forEach(inp => {
+      inp.addEventListener('change', async () => {
+        const prodId = inp.dataset.vssFechaId;
+        const fechaVal = inp.value;
+        if (!fechaVal) return;
+        await apiFetch(`/productos/${prodId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vender_sin_stock: true,
+            fecha_entrega_estimada: fechaVal
+          })
+        });
+        loadInventario();
+        loadProductos();
+      });
+    });
 
     tbody.querySelectorAll('.btn-inv-apply-conteo').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -2577,7 +2627,16 @@
     document.getElementById('ficha-oferta').value = (p.precio_oferta && Number(p.precio_oferta) > 0) ? Number(p.precio_oferta).toFixed(2) : '';
     var stockMinEl = document.getElementById('ficha-stock-minimo');
     if (stockMinEl) stockMinEl.value = p.stock_minimo !== undefined && p.stock_minimo !== null ? Number(p.stock_minimo) : 1;
-    document.getElementById('ficha-politica').value = p.politica_sin_stock || 'compra_directa';
+    var vssChk = document.getElementById('ficha-vender-sin-stock');
+    var vssWrap = document.getElementById('ficha-fecha-entrega-wrap');
+    var vssFecha = document.getElementById('ficha-fecha-entrega');
+    var permiteVss = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
+    if (vssChk) vssChk.checked = permiteVss;
+    if (vssFecha) vssFecha.value = p.fecha_entrega_estimada ? String(p.fecha_entrega_estimada).slice(0, 10) : '';
+    if (vssWrap) {
+      vssWrap.classList.toggle('hidden', !permiteVss);
+      vssWrap.classList.toggle('flex', permiteVss);
+    }
     document.getElementById('ficha-activo').value = p.activo !== false ? 'true' : 'false';
 
     calcularMargenFichaEnVivo();
@@ -2653,6 +2712,18 @@
       var el = document.getElementById(id);
       if (el) el.addEventListener('input', calcularMargenFichaEnVivo);
     });
+
+    var vssChkInit = document.getElementById('ficha-vender-sin-stock');
+    var vssWrapInit = document.getElementById('ficha-fecha-entrega-wrap');
+    var vssFechaInit = document.getElementById('ficha-fecha-entrega');
+    if (vssChkInit && vssWrapInit) {
+      vssChkInit.addEventListener('change', function () {
+        var on = vssChkInit.checked;
+        vssWrapInit.classList.toggle('hidden', !on);
+        vssWrapInit.classList.toggle('flex', on);
+        if (on && vssFechaInit && !vssFechaInit.value) vssFechaInit.focus();
+      });
+    }
 
     if (btnRegenSku) {
       btnRegenSku.addEventListener('click', async function () {
@@ -2752,7 +2823,17 @@
           fd.append('precio_oferta', document.getElementById('ficha-oferta').value);
           var stockMinInp = document.getElementById('ficha-stock-minimo');
           if (stockMinInp) fd.append('stock_minimo', stockMinInp.value || '1');
-          fd.append('politica_sin_stock', document.getElementById('ficha-politica').value);
+          var vssChkVal = Boolean(document.getElementById('ficha-vender-sin-stock')?.checked);
+          var vssFechaVal = (document.getElementById('ficha-fecha-entrega')?.value || '').trim();
+          if (vssChkVal && !vssFechaVal) {
+            alert('Por favor indica la fecha de entrega estimada cuando activas "Vender sin stock".');
+            document.getElementById('ficha-fecha-entrega')?.focus();
+            btnSave.disabled = false;
+            btnSave.textContent = orig;
+            return;
+          }
+          fd.append('vender_sin_stock', vssChkVal ? 'true' : 'false');
+          fd.append('fecha_entrega_estimada', vssChkVal ? vssFechaVal : '');
           fd.append('activo', document.getElementById('ficha-activo').value);
 
           var fotoInp = document.getElementById('ficha-foto-input');

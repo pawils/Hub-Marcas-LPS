@@ -401,28 +401,32 @@ initSlider('slider-taza-navidad');
 
   function cardHtml(p) {
     var img = resolverFotoProducto(p);
-    var nombre = escapeHtml(p.nombre);
+    var nombreLimpio = cleanProductTitle(p.nombre);
+    var nombre = escapeHtml(nombreLimpio);
     var hasPromo = p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio);
     var stockNum = Number(p.stock_actual || 0);
-    var agotado = stockNum <= 0 && p.politica_sin_stock === 'agotado';
+    var permiteSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
+    var agotado = stockNum <= 0 && !permiteSinStock;
     var isRes = esProductoReserva(p.slug, p.politica_sin_stock);
     var precioEfectivo = hasPromo ? Number(p.precio_oferta) : Number(p.precio);
     var reservaUnit = isRes ? 20.00 : precioEfectivo;
     var modalidadStr = isRes ? 'reserva' : 'compra_directa';
     var slugJs = escapeHtml(p.slug).replace(/'/g, "\\'");
     var imgsList = (Array.isArray(p.imagenes) && p.imagenes.length > 0) ? p.imagenes : [img];
-    var cat = classifyCategoryBySlug(p.slug, p.nombre);
+    var cat = classifyCategoryBySlug(p.slug, nombreLimpio);
 
     var prodObj = {
       slug: p.slug,
       sku: p.sku || '1029',
-      nombre: p.nombre,
+      nombre: nombreLimpio,
       precio: precioEfectivo,
       precio_regular: Number(p.precio),
       reserva: reservaUnit,
       modalidad: modalidadStr,
       categoria: cat,
       stock_actual: stockNum,
+      vender_sin_stock: permiteSinStock,
+      fecha_entrega_estimada: p.fecha_entrega_estimada || null,
       agotado: agotado,
       imagenes: imgsList,
       descripcion: p.descripcion || '',
@@ -464,19 +468,37 @@ initSlider('slider-taza-navidad');
 
   var PRODUCTOS_STORE_MAP = {};
 
+  function cleanProductTitle(str) {
+    return String(str || '')
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function formatFechaEntregaCorta(iso) {
+    if (!iso) return '';
+    var parts = String(iso).slice(0, 10).split('-');
+    if (parts.length !== 3) return '';
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   function registerProductInStore(data) {
     if (!data || !data.slug) return;
     var existing = PRODUCTOS_STORE_MAP[data.slug] || {};
+    var cleanNom = cleanProductTitle(data.nombre || existing.nombre || data.slug);
     PRODUCTOS_STORE_MAP[data.slug] = {
       slug: data.slug,
       sku: data.sku || existing.sku || '1001',
-      nombre: data.nombre || existing.nombre || data.slug,
+      nombre: cleanNom,
       precio: Number(data.precio || existing.precio || 59.90),
       precio_regular: Number(data.precio_regular || data.precio || existing.precio || 59.90),
       reserva: Number(data.reserva || existing.reserva || 59.90),
       modalidad: data.modalidad || existing.modalidad || (esProductoReserva(data.slug) ? 'reserva' : 'compra_directa'),
-      categoria: data.categoria || existing.categoria || classifyCategoryBySlug(data.slug, data.nombre),
+      categoria: data.categoria || existing.categoria || classifyCategoryBySlug(data.slug, cleanNom),
       stock_actual: data.stock_actual !== undefined ? Number(data.stock_actual) : (existing.stock_actual !== undefined ? existing.stock_actual : 5),
+      vender_sin_stock: data.vender_sin_stock !== undefined ? Boolean(data.vender_sin_stock) : Boolean(existing.vender_sin_stock),
+      fecha_entrega_estimada: data.fecha_entrega_estimada !== undefined ? data.fecha_entrega_estimada : (existing.fecha_entrega_estimada || null),
       agotado: Boolean(data.agotado),
       imagenes: (Array.isArray(data.imagenes) && data.imagenes.length > 0) ? data.imagenes : (existing.imagenes || ['/imagenes/Artesanitas/logo_artesanitas.peru.jpg']),
       descripcion: data.descripcion || existing.descripcion || 'Pieza artesanal modelada y esmaltada a mano en cerámica de alta temperatura.',
@@ -500,30 +522,40 @@ initSlider('slider-taza-navidad');
 
       var isRes = prod.modalidad === 'reserva';
       document.getElementById('qv-sku').textContent = 'SKU: ' + (prod.sku || '1001');
-      document.getElementById('qv-title').textContent = prod.nombre;
+      document.getElementById('qv-title').textContent = cleanProductTitle(prod.nombre);
       document.getElementById('qv-price').textContent = 'S/ ' + Number(prod.precio).toFixed(2);
       document.getElementById('qv-desc').textContent = prod.descripcion;
       document.getElementById('qv-qty').textContent = '1';
       document.getElementById('qv-link-pdp').href = '/producto/' + encodeURIComponent(prod.slug);
-      document.getElementById('qv-link-wa').href = waLink(prod.nombre + ' (SKU ' + (prod.sku || '') + ')');
+      document.getElementById('qv-link-wa').href = waLink(cleanProductTitle(prod.nombre) + ' (SKU ' + (prod.sku || '') + ')');
 
       var modeBadge = document.getElementById('qv-mode-badge');
       var stockBadge = document.getElementById('qv-stock-badge');
       var payHint = document.getElementById('qv-payment-hint');
       var btnAddTxt = document.getElementById('qv-btn-add-text');
       var btnBuyTxt = document.getElementById('qv-btn-buy-text');
+      var fechaEstFmt = formatFechaEntregaCorta(prod.fecha_entrega_estimada);
 
-      if (isRes) {
-        modeBadge.textContent = 'Colección en Preventa';
+      if (prod.agotado) {
+        modeBadge.textContent = 'Sin Stock';
+        modeBadge.className = 'bg-[#4A3C31] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow';
+        stockBadge.textContent = 'Agotado temporalmente';
+        payHint.textContent = 'Consulta por WhatsApp próxima reposición';
+        btnAddTxt.textContent = 'Agotado';
+        btnBuyTxt.textContent = 'Consultar Reposición';
+      } else if (isRes) {
+        modeBadge.textContent = prod.stock_actual <= 0 && prod.vender_sin_stock ? 'Disponible a Pedido' : 'Colección en Preventa';
         modeBadge.className = 'bg-[#B87352] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow';
-        stockBadge.textContent = 'Reserva hoy con S/ 20.00';
-        payHint.textContent = 'Reserva con S/ 20.00 · Saldo al entregar';
+        stockBadge.textContent = fechaEstFmt ? ('Entrega estimada: ' + fechaEstFmt) : 'Reserva hoy con S/ 20.00';
+        payHint.textContent = fechaEstFmt ? ('Compra o reserva · Entrega: ' + fechaEstFmt) : 'Reserva con S/ 20.00 · Saldo al entregar';
         btnAddTxt.textContent = 'Agregar a Reserva';
         btnBuyTxt.textContent = 'Reservar Ahora (S/ 20)';
       } else {
         modeBadge.textContent = 'Venta Directa Online';
         modeBadge.className = 'bg-[#137333] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow';
-        stockBadge.textContent = prod.stock_actual > 0 ? ('En Stock (' + prod.stock_actual + ' disp.) · Despacho Inmediato') : 'Disponible para Despacho Inmediato';
+        stockBadge.textContent = prod.stock_actual > 0
+          ? ('En Stock (' + prod.stock_actual + ' disp.) · Despacho Inmediato')
+          : (fechaEstFmt ? ('A pedido · Entrega: ' + fechaEstFmt) : 'Disponible para Despacho Inmediato');
         payHint.textContent = 'Pago 100% Online · Descarga Automática de Stock';
         btnAddTxt.textContent = 'Agregar al Carro';
         btnBuyTxt.textContent = 'Ir a Pagar (S/ ' + Number(prod.precio).toFixed(2) + ')';
@@ -532,11 +564,12 @@ initSlider('slider-taza-navidad');
       var specsEl = document.getElementById('qv-specs');
       if (specsEl) {
         specsEl.innerHTML =
-          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Código SKU:</span><span class="font-mono font-bold">' + escapeHtml(prod.sku || '1001') + '</span></div>' +
-          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Medidas / Capacidad:</span><span class="font-semibold">' + escapeHtml(prod.tamano_dimensiones) + '</span></div>' +
-          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Acabado / Color:</span><span class="font-semibold">' + escapeHtml(prod.color) + '</span></div>' +
-          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Detalle:</span><span class="font-semibold">' + escapeHtml(prod.caracteristicas) + '</span></div>' +
-          '<div class="flex items-center justify-between"><span class="text-[#8C7A6B]">Logística:</span><span class="font-semibold">Envío Shalom (S/ 10) o Retiro en Taller Trujillo</span></div>';
+          '<div class="grid grid-cols-[125px_1fr] sm:grid-cols-[145px_1fr] gap-2 items-start"><span class="text-[#8C7A6B]">Código SKU:</span><span class="font-mono font-bold text-[#4A3C31]">' + escapeHtml(prod.sku || '1001') + '</span></div>' +
+          '<div class="grid grid-cols-[125px_1fr] sm:grid-cols-[145px_1fr] gap-2 items-start"><span class="text-[#8C7A6B]">Medidas / Capacidad:</span><span class="font-semibold text-[#4A3C31]">' + escapeHtml(prod.tamano_dimensiones) + '</span></div>' +
+          '<div class="grid grid-cols-[125px_1fr] sm:grid-cols-[145px_1fr] gap-2 items-start"><span class="text-[#8C7A6B]">Acabado / Color:</span><span class="font-semibold text-[#4A3C31]">' + escapeHtml(prod.color) + '</span></div>' +
+          '<div class="grid grid-cols-[125px_1fr] sm:grid-cols-[145px_1fr] gap-2 items-start"><span class="text-[#8C7A6B]">Detalle:</span><span class="font-semibold text-[#4A3C31]">' + escapeHtml(prod.caracteristicas) + '</span></div>' +
+          (fechaEstFmt && prod.stock_actual <= 0 ? ('<div class="grid grid-cols-[125px_1fr] sm:grid-cols-[145px_1fr] gap-2 items-start"><span class="text-[#8C7A6B]">Entrega Estimada:</span><span class="font-bold text-[#B87352]">' + escapeHtml(fechaEstFmt) + '</span></div>') : '') +
+          '<div class="grid grid-cols-[125px_1fr] sm:grid-cols-[145px_1fr] gap-2 items-start"><span class="text-[#8C7A6B]">Logística:</span><span class="font-semibold text-[#4A3C31]">Envío Shalom (S/ 10) o Retiro en Taller Trujillo</span></div>';
       }
 
       var mainImg = document.getElementById('qv-main-img');
@@ -1173,17 +1206,20 @@ initSlider('slider-taza-navidad');
         productos.forEach(function (p) {
           var staticCard = document.querySelector('[data-slug="' + p.slug + '"]');
           var precioEf = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio)) ? Number(p.precio_oferta) : Number(p.precio);
+          var permiteSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
           var isRes = esProductoReserva(p.slug, p.politica_sin_stock);
-          var agotado = Number(p.stock_actual || 0) <= 0 && p.politica_sin_stock === 'agotado';
+          var agotado = Number(p.stock_actual || 0) <= 0 && !permiteSinStock;
           registerProductInStore({
             slug: p.slug,
             sku: p.sku,
-            nombre: p.nombre,
+            nombre: cleanProductTitle(p.nombre),
             precio: precioEf,
             precio_regular: Number(p.precio),
             reserva: isRes ? 20.00 : precioEf,
             modalidad: isRes ? 'reserva' : 'compra_directa',
             stock_actual: Number(p.stock_actual || 0),
+            vender_sin_stock: permiteSinStock,
+            fecha_entrega_estimada: p.fecha_entrega_estimada || null,
             agotado: agotado,
             imagenes: Array.isArray(p.imagenes) && p.imagenes.length > 0 ? p.imagenes : undefined,
             descripcion: p.descripcion,

@@ -835,12 +835,13 @@
         <table class="artesanitas-table w-full text-sm">
           <thead>
             <tr class="border-b border-[#EBE5DE] text-left text-[#8C7A6B] text-xs">
-              <th class="px-4 py-3 font-semibold">Producto / Jerarquía</th>
-              <th class="px-4 py-3 font-semibold">SKU Interno &amp; EAN-13</th>
-              <th class="px-4 py-3 font-semibold">Costo / PVP</th>
-              <th class="px-4 py-3 font-semibold text-center">Stock Sistema</th>
-              <th class="px-4 py-3 font-semibold">Conteo Físico / Ingreso Mercadería</th>
-              <th class="px-4 py-3 font-semibold text-right">Etiqueta / Acciones</th>
+              <th class="px-4 py-3 font-semibold">Producto</th>
+              <th class="px-3 py-3 font-semibold text-center">Stock</th>
+              <th class="px-3 py-3 font-semibold text-right">Costo</th>
+              <th class="px-3 py-3 font-semibold text-right">PVP</th>
+              <th class="px-4 py-3 font-semibold">Conteo / Ajuste (- / +)</th>
+              <th class="px-4 py-3 font-semibold">Vender sin Stock</th>
+              <th class="px-4 py-3 font-semibold text-right">Ficha 360°</th>
             </tr>
           </thead>
           <tbody id="inventario-tbody" class="divide-y divide-[#F1EDE7]"></tbody>
@@ -964,42 +965,45 @@
             </div>
           </div>
 
-          <!-- Bloque 2: Especificaciones Físicas y Técnicas de la Pieza -->
-          <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] space-y-3">
-            <span class="text-xs font-bold uppercase tracking-wider text-[#B87352] block">2. Especificaciones Técnicas &amp; Detalles Comerciales (Visibles al Cliente en Tienda)</span>
+          <!-- Bloque 2: Especificaciones Físicas y Descripción Detallada -->
+          <div class="bg-white p-4 rounded-2xl border border-[#EBE5DE] space-y-3.5 text-left">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#F1EDE7] pb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#B87352]">2. Descripción Detallada &amp; Ficha Técnica (Visible al Cliente)</span>
+              <span class="text-[11px] text-[#8C7A6B]">Los emoticonos se permiten aquí en la descripción, no en el título de almacén.</span>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Capacidad / Dimensiones</label>
+                <label class="block text-[11px] font-semibold text-[#4A3C31] mb-1">Capacidad / Medidas</label>
                 <input type="text" id="ficha-dimensiones" maxlength="120" placeholder="Ej: 12 oz (350 ml) · 10cm x 8.5cm"
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:bg-white focus:outline-none focus:border-[#B87352]">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Color / Acabado Esmalte</label>
+                <label class="block text-[11px] font-semibold text-[#4A3C31] mb-1">Color / Acabado Esmalte</label>
                 <input type="text" id="ficha-color" maxlength="80" placeholder="Ej: Blanco marfil brillante"
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:bg-white focus:outline-none focus:border-[#B87352]">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Atributos Especiales</label>
+                <label class="block text-[11px] font-semibold text-[#4A3C31] mb-1">Atributos / Cuidados</label>
                 <input type="text" id="ficha-caracteristicas" maxlength="160" placeholder="Ej: Apto microondas · Pintado a mano"
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:bg-white focus:outline-none focus:border-[#B87352]">
               </div>
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Descripción Detallada de la Ficha de Producto</label>
-              <textarea id="ficha-descripcion" rows="2" maxlength="1000" placeholder="Describe la historia, técnica artesanal y cuidados de esta pieza..."
-                class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs font-medium focus:bg-white focus:outline-none focus:border-[#B87352]"></textarea>
+              <label class="block text-[11px] font-semibold text-[#4A3C31] mb-1">Descripción Comercial Detallada</label>
+              <textarea id="ficha-descripcion" rows="3" maxlength="1000" placeholder="Describe la historia, técnica artesanal y cuidados de esta pieza..."
+                class="w-full px-3 py-2.5 rounded-xl border border-[#D5C9BD] bg-[#F9F6F0] text-xs sm:text-sm font-normal text-[#4A3C31] leading-relaxed focus:bg-white focus:outline-none focus:border-[#B87352]"></textarea>
             </div>
           </div>
 
-          <!-- Bloque 3: Costos, PVP, Margen en Vivo & Política de Stock -->
-          <div class="bg-[#F9F6F0] p-4 rounded-2xl border border-[#EBE5DE] space-y-3">
+          <!-- Bloque 3: Costos, PVP, Margen & Configuración Shopify/BigCommerce de Venta sin Stock -->
+          <div class="bg-[#F9F6F0] p-4 rounded-2xl border border-[#EBE5DE] space-y-3.5 text-left">
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-[#4A3C31]">3. Estructura de Precios, Costo Artesano &amp; Política de Venta</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-[#4A3C31]">3. Precios, Margen &amp; Disponibilidad de Venta</span>
               <span id="ficha-margen-pill" class="text-xs font-extrabold px-3 py-1 rounded-full bg-green-100 text-green-800 border border-green-200">
                 Margen Bruto: S/ 0.00 (0%)
               </span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div>
                 <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Costo Artesano (S/)</label>
                 <input type="number" id="ficha-costo" step="0.10" min="0" placeholder="0.00"
@@ -1021,19 +1025,27 @@
                   class="w-full px-3 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-bold text-[#B87352]">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Modalidad Stock = 0</label>
-                <select id="ficha-politica" class="w-full px-2.5 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-semibold text-[#4A3C31]">
-                  <option value="compra_directa">Venta Directa (Con Stock)</option>
-                  <option value="agotado">Bloquear (Mostrar Agotado)</option>
-                  <option value="preventa">Habilitar Reserva (S/ 20)</option>
-                </select>
-              </div>
-              <div>
                 <label class="block text-[11px] font-semibold text-[#8C7A6B] mb-1">Visibilidad Tienda</label>
                 <select id="ficha-activo" class="w-full px-2.5 py-2 rounded-xl border border-[#D5C9BD] bg-white text-xs font-semibold text-[#4A3C31]">
                   <option value="true">Publicado (Activo)</option>
                   <option value="false">Oculto (Pausado)</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Check estilo Shopify / BigCommerce: Vender sin stock + Fecha de entrega -->
+            <div class="bg-white rounded-xl border border-[#EBE5DE] p-3 flex flex-wrap items-center justify-between gap-3">
+              <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                <input type="checkbox" id="ficha-vender-sin-stock" class="w-4 h-4 accent-[#007A78] rounded cursor-pointer">
+                <div>
+                  <span class="text-xs font-bold text-[#4A3C31] block">Continuar vendiendo cuando esté sin stock</span>
+                  <span class="text-[11px] text-[#8C7A6B]">Permite comprar o reservar aunque el stock sea 0, mostrando fecha de entrega al cliente.</span>
+                </div>
+              </label>
+              <div id="ficha-fecha-entrega-wrap" class="hidden items-center gap-2">
+                <label for="ficha-fecha-entrega" class="text-[11px] font-bold text-[#B87352] whitespace-nowrap">Fecha de entrega estimada:</label>
+                <input type="date" id="ficha-fecha-entrega"
+                  class="px-3 py-1.5 rounded-xl border border-[#B87352]/50 bg-[#F9F6F0] text-xs font-bold text-[#4A3C31] focus:outline-none focus:border-[#B87352]">
               </div>
             </div>
           </div>
@@ -1593,7 +1605,7 @@
   </div>
 
   <!-- Script modular externo al final del DOM para inicializar todos los modales -->
-  <script src="/js/registros.js?v=20261126_s7"></script>
+  <script src="/js/registros.js?v=20261126_s8"></script>
 </body>
 
 </html>
