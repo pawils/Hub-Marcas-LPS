@@ -22,19 +22,23 @@ async function ensureProductColumns() {
             ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS vender_sin_stock BOOLEAN NOT NULL DEFAULT FALSE;
             ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS fecha_entrega_estimada DATE;
             UPDATE negocio_productos
-            SET politica_sin_stock = 'compra_directa',
-                stock_actual = CASE WHEN stock_actual = 0 THEN 3 ELSE stock_actual END
-            WHERE politica_sin_stock = 'preventa'
+            SET vender_sin_stock = TRUE,
+                politica_sin_stock = 'preventa',
+                fecha_entrega_estimada = COALESCE(fecha_entrega_estimada, '2026-12-10')
+            WHERE ultimo_conteo_at IS NULL
               AND vender_sin_stock = FALSE
-              AND COALESCE(coleccion, '') NOT ILIKE '%navid%'
-              AND COALESCE(coleccion, '') NOT ILIKE '%rapunzel%'
-              AND COALESCE(coleccion, '') NOT ILIKE '%van gogh%'
-              AND slug NOT IN (
-                'taza-navidad-papa-noel','taza-muneco-de-nieve','taza-arbolito-chocolatosa','taza-arbolito-rosa',
-                'taza-rapunzel','taza-stich','taza-van-gogh','taza-piston-cup','azucarera-van-gogh','vasito-van-gogh'
-              )
-              AND slug NOT LIKE 'taza-rapunzel%'
-              AND slug NOT LIKE 'taza-navidad%';
+              AND (
+                slug IN (
+                  'taza-navidad-papa-noel','taza-muneco-de-nieve','taza-arbolito-chocolatosa','taza-arbolito-rosa',
+                  'taza-rapunzel','taza-stich','taza-van-gogh','taza-piston-cup','azucarera-van-gogh','vasito-van-gogh'
+                )
+                OR slug LIKE 'taza-rapunzel%'
+                OR slug LIKE 'taza-navidad%'
+              );
+            UPDATE negocio_productos
+            SET politica_sin_stock = CASE WHEN vender_sin_stock THEN 'preventa' ELSE 'compra_directa' END
+            WHERE (vender_sin_stock = TRUE AND politica_sin_stock != 'preventa')
+               OR (vender_sin_stock = FALSE AND politica_sin_stock = 'preventa');
         `).catch((err) => {
             _productColsEnsured = null;
             logger.warn('Negocios: no se pudo asegurar columnas de producto', { error: err.message });
@@ -189,6 +193,12 @@ async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
     );
     const existingSlugs = new Set(existingRows.map(r => r.slug));
 
+    const ALIAS_SLUGS_TO_SKIP = new Set([
+        'taza-copa-piston',
+        'taza-rapunzel-palo-rosa',
+        'taza-rapunzel-moradito'
+    ]);
+
     const catalogoBase = [
         ...(Array.isArray(PRODUCTOS_CATALOGO) ? PRODUCTOS_CATALOGO : []),
         { slug: 'taza-navidad-papa-noel', nombre: 'Taza Navideña Papá Noel', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_navidad_papa_noel_1.jpeg'] },
@@ -196,6 +206,10 @@ async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
         { slug: 'taza-arbolito-chocolatosa', nombre: 'Taza Arbolito Chocolatosa', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_arbolito_Chocolatosa.jpeg'] },
         { slug: 'taza-arbolito-rosa', nombre: 'Taza Arbolito Rosa', precio: 59.90, coleccion: 'Colección Navidad', imagenes: ['/imagenes/Artesanitas/reservas_navidad_2026/Taza_arbolito_Rosa.jpeg'] },
         { slug: 'taza-piston-cup', nombre: 'Taza Piston Cup', precio: 59.00, coleccion: 'Personajes & Licencias', imagenes: ['/imagenes/Artesanitas/Fotos/Taza_Piston_1.jpeg'] },
+        { slug: 'taza-stich-celeste', nombre: 'Taza Stich celeste', precio: 65.00, coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Taza_Stich_sin_plato_1.jpeg'] },
+        { slug: 'taza-stich-azul', nombre: 'Taza Stich azul', precio: 65.00, coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/taza_stich_1.jpeg'] },
+        { slug: 'taza-rosada', nombre: 'Taza rosada', precio: 65.00, coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Rosada_sinplato_1.jpeg'] },
+        { slug: 'taza-shrek', nombre: 'Taza Shrek', precio: 69.00, coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/taza_shrek_2.jpg'] },
         { slug: 'adorno-paltita', nombre: 'Adorno Paltita', precio: 35.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_Paltita_1.jpeg'] },
         { slug: 'adorno-oso-sentado', nombre: 'Adorno Oso sentado', precio: 32.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_oso_sentado_1.jpeg'] },
         { slug: 'adorno-munequitas', nombre: 'Adorno muñequitas', precio: 29.00, linea: 'Decoración & Maceteros', sublinea: 'Adornos con Plantita', coleccion: 'Catálogo General', imagenes: ['/imagenes/Artesanitas/Fotos/Adorno_munequita_con_plantita_1.jpeg'] },
@@ -204,7 +218,7 @@ async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
     ];
 
     for (const item of catalogoBase) {
-        if (!item || !item.slug || existingSlugs.has(item.slug)) continue;
+        if (!item || !item.slug || ALIAS_SLUGS_TO_SKIP.has(item.slug) || existingSlugs.has(item.slug)) continue;
         existingSlugs.add(item.slug);
         const lin = item.linea || (item.slug.includes('adorno') || item.slug.includes('elefantito') || item.slug.includes('jarron') ? 'Decoración & Maceteros' : 'Vajilla Artesanal');
         const sub = item.sublinea || (item.slug.includes('plato') && !item.slug.includes('taza') ? 'Platos & Bowls' : (item.slug.includes('tetera') || item.slug.includes('azucarera') ? 'Teteras & Azucareras' : 'Tazas & Mugs'));

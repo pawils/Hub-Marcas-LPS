@@ -461,4 +461,4 @@ function urlWhatsapp(producto) {
     return `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(texto)}`;
 }
 
-module.exports = { productos, getProductoPorSlug, urlWhatsapp, WHATSAPP_NUMERO };
+module.exports = { productos, PRODUCTOS_CATALOGO: productos, getProductoPorSlug, urlWhatsapp, WHATSAPP_NUMERO };

@@ -1310,42 +1310,81 @@
     actualizarTotales();
   }
 
-  // Cargar únicamente los productos dinámicos que pertenezcan a Colecciones de Reserva (Navidad, Rapunzel, Van Gogh)
+  // Sincronizar /pedido con el check "Vender sin stock" (vender_sin_stock) y precios en vivo desde Inventario
   fetch(`/api/negocios/${NEGOCIO}/productos`)
     .then(r => r.ok ? r.json() : { productos: [] })
     .then(data => {
       const lista = (data && data.productos) || [];
       const optgroupNav = document.getElementById('optgroup-coleccion-navidad');
       const optgroupPrev = document.getElementById('optgroup-colecciones-preventa');
+      let rapunzelActivas = 0;
+
       lista.forEach(p => {
         if (!p || !p.slug) return;
-        const col = String(p.coleccion || '').toLowerCase();
-        const esNavidad = /navid/i.test(col) || p.slug.startsWith('taza-navidad');
-        const esOtraReserva = /rapunzel|van\s*gogh/i.test(col) || p.slug.startsWith('taza-rapunzel') || Boolean(CATALOGO_PREVENTA[p.slug]);
-        if (!esNavidad && !esOtraReserva) return;
-
         const precioFinal = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio))
           ? Number(p.precio_oferta)
           : Number(p.precio);
-        if (!CATALOGO_PREVENTA[p.slug]) {
+        const permiteReserva = p.vender_sin_stock === true;
+        const esVarianteRapunzel = p.slug.startsWith('taza-rapunzel-');
+
+        // 1. Actualizar precio, imagen y descripción en CATALOGO_PREVENTA si existe o si está habilitado para reserva
+        if (CATALOGO_PREVENTA[p.slug] || permiteReserva) {
+          const prev = CATALOGO_PREVENTA[p.slug] || {};
           CATALOGO_PREVENTA[p.slug] = {
             slug: p.slug,
-            nombre: p.nombre,
-            precio: precioFinal || 59.90,
+            nombre: p.nombre || prev.nombre || p.slug,
+            precio: precioFinal || prev.precio || 59.90,
             reserva: 20.00,
-            fecha: '10 de Diciembre',
-            imagen: (Array.isArray(p.imagenes) && p.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
-            descripcion: p.descripcion || 'Pieza artesanal modelada y pintada a mano.'
+            fecha: p.fecha_entrega_estimada ? String(p.fecha_entrega_estimada).slice(0, 10) : (prev.fecha || '10 de Diciembre'),
+            imagen: (Array.isArray(p.imagenes) && p.imagenes[0]) || prev.imagen || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
+            descripcion: p.descripcion || prev.descripcion || 'Pieza artesanal modelada y pintada a mano.'
           };
         }
-        const targetGroup = esNavidad ? optgroupNav : optgroupPrev;
-        if (targetGroup && !productoSelect?.querySelector(`option[value="${p.slug}"]`)) {
-          const opt = document.createElement('option');
-          opt.value = p.slug;
-          opt.textContent = `${p.nombre} (S/ ${(precioFinal || 59.90).toFixed(2)})`;
-          targetGroup.appendChild(opt);
+
+        // 2. Si es una de las 9 variantes de Rapunzel, actualizar su tarjeta interactiva (precio y visibilidad según Vender sin stock)
+        if (esVarianteRapunzel) {
+          const varBtn = document.querySelector(`.btn-rapunzel-variant[data-variant="${p.slug}"]`);
+          if (varBtn) {
+            const priceSpans = varBtn.querySelectorAll('span');
+            priceSpans.forEach(sp => {
+              if (/^S\/\s*\d/.test(sp.textContent.trim())) {
+                sp.textContent = `S/ ${(precioFinal || 65).toFixed(2)}`;
+              }
+            });
+            varBtn.classList.toggle('hidden', !permiteReserva);
+          }
+          if (permiteReserva) rapunzelActivas++;
+          return;
+        }
+
+        // 3. Para productos en la lista desplegable (#producto-select):
+        // Si tiene check "Vender sin stock", mostrar/agregar en la lista; si el admin le quitó el check, ocultarlo de la lista de reservas.
+        const existingOpt = productoSelect?.querySelector(`option[value="${p.slug}"]`);
+        if (!permiteReserva) {
+          if (existingOpt) existingOpt.remove();
+          return;
+        }
+
+        if (existingOpt) {
+          existingOpt.textContent = `${p.nombre} (S/ ${(precioFinal || 59.90).toFixed(2)})`;
+        } else {
+          const col = String(p.coleccion || '').toLowerCase();
+          const esNavidad = /navid/i.test(col) || p.slug.startsWith('taza-navidad');
+          const targetGroup = esNavidad ? optgroupNav : optgroupPrev;
+          if (targetGroup) {
+            const opt = document.createElement('option');
+            opt.value = p.slug;
+            opt.textContent = `${p.nombre} (S/ ${(precioFinal || 59.90).toFixed(2)})`;
+            targetGroup.appendChild(opt);
+          }
         }
       });
+
+      // Si todas las variantes de Rapunzel tienen desactivado "Vender sin stock", ocultar la opción agrupadora
+      const optRapunzelMaster = productoSelect?.querySelector('option[value="taza-rapunzel"]');
+      if (optRapunzelMaster && lista.some(p => p.slug && p.slug.startsWith('taza-rapunzel-')) && rapunzelActivas === 0) {
+        optRapunzelMaster.remove();
+      }
 
       const params = new URLSearchParams(window.location.search);
       const prodParam = params.get('producto');

@@ -405,9 +405,9 @@ initSlider('slider-taza-navidad');
     var nombre = escapeHtml(nombreLimpio);
     var hasPromo = p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio);
     var stockNum = Number(p.stock_actual || 0);
-    var permiteSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
+    var permiteSinStock = p.vender_sin_stock === true;
     var agotado = stockNum <= 0 && !permiteSinStock;
-    var isRes = esProductoReserva(p.slug, p.coleccion);
+    var isRes = permiteSinStock;
     var precioEfectivo = hasPromo ? Number(p.precio_oferta) : Number(p.precio);
     var reservaUnit = isRes ? 20.00 : precioEfectivo;
     var modalidadStr = isRes ? 'reserva' : 'compra_directa';
@@ -1212,8 +1212,8 @@ initSlider('slider-taza-navidad');
         productos.forEach(function (p) {
           var staticCard = document.querySelector('[data-slug="' + p.slug + '"]');
           var precioEf = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio)) ? Number(p.precio_oferta) : Number(p.precio);
-          var permiteSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
-          var isRes = esProductoReserva(p.slug, p.coleccion);
+          var permiteSinStock = p.vender_sin_stock === true;
+          var isRes = permiteSinStock;
           var agotado = Number(p.stock_actual || 0) <= 0 && !permiteSinStock;
           registerProductInStore({
             slug: p.slug,
@@ -1239,7 +1239,7 @@ initSlider('slider-taza-navidad');
               var skuBadge = staticCard.querySelector('[data-card-sku="' + p.slug + '"]');
               if (skuBadge) skuBadge.textContent = 'SKU ' + p.sku;
             }
-          } else {
+          } else if (p.slug.indexOf('taza-rapunzel-') !== 0 && p.slug !== 'vasito-van-gogh' && p.slug !== 'taza-stich') {
             nuevosDinamicos.push(p);
           }
         });

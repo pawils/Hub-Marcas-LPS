@@ -22,7 +22,8 @@ const {
     slugUnico,
     buildAutoSku,
     generarMatriculaUnica,
-    cleanProductTitle
+    cleanProductTitle,
+    syncCatalogoBaseAInventario
 } = require('../services/sku-ean.service');
 
 router.param('negocioSlug', resolveNegocioSlug);
@@ -57,9 +58,16 @@ function uploadImagenes(req, res, next) {
 // ── PÚBLICO ──────────────────────────────────────────────────────────────────
 
 // GET /api/negocios/:negocioSlug/productos — productos activos con ficha técnica y stock
+let _initialCatalogSynced = false;
 router.get('/:negocioSlug/productos', async (req, res) => {
     try {
         await ensureProductColumns();
+        if (req.negocio.slug === 'artesanitas' && !_initialCatalogSynced) {
+            _initialCatalogSynced = true;
+            await syncCatalogoBaseAInventario(req.negocio.id, req.negocio.slug).catch(() => {
+                _initialCatalogSynced = false;
+            });
+        }
         const { rows } = await pool.query(
             `SELECT ${PRODUCT_COLUMNS}
              FROM negocio_productos
