@@ -105,41 +105,20 @@
             </div>
             <select id="producto-select"
               class="w-full pl-11 pr-10 py-3.5 rounded-2xl border-2 border-[#D5C9BD] bg-[#F9F6F0] text-[#4A3C31] font-semibold text-xs sm:text-sm focus:outline-none focus:border-[#B87352] focus:bg-white transition-all cursor-pointer appearance-none shadow-2xs">
-              <option value="" disabled selected>— Selecciona o agrega otra pieza a tu reserva —</option>
-              <optgroup label="Colección Navidad 2026">
+              <option value="" disabled selected>— Selecciona una colección o pieza de preventa —</option>
+              <optgroup label="Colección Navidad" id="optgroup-coleccion-navidad">
                 <option value="taza-navidad-papa-noel">Taza Navideña Papá Noel (S/ 59.90)</option>
                 <option value="taza-muneco-de-nieve">Taza Muñeco de Nieve (S/ 59.90)</option>
                 <option value="taza-arbolito-chocolatosa">Taza Arbolito Chocolatosa (S/ 59.90)</option>
                 <option value="taza-arbolito-rosa">Taza Arbolito Rosa (S/ 59.90)</option>
               </optgroup>
-              <optgroup label="Colecciones Destacadas & Preventa">
+              <optgroup label="Colecciones Destacadas en Preventa (Rapunzel, Van Gogh, Stich)" id="optgroup-colecciones-preventa">
                 <option value="taza-rapunzel">01 · Colección Rapunzel (9 variantes)</option>
                 <option value="taza-stich">02 · Taza Stich (S/ 65.00)</option>
                 <option value="taza-van-gogh">03 · Taza Van Gogh (S/ 69.00)</option>
                 <option value="taza-piston-cup">04 · Taza Piston Cup (S/ 59.00)</option>
                 <option value="azucarera-van-gogh">05 · Azucarera Van Gogh (S/ 65.00)</option>
                 <option value="vasito-van-gogh">06 · Vasito Van Gogh (S/ 59.00)</option>
-              </optgroup>
-              <optgroup label="Catálogo General — Compra Directa (Pago 100%)" id="optgroup-catalogo-general">
-                <option value="taza-formula-1">Taza Fórmula 1 (S/ 69.00)</option>
-                <option value="taza-corazon-y-plato">Taza corazón y plato (S/ 75.00)</option>
-                <option value="taza-castellana">Taza Castellana (S/ 55.00)</option>
-                <option value="taza-lavanda-abejita">Taza lavanda abejita (S/ 55.00)</option>
-                <option value="taza-stich-celeste">Taza Stich celeste (S/ 65.00)</option>
-                <option value="taza-stich-azul">Taza Stich azul (S/ 65.00)</option>
-                <option value="taza-runner">Taza Runner (S/ 42.00)</option>
-                <option value="tetera-corazon">Tetera Corazón (S/ 85.00)</option>
-                <option value="palo-rosa-lb">Palo Rosa LB (S/ 69.00)</option>
-                <option value="taza-rosada">Taza rosada (S/ 65.00)</option>
-                <option value="taza-snoopy">Taza Snoopy (S/ 55.00)</option>
-                <option value="taza-shrek">Taza Shrek (S/ 69.00)</option>
-                <option value="platos-uva">Platos uva (S/ 29.00)</option>
-                <option value="plato-morado-full">Plato morado full (S/ 32.00)</option>
-                <option value="adorno-paltita">Adorno Paltita (S/ 35.00)</option>
-                <option value="adorno-oso-sentado">Adorno Oso sentado (S/ 32.00)</option>
-                <option value="adorno-munequitas">Adorno muñequitas (S/ 29.00)</option>
-                <option value="elefantitos-decorativos">Elefantitos decorativos (S/ 49.00)</option>
-                <option value="jarron-prada">Jarrón Prada (S/ 85.00)</option>
               </optgroup>
             </select>
             <input type="hidden" id="producto-variante-input" name="producto_slug" value="">
@@ -148,6 +127,11 @@
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </div>
+          </div>
+
+          <div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 bg-[#F9F6F0] px-3.5 py-2 rounded-xl border border-[#EBE5DE] text-[11px] text-[#8C7A6B]">
+            <span>Esta vista es exclusiva para <strong>Colecciones en Reserva (S/ 20.00)</strong>.</span>
+            <a href="/#catalogo" class="font-bold text-[#007A78] hover:underline">¿Buscas compra inmediata? Ir al Catálogo General →</a>
           </div>
 
           <!-- Submenú de Variaciones Interactivas de Rapunzel -->
@@ -838,7 +822,7 @@
 
   <!-- Script modular externo con Cache-Buster -->
   <script src="/js/lps-modal.js?v=20261126_s1"></script>
-  <script src="/js/pedido.js?v=20261125_s1"></script>
+  <script src="/js/pedido.js?v=20261128_s1"></script>
 </body>
 
 </html>

@@ -407,7 +407,7 @@ initSlider('slider-taza-navidad');
     var stockNum = Number(p.stock_actual || 0);
     var permiteSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
     var agotado = stockNum <= 0 && !permiteSinStock;
-    var isRes = esProductoReserva(p.slug, p.politica_sin_stock);
+    var isRes = esProductoReserva(p.slug, p.coleccion);
     var precioEfectivo = hasPromo ? Number(p.precio_oferta) : Number(p.precio);
     var reservaUnit = isRes ? 20.00 : precioEfectivo;
     var modalidadStr = isRes ? 'reserva' : 'compra_directa';
@@ -459,12 +459,14 @@ initSlider('slider-taza-navidad');
     'vasito-van-gogh': true
   };
 
-  function esProductoReserva(slug, politica) {
+  function esProductoReserva(slug, coleccion) {
     if (!slug) return false;
     var s = String(slug).toLowerCase();
+    var col = String(coleccion || '').toLowerCase();
     if (RESERVA_SLUGS_EXACT[s]) return true;
     if (s.indexOf('taza-rapunzel') === 0 || s.indexOf('taza-navidad') === 0) return true;
-    return politica === 'preventa';
+    if (/navid|rapunzel|van\s*gogh/i.test(col)) return true;
+    return false;
   }
 
   var PRODUCTOS_STORE_MAP = {};
@@ -1211,7 +1213,7 @@ initSlider('slider-taza-navidad');
           var staticCard = document.querySelector('[data-slug="' + p.slug + '"]');
           var precioEf = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio)) ? Number(p.precio_oferta) : Number(p.precio);
           var permiteSinStock = p.vender_sin_stock === true || p.politica_sin_stock === 'preventa';
-          var isRes = esProductoReserva(p.slug, p.politica_sin_stock);
+          var isRes = esProductoReserva(p.slug, p.coleccion);
           var agotado = Number(p.stock_actual || 0) <= 0 && !permiteSinStock;
           registerProductInStore({
             slug: p.slug,

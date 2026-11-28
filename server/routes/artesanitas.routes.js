@@ -30,12 +30,14 @@ const RESERVA_SLUGS_EXACT = new Set([
     'vasito-van-gogh'
 ]);
 
-function esProductoReserva(slug, politica) {
+function esProductoReserva(slug, _politica, coleccion) {
     if (!slug) return false;
     const s = String(slug).toLowerCase();
+    const col = String(coleccion || '').toLowerCase();
     if (RESERVA_SLUGS_EXACT.has(s)) return true;
     if (s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad')) return true;
-    return politica === 'preventa';
+    if (/navid|rapunzel|van\s*gogh/i.test(col)) return true;
+    return false;
 }
 
 function renderProductoFallbackPage(res, slugRequested = '', statusCode = 404) {
@@ -159,7 +161,7 @@ router.get('/producto/:slug', async (req, res) => {
             return renderProductoFallbackPage(res, req.params.slug, 404);
         }
 
-        const esReserva = esProductoReserva(producto.slug, producto.politica_sin_stock);
+        const esReserva = esProductoReserva(producto.slug, producto.politica_sin_stock, producto.coleccion);
         const baseUrl = `${req.protocol}://${req.get('host')}`;
         const pageUrl = `${baseUrl}/producto/${producto.slug}`;
         const mainImage = (Array.isArray(producto.imagenes) && producto.imagenes[0]) || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg';

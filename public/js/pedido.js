@@ -207,120 +207,9 @@
       imagen: '/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Morada_sinplato_1.jpeg',
       descripcion: 'Pieza artesanal inspirada en Rapunzel, en color morado entero (sin plato), modelada y pintada a mano.'
     },
-    // ── Piezas del Catálogo General ──
-    'taza-formula-1': {
-      slug: 'taza-formula-1',
-      sku: '1028',
-      nombre: 'Taza Fórmula 1',
-      precio: 69.00,
-      reserva: 69.00,
-      modalidad: 'compra_directa',
-      fecha: 'Despacho Inmediato (24-48h)',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_formula1_1.jpg',
-      descripcion: 'Para los amantes de la velocidad y los detalles únicos. Taza de cerámica artesanal de Fórmula 1 apta para bebidas calientes y microondas.'
-    },
-    'taza-corazon-y-plato': {
-      slug: 'taza-corazon-y-plato',
-      nombre: 'Taza corazón y plato',
-      precio: 75.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_corazón_y_ plato.jpeg',
-      descripcion: 'Incluye platito. Modelada a mano con esmalte satinado.'
-    },
-    'taza-castellana': {
-      slug: 'taza-castellana',
-      nombre: 'Taza Castellana',
-      precio: 55.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_castellana.jpeg',
-      descripcion: 'Incluye platito. Diseño cálido y artesanal para uso diario.'
-    },
-    'elefantitos-decorativos': {
-      slug: 'elefantitos-decorativos',
-      nombre: 'Elefantitos decorativos',
-      precio: 49.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/elefantitos_decorativos_1.jpg',
-      descripcion: 'Pieza decorativa para darle un toque especial a tu hogar.'
-    },
-    'elefantitos-decorativos-variante': {
-      slug: 'elefantitos-decorativos-variante',
-      nombre: 'Elefantitos decorativos (Variante)',
-      precio: 49.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/elefantitos_decorativos_2.jpeg',
-      descripcion: 'Pieza decorativa con detalles únicos para el hogar.'
-    },
-    'taza-lavanda-abejita': {
-      slug: 'taza-lavanda-abejita',
-      nombre: 'Taza lavanda abejita',
-      precio: 55.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_lavanda_abejita.jpeg',
-      descripcion: 'Incluye platito. Diseño pintado a mano con detalles naturales.'
-    },
-    'jarron-prada': {
-      slug: 'jarron-prada',
-      nombre: 'Jarrón Prada',
-      precio: 85.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/jarron_prada.jpeg',
-      descripcion: 'Pieza escultural y elegante para decoración de interiores.'
-    },
-    'munequitas': {
-      slug: 'munequitas',
-      nombre: 'Muñequitas',
-      precio: 45.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/muñequitas.jpeg',
-      descripcion: 'Figura decorativa modelada y pintada a mano.'
-    },
-    'taza-stich-celeste': {
-      slug: 'taza-stich-celeste',
-      nombre: 'Taza Stich celeste',
-      precio: 65.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Taza_Stich_sin_plato_1.jpeg',
-      descripcion: 'Taza temática en celeste pastel con detalle interno esculpido a mano.'
-    },
-    'taza-stich-azul': {
-      slug: 'taza-stich-azul',
-      nombre: 'Taza Stich azul',
-      precio: 65.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_stich_1.jpeg',
-      descripcion: 'Taza temática en azul profundo con mensaje Ohana y figura en relieve.'
-    },
-    'taza-runner': {
-      slug: 'taza-runner',
-      nombre: 'Taza Runner',
-      precio: 42.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_runner_1.jpeg',
-      descripcion: 'Taza temática especial de cerámica para apasionados del running.'
-    },
-    'tetera-corazon': {
-      slug: 'tetera-corazon',
-      nombre: 'Tetera Corazón',
-      precio: 85.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/tetera_corazon_1.jpeg',
-      descripcion: 'Tetera de cerámica modelada a mano con detalles de corazones.'
-    },
     'palo-rosa-lb': {
       slug: 'palo-rosa-lb',
-      nombre: 'Palo Rosa LB',
+      nombre: 'Palo Rosa LB (Colección Rapunzel)',
       precio: 69.00,
       reserva: 20.00,
       fecha: '10 de Diciembre',
@@ -354,51 +243,6 @@
       imagen: '/imagenes/Artesanitas/Fotos/taza_Rapunzel_Morada_con_lineas_1.jpeg',
       descripcion: 'Taza artesanal morada con líneas texturizadas en relieve.'
     },
-    'taza-rosada': {
-      slug: 'taza-rosada',
-      nombre: 'Taza rosada',
-      precio: 65.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Taza_Rapunzel_Rosada_sinplato_1.jpeg',
-      descripcion: 'Taza artesanal en tono rosa pastel delicado, modelada a mano con acabado brillante.'
-    },
-    'taza-snoopy': {
-      slug: 'taza-snoopy',
-      nombre: 'Taza Snoopy',
-      precio: 55.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_snoopy_0.jpeg',
-      descripcion: 'Taza temática artesanal inspirada en Snoopy, modelada y esmaltada con cariño.'
-    },
-    'taza-shrek': {
-      slug: 'taza-shrek',
-      nombre: 'Taza Shrek',
-      precio: 69.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/taza_shrek_2.jpg',
-      descripcion: 'Taza temática de cerámica inspirada en Shrek, diseño modelado y pintado artesanalmente.'
-    },
-    'platos-uva': {
-      slug: 'platos-uva',
-      nombre: 'Platos uva',
-      precio: 29.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Platos uva.jpeg',
-      descripcion: 'Plato artesanal en tono uva profundo, perfecto para postres o como base de tus tazas favoritas.'
-    },
-    'plato-morado-full': {
-      slug: 'plato-morado-full',
-      nombre: 'Plato morado full',
-      precio: 32.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Plato morado full.jpeg',
-      descripcion: 'Plato artesanal en color morado entero con esmalte cerámico de alta temperatura.'
-    },
     'vaso-van-gogh': {
       slug: 'vasito-van-gogh',
       nombre: 'Vasito Van Gogh',
@@ -408,15 +252,6 @@
       imagen: '/imagenes/Artesanitas/Fotos/vasito_van_gogh_0.jpeg',
       descripcion: 'Vasito de cerámica inspirado en Van Gogh, ideal para café, té o infusiones especiales.'
     },
-    'adorno-paltita': {
-      slug: 'adorno-paltita',
-      nombre: 'Adorno Paltita',
-      precio: 35.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Adorno_Paltita_1.jpeg',
-      descripcion: 'Adorno y macetero artesanal en forma de paltita con lazo, modelado y pintado a mano.'
-    },
     'taza-copa-piston': {
       slug: 'taza-piston-cup',
       nombre: 'Taza Copa Pistón',
@@ -425,24 +260,6 @@
       fecha: '10 de Diciembre',
       imagen: '/imagenes/Artesanitas/Fotos/Taza_Piston_1.jpeg',
       descripcion: 'Taza de cerámica artesanal temática inspirada en la Copa Pistón, modelada y esmaltada a mano.'
-    },
-    'adorno-oso-sentado': {
-      slug: 'adorno-oso-sentado',
-      nombre: 'Adorno Oso sentado',
-      precio: 32.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Adorno_oso_sentado_1.jpeg',
-      descripcion: 'Tierno adorno y macetero de osito sentado con detalles de corazones pintados a mano.'
-    },
-    'adorno-munequitas': {
-      slug: 'adorno-munequitas',
-      nombre: 'Adorno muñequitas',
-      precio: 29.00,
-      reserva: 20.00,
-      fecha: '10 de Diciembre',
-      imagen: '/imagenes/Artesanitas/Fotos/Adorno_munequita_con_plantita_1.jpeg',
-      descripcion: 'Delicado adorno de muñequita con corona de flores y plantita, modelado y pintado a mano.'
     }
   };
 
@@ -614,9 +431,10 @@
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
       return parsed
-        .filter(item => item && item.slug && Number(item.cantidad) > 0)
+        .filter(item => item && item.slug && Number(item.cantidad) > 0 && item.modalidad !== 'compra_directa')
         .map(item => {
           const ref = CATALOGO_PREVENTA[ALIASES[item.slug] || item.slug];
+          if (!ref && item.modalidad !== 'reserva') return null;
           const cant = Math.min(50, Math.max(1, parseInt(item.cantidad, 10) || 1));
           if (ref && !CATALOGO_PREVENTA[item.slug]) {
             CATALOGO_PREVENTA[item.slug] = ref;
@@ -641,7 +459,8 @@
             imagen: finalProd.imagen || item.imagen || '/imagenes/Artesanitas/logo_artesanitas.peru.jpg',
             descripcion: finalProd.descripcion || item.descripcion || ''
           };
-        });
+        })
+        .filter(Boolean);
     } catch (e) {
       return [];
     }
@@ -1491,16 +1310,20 @@
     actualizarTotales();
   }
 
-  // Cargar productos dinámicos del panel admin para que también estén disponibles en /pedido
+  // Cargar únicamente los productos dinámicos que pertenezcan a Colecciones de Reserva (Navidad, Rapunzel, Van Gogh)
   fetch(`/api/negocios/${NEGOCIO}/productos`)
     .then(r => r.ok ? r.json() : { productos: [] })
     .then(data => {
       const lista = (data && data.productos) || [];
-      const optgroup = document.getElementById('optgroup-catalogo-general');
+      const optgroupNav = document.getElementById('optgroup-coleccion-navidad');
+      const optgroupPrev = document.getElementById('optgroup-colecciones-preventa');
       lista.forEach(p => {
         if (!p || !p.slug) return;
-        const esReserva = p.politica_sin_stock === 'preventa' || p.slug.startsWith('taza-rapunzel') || p.slug.startsWith('taza-navidad') || Boolean(CATALOGO_PREVENTA[p.slug]);
-        if (!esReserva) return;
+        const col = String(p.coleccion || '').toLowerCase();
+        const esNavidad = /navid/i.test(col) || p.slug.startsWith('taza-navidad');
+        const esOtraReserva = /rapunzel|van\s*gogh/i.test(col) || p.slug.startsWith('taza-rapunzel') || Boolean(CATALOGO_PREVENTA[p.slug]);
+        if (!esNavidad && !esOtraReserva) return;
+
         const precioFinal = (p.precio_oferta && Number(p.precio_oferta) > 0 && Number(p.precio_oferta) < Number(p.precio))
           ? Number(p.precio_oferta)
           : Number(p.precio);
@@ -1515,11 +1338,12 @@
             descripcion: p.descripcion || 'Pieza artesanal modelada y pintada a mano.'
           };
         }
-        if (optgroup && !productoSelect?.querySelector(`option[value="${p.slug}"]`)) {
+        const targetGroup = esNavidad ? optgroupNav : optgroupPrev;
+        if (targetGroup && !productoSelect?.querySelector(`option[value="${p.slug}"]`)) {
           const opt = document.createElement('option');
           opt.value = p.slug;
           opt.textContent = `${p.nombre} (S/ ${(precioFinal || 59.90).toFixed(2)})`;
-          optgroup.appendChild(opt);
+          targetGroup.appendChild(opt);
         }
       });
 

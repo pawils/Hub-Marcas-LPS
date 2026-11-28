@@ -21,6 +21,20 @@ async function ensureProductColumns() {
         _productColsEnsured = pool.query(`
             ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS vender_sin_stock BOOLEAN NOT NULL DEFAULT FALSE;
             ALTER TABLE negocio_productos ADD COLUMN IF NOT EXISTS fecha_entrega_estimada DATE;
+            UPDATE negocio_productos
+            SET politica_sin_stock = 'compra_directa',
+                stock_actual = CASE WHEN stock_actual = 0 THEN 3 ELSE stock_actual END
+            WHERE politica_sin_stock = 'preventa'
+              AND vender_sin_stock = FALSE
+              AND COALESCE(coleccion, '') NOT ILIKE '%navid%'
+              AND COALESCE(coleccion, '') NOT ILIKE '%rapunzel%'
+              AND COALESCE(coleccion, '') NOT ILIKE '%van gogh%'
+              AND slug NOT IN (
+                'taza-navidad-papa-noel','taza-muneco-de-nieve','taza-arbolito-chocolatosa','taza-arbolito-rosa',
+                'taza-rapunzel','taza-stich','taza-van-gogh','taza-piston-cup','azucarera-van-gogh','vasito-van-gogh'
+              )
+              AND slug NOT LIKE 'taza-rapunzel%'
+              AND slug NOT LIKE 'taza-navidad%';
         `).catch((err) => {
             _productColsEnsured = null;
             logger.warn('Negocios: no se pudo asegurar columnas de producto', { error: err.message });
@@ -125,8 +139,50 @@ function cleanProductTitle(texto) {
         .slice(0, 150);
 }
 
+const RESERVA_OFFICIAL_SLUGS = new Set([
+    'taza-navidad-papa-noel',
+    'taza-muneco-de-nieve',
+    'taza-arbolito-chocolatosa',
+    'taza-arbolito-rosa',
+    'taza-rapunzel',
+    'taza-stich',
+    'taza-van-gogh',
+    'taza-piston-cup',
+    'azucarera-van-gogh',
+    'vasito-van-gogh'
+]);
+
+function esProductoReservaOficial(slug, coleccion) {
+    const s = String(slug || '').toLowerCase();
+    const col = String(coleccion || '').toLowerCase();
+    if (RESERVA_OFFICIAL_SLUGS.has(s)) return true;
+    if (s.startsWith('taza-rapunzel') || s.startsWith('taza-navidad')) return true;
+    if (/navid|rapunzel|van\s*gogh/i.test(col)) return true;
+    return false;
+}
+
 async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
     let matriculadosNuevos = 0;
+
+    // Corregir productos del Catálogo General que fueron auto-matriculados antes con politica_sin_stock='preventa' sin pertenecer a colecciones de reserva
+    await pool.query(
+        `UPDATE negocio_productos
+         SET politica_sin_stock = 'compra_directa'
+         WHERE negocio_id = $1
+           AND politica_sin_stock = 'preventa'
+           AND vender_sin_stock = FALSE
+           AND COALESCE(coleccion, '') NOT ILIKE '%navid%'
+           AND COALESCE(coleccion, '') NOT ILIKE '%rapunzel%'
+           AND COALESCE(coleccion, '') NOT ILIKE '%van gogh%'
+           AND slug NOT IN (
+             'taza-navidad-papa-noel','taza-muneco-de-nieve','taza-arbolito-chocolatosa','taza-arbolito-rosa',
+             'taza-rapunzel','taza-stich','taza-van-gogh','taza-piston-cup','azucarera-van-gogh','vasito-van-gogh'
+           )
+           AND slug NOT LIKE 'taza-rapunzel%'
+           AND slug NOT LIKE 'taza-navidad%'`,
+        [negocioId]
+    ).catch(() => {});
+
     const { rows: existingRows } = await pool.query(
         `SELECT slug FROM negocio_productos WHERE negocio_id = $1`,
         [negocioId]
@@ -153,14 +209,17 @@ async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
         const lin = item.linea || (item.slug.includes('adorno') || item.slug.includes('elefantito') || item.slug.includes('jarron') ? 'Decoración & Maceteros' : 'Vajilla Artesanal');
         const sub = item.sublinea || (item.slug.includes('plato') && !item.slug.includes('taza') ? 'Platos & Bowls' : (item.slug.includes('tetera') || item.slug.includes('azucarera') ? 'Teteras & Azucareras' : 'Tazas & Mugs'));
         const col = item.coleccion || (item.slug.includes('navidad') || item.slug.includes('arbolito') ? 'Colección Navidad' : (item.slug.includes('van-gogh') ? 'Colección Van Gogh' : (item.slug.includes('rapunzel') ? 'Colección Rapunzel' : 'Catálogo General')));
+        const esReserva = esProductoReservaOficial(item.slug, col);
+        const politica = esReserva ? 'preventa' : 'compra_directa';
+        const stockInicial = esReserva ? 0 : 3;
         const codes = await generarMatriculaUnica(negocioId, negocioSlug, lin, sub);
 
         const { rows: ins } = await pool.query(
             `INSERT INTO negocio_productos (
                 negocio_id, slug, nombre, precio, sku, ean, stock_actual, stock_minimo,
-                politica_sin_stock, linea, sublinea, sub_sublinea, coleccion,
+                politica_sin_stock, vender_sin_stock, linea, sublinea, sub_sublinea, coleccion,
                 tipo_producto, descripcion, imagenes, ubicacion_almacen, activo
-             ) VALUES ($1, $2, $3, $4, $5, $6, 0, 2, 'preventa', $7, $8, 'Cerámica Pintada a Mano', $9, 'Cerámica', $10, $11, 'Almacén Principal Trujillo', TRUE)
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8, $9, $10, $11, 'Cerámica Pintada a Mano', $12, 'Cerámica', $13, $14, 'Almacén Principal Trujillo', TRUE)
              ON CONFLICT (negocio_id, slug) DO NOTHING
              RETURNING id`,
             [
@@ -170,6 +229,9 @@ async function syncCatalogoBaseAInventario(negocioId, negocioSlug) {
                 Number(item.precio || 59.90),
                 codes.sku,
                 codes.ean,
+                stockInicial,
+                politica,
+                esReserva,
                 lin,
                 sub,
                 col,
